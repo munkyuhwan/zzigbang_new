@@ -1,0 +1,14 @@
+export const colorBackground = "#e9e9ee";
+export const colorMenuHeader = "#efefef";
+export const colorLightGrey = "#f3f3f4";
+export const colorGrey = "#ebebeb";
+export const colorWhite = "#ffffff";
+export const colorBlack = "#000000";
+export const colorTransparent = "#00000000";
+export const colorGreen = "#313e32";
+export const colorRed = "#f54441";
+export const colorPink = "#ffe0cb";
+export const colorCartFont = "#232324";
+export const colorDarkGrey = "#979797";
+export const colorYellow = "#ffe0cb";
+export const colorLightGreen = "#3d6241";
