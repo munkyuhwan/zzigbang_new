@@ -5,14 +5,37 @@ import { ADMIN_API_GOODS } from '../../resources/apiResources';
 import { setError } from '../store/error';
 
 export async function formRequest(dispatch, url, postData) {
-  try {
-    const response = await axios.post(url,postData, {headers: {'Content-Type': 'multipart/form-data; boundary=boundary'},transformRequest: formData =>  formData,});
+  
+  const MAX_RETRIES = 5;
+  const RETRY_DELAY = 100; // 0.5초
+
+  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      const response = await axios.post(url, postData, {
+        headers: { 'Content-Type': 'multipart/form-data; boundary=boundary' },
+        transformRequest: formData => formData,
+        timeout:30000
+      });
+      return response;
+    } catch (err) {
+      if (attempt < MAX_RETRIES) {
+        console.log(`요청 실패 (${attempt}/${MAX_RETRIES}) - 0.5초 후 재시도`);
+        await new Promise(resolve => setTimeout(resolve, RETRY_DELAY));
+      } else {
+        console.log('모든 재시도 실패');
+        return new Error(err);
+      }
+    }
+  }
+  
+  /* try {
+    const response = await axios.post(url,postData, {headers: {'Content-Type': 'multipart/form-data; boundary=boundary'},transformRequest: formData =>  formData,timeout:5000});
     //const response = await axios.post(url,postData, {});
     return response;
     
   }catch(err) {
     return new Error(err);
-  }
+  } */
 }
 export async function posApiRequest(url, postData={}) {
   //callApiWithExceptionHandling(`${url}`,postData);

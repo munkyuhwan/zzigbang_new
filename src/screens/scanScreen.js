@@ -43,6 +43,9 @@ const ScanScreen = () => {
     const { Weight } = NativeModules;
     const camera = useRef();
      
+    const cameraOpacity = useRef(new Animated.Value(1)).current;
+    const imageOpacity = useRef(new Animated.Value(0)).current;
+
     const device = useCameraDevice('back');
     const format = device?.formats.find(f => {
         const ratio = f.videoWidth / f.videoHeight;
@@ -63,6 +66,7 @@ const ScanScreen = () => {
     const [price,setPrice] = useState(0);
     const [amt,setAmt] = useState(0);
     const [isMainShow, setMainShow] = useState(true);
+    const [storeID, setStoreID] = useState("");
 
     const { items, orderList } = useSelector(state=>state.menu);
     const {strings,selectedLanguage, isAddShow, weight} = useSelector(state=>state.common);
@@ -85,6 +89,21 @@ const ScanScreen = () => {
         outputRange: [colorPink, '#0000ff'], // 빨강 ↔ 파랑
     });
 
+    useEffect(() => {
+        if (imgURL !== "") {
+          // 카메라 페이드아웃, 이미지 페이드인
+          Animated.parallel([
+            Animated.timing(cameraOpacity, { toValue: 0, duration: 500, useNativeDriver: true }),
+            Animated.timing(imageOpacity, { toValue: 1, duration: 500, useNativeDriver: true })
+          ]).start();
+        } else {
+          // 이미지 페이드아웃, 카메라 페이드인
+          Animated.parallel([
+            Animated.timing(cameraOpacity, { toValue: 1, duration: 500, useNativeDriver: true }),
+            Animated.timing(imageOpacity, { toValue: 0, duration: 500, useNativeDriver: true })
+          ]).start();
+        }
+      }, [imgURL]);
     
     useEffect(() => {
         // 2. 깜빡이는 애니메이션 루프 설정
@@ -114,7 +133,14 @@ const ScanScreen = () => {
                 ])
             ).start();
         }
-      }, [tmpBreadList, rescanIndex]);
+    }, [tmpBreadList, rescanIndex]);
+
+    useEffect(()=>{
+        AsyncStorage.getItem("BREAD_STORE_ID")
+        .then(result=>{
+            setStoreID(result);
+        })
+    },[])
     
     function screenTimeOut(){
         clearInterval(timeoutSet);
@@ -179,31 +205,34 @@ const ScanScreen = () => {
     
     async function startScan(scanWeight) {
         clearWeightInterval();
-
-        if(typeof(weight)!="number") {
+        if(typeof(scanWeight)!="number") {
             EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"스캔오류", str:"무게를 확인할 수 없습니다."});
             return;
         }
-        if(weight=="NaN") {
+        if(scanWeight=="NaN") {
             EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"스캔오류", str:"무게를 확인할 수 없습니다."});
             return;
         }
         
-        try {
+        /* try {
             const breadStoreID = await AsyncStorage.getItem("BREAD_STORE_ID");
-            console.log("breadStoreID: ", breadStoreID);
-          } catch (err) {
+        } catch (err) {
             console.error("AsyncStorage 에러: ", err);
-          }
-        var breadStoreID = await AsyncStorage.getItem("BREAD_STORE_ID");
+        }   */
+        var breadStoreID = storeID;
 
         //var breadStoreID = "test";
         setImgURL("");
 
-       
+       console.log("breadStoreID: ",breadStoreID);
         
         try{
+            console.log("capture",camera.current);
             const {uri} = await camera.current.capture();
+            
+            
+            /* 
+            console.log("uri: ",uri);
             if (uri.startsWith('file://')) {
                 // Platform dependent, iOS & Android uses '/'
                 const pathSplitter = '/';
@@ -223,8 +252,8 @@ const ScanScreen = () => {
                 const formData = new FormData();
                 formData.append("image", {uri: `file://${RNFS.DownloadDirectoryPath}/${fileName}`,name:`${fileName}`, filename:`${fileName}`, type: "image/*"} );
                 formData.append("store_name", breadStoreID);
-                //formData.append("input_weight", scanWeight);
-                formData.append("input_weight", 0.03);
+                formData.append("input_weight", scanWeight);
+                //formData.append("input_weight", 0.03);
                 console.log("foramdata: ",formData);
                 const aiResult = await formRequest(dispatch,`${AI_SERVER}${AI_QUERY}`, formData );
                 console.log("aiResult: ",aiResult);
@@ -327,7 +356,7 @@ const ScanScreen = () => {
                 EventRegister.emit("showSpinner",{isSpinnerShow:false, msg:"", spinnerType:"",closeText:""})
                 EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"스캔오류", str:"이미지를 저장할 수 없습니다."});
                 return;
-            }
+            } */
         }catch(err) {
             console.log("err: ",err);
             DeviceEventEmitter.removeAllListeners("onWeightChanged");
@@ -415,17 +444,30 @@ const ScanScreen = () => {
                     cameraType={CameraType.Back} // front/back(default)
                     onError={()=>{console.log("error fail");}}
                 /> */}
-                <Camera
-                    ref={camera}
-                    style={{flex:1, aspectRatio: 4 / 3}}
-                    device={device}
-                    format={format}
-                    isActive={true}
-                    resizeMode='contain'
-                />
-                {imgURL!="" &&
-                    <Image style={{width:'100%', height:'100%', backgroundColor:colorBlack, position:'absolute'}} resizeMode='contain' source={{uri:imgURL}} />
-                }
+                <Animated.View style={{ flex: 1, opacity: cameraOpacity }}>
+
+                    <Camera
+                        ref={camera}
+                        style={{flex:1, aspectRatio: 4 / 3}}
+                        device={device}
+                        format={format}
+                        isActive={true}
+                        resizeMode='contain'
+                    />
+                </Animated.View>
+                <Animated.View style={{ 
+                    width: '100%', 
+                    height: '100%', 
+                    backgroundColor: colorBlack, 
+                    position: 'absolute', 
+                    opacity: imageOpacity 
+                }}>
+
+                    {imgURL!="" &&
+                        <Image style={{width:'100%', height:'100%', backgroundColor:colorBlack, position:'absolute'}} resizeMode='contain' source={{uri:imgURL}} />
+                    }
+                </Animated.View>
+
             </View>
             <View style={{flex:0.343}} >
 
@@ -459,15 +501,15 @@ const ScanScreen = () => {
                 <View style={{position:'absolute', zIndex:9999999, right:250, bottom:35,}}>
                     <TouchableWithoutFeedback 
                         onPress={()=>{ 
-                            EventRegister.emit("showSpinner",{isSpinnerShow:true, msg:"스캔 중 입니다.", spinnerType:"",closeText:""})
+                            //EventRegister.emit("showSpinner",{isSpinnerShow:true, msg:"스캔 중 입니다.", spinnerType:"",closeText:""})
                             setImgURL("");
                             if(rescanIndex == null) {
                                 setScanType(ADD);
                             }else {
                                 setScanType(RESCAN); 
                             }
-                            startScan("")
-                            /* 
+                            //startScan("")
+                             
                             async function startMeasuring() {
                                 const prodID = await AsyncStorage.getItem("weightProductID");
                                 const vendorID = await AsyncStorage.getItem("weightVendorID");
@@ -487,7 +529,8 @@ const ScanScreen = () => {
                                 }
                                 
                             }, 1000);
-
+                            //startScan(0.2);
+                            
                             DeviceEventEmitter.removeAllListeners("onWeightChanged"); 
                             DeviceEventEmitter.addListener("onWeightChanged",(data)=>{    
                                 const result = data?.weight.replace(/[^0-9.]/g, ""); // 숫자와 소숫점 제외 모든 문자 제거
@@ -495,11 +538,12 @@ const ScanScreen = () => {
                                 console.log("weight: ",weight);
                                 if(Number(weight)>0) {
                                     console.log("start scan");
+                                    startScan(weight)
                                     //dispatch(setCommon({weight:weight}))
-                                    startScan(weight);
+                                    
                                 }
                             });  
-                             */
+                            //startScan(1);
                             const sound = new Sound('z004.wav', Sound.MAIN_BUNDLE, (error) => {
                                 if (error) {
                                     console.log('오디오 로드 실패', error);
@@ -514,6 +558,7 @@ const ScanScreen = () => {
                                 });
                                 // 재생                            
                             });
+                            
 
                         }} 
                     >
