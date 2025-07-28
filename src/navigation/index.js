@@ -11,7 +11,6 @@ import { smartroCancelService } from '../utils/smartro';
 import { Alert, DeviceEventEmitter, NativeModules } from 'react-native';
 import { InstallmentPopup } from '../screens/popups/installmentPopup';
 import messaging from '@react-native-firebase/messaging';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { initializeApp, setCommon } from '../store/common';
 import { SCREEN_TIMEOUT } from '../resources/values';
 import { extractNumbers, openAlert } from '../utils/common';
@@ -20,6 +19,7 @@ import { isEmpty } from 'lodash'
 import { CallAssistance } from '../components/callAssistance';
 import { AlertPopup } from '../components/alertPopup';
 import { PhonePopup } from '../components/phonePopup';
+import { storage } from '../utils/localStorage';
 
 const Stack = createStackNavigator()
 var statusInterval;
@@ -96,7 +96,7 @@ export default function Navigation() {
     }
 
     async function initializeFcm() {
-        const prevStoreID = await AsyncStorage.getItem("STORE_IDX").catch(()=>{return null;});
+        const prevStoreID = storage.getString("STORE_IDX");
         if(prevStoreID){      
             try{
                await messaging().unsubscribeFromTopic(`${prevStoreID}`);
@@ -115,8 +115,8 @@ export default function Navigation() {
     useEffect(()=>{
         // 저울 스타트
         async function startConnect () {
-            const productId = await AsyncStorage.getItem("weightProductID");
-            const vendorId = await AsyncStorage.getItem("weightVendorID");   
+            const productId = storage.getString("weightProductID");
+            const vendorId = storage.getString("weightVendorID");   
             if(!isEmpty(productId) && !isEmpty(vendorId)) {
                 console.log("connect");          
                 const {Weight} = NativeModules;

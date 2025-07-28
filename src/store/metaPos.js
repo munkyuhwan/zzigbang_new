@@ -3,6 +3,7 @@ import { getIP, getStoreID } from "../utils/common";
 import { apiRequest, callApiWithExceptionHandling, posApiRequest } from "../utils/apiRequest";
 import { ADMIN_API_BANNER, ADMIN_API_BASE_URL, ADMIN_API_STORE_INFO, POS_BASE_URL } from "../resources/apiResources";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { storage } from "../utils/localStorage";
 
 
 export const initMeta = createAsyncThunk("meta/initMeta", async(data,{dispatch,getState, rejectWithValue}) =>{
@@ -34,7 +35,8 @@ export const getTableData = createAsyncThunk("meta/getTableData", async(data,{di
 
 
 export const getStoreInfo = createAsyncThunk("meta/getStoreInfo", async(data, {dispatch,rejectWithValue})=>{
-    const STORE_IDX = await AsyncStorage.getItem("STORE_IDX")
+    //const STORE_IDX = await AsyncStorage.getItem("STORE_IDX");
+    const STORE_IDX = storage.getString("STORE_IDX");
     if(!STORE_IDX) {
         return rejectWithValue();
     }
@@ -44,8 +46,11 @@ export const getStoreInfo = createAsyncThunk("meta/getStoreInfo", async(data, {d
             return rejectWithValue("DATA DOES NOT EXIST");
         }else {
             if(data.result == true){
-                AsyncStorage.setItem("POS_IP", data?.data.ip);
-                AsyncStorage.setItem("STORE_NAME", data?.data.store_name);
+                //AsyncStorage.setItem("POS_IP", data?.data.ip);
+                //AsyncStorage.setItem("STORE_NAME", data?.data.store_name);
+                storage.set("POS_IP", data?.data.ip);
+                storage.set("STORE_NAME", data?.data.store_name);
+
                 //AsyncStorage.setItem("BSN_NO",bsnNo);
                 //AsyncStorage.setItem("TID_NO",catId); 
                 dispatch(setMeta({storeInfo:data?.data}));

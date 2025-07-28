@@ -8,10 +8,10 @@ import {isEmpty} from 'lodash';
 import { useDispatch, useSelector } from "react-redux";
 import { colorBlack, colorDarkGrey } from "../resources/colors";
 import { useNavigation } from "@react-navigation/native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { setCommon } from "../store/common";
 import { LAN_CN, LAN_EN, LAN_JP, LAN_KO } from "../resources/values";
 import SettingScreen from "../screens/settingScreen";
+import { storage } from "../utils/localStorage";
   
 // 헤더 컴포넌트
 export const MainHeader = (props) => {
@@ -87,7 +87,7 @@ export const MainHeader = (props) => {
                 {//isOpen==true &&
                     <MainMenuHeaderSectionWrapper  flex={1} >
                         <MainMenuHeaderLanguageWrapper>
-                            <Pressable onPress={() => {AsyncStorage.setItem("LAN",LAN_EN); dispatch(setCommon({selectedLanguage:LAN_EN})); setOpen(false); }}>
+                            <Pressable onPress={() => {storage.set("LAN",LAN_EN); dispatch(setCommon({selectedLanguage:LAN_EN})); setOpen(false); }}>
                                 <LanguageWrapper isSelected={selectedLanguage == LAN_EN}  >
                                     <MainMenuHeaderLanguage source={require("../resources/imgs/drawable-xxxhdpi/bt_american.png")} />
                                 </LanguageWrapper>
@@ -95,7 +95,7 @@ export const MainHeader = (props) => {
                         </MainMenuHeaderLanguageWrapper>
                     
                         <MainMenuHeaderLanguageWrapper >
-                            <Pressable onPress={() => {AsyncStorage.setItem("LAN",LAN_CN);dispatch(setCommon({selectedLanguage:LAN_CN}));  setOpen(false);  }}>
+                            <Pressable onPress={() => {storage.set("LAN",LAN_CN);dispatch(setCommon({selectedLanguage:LAN_CN}));  setOpen(false);  }}>
                                 <LanguageWrapper isSelected={selectedLanguage == LAN_CN}>
                                     <MainMenuHeaderLanguage source={require("../resources/imgs/drawable-xxxhdpi/bt_chan.png")} />
                                 </LanguageWrapper>
@@ -103,7 +103,7 @@ export const MainHeader = (props) => {
                         </MainMenuHeaderLanguageWrapper>
                     
                         <MainMenuHeaderLanguageWrapper  >
-                            <Pressable onPress={() => {AsyncStorage.setItem("LAN",LAN_JP); dispatch(setCommon({selectedLanguage:LAN_JP})); setOpen(false);  }}>
+                            <Pressable onPress={() => {storage.set("LAN",LAN_JP); dispatch(setCommon({selectedLanguage:LAN_JP})); setOpen(false);  }}>
                                 <LanguageWrapper isSelected={selectedLanguage == LAN_JP}>
                                     <MainMenuHeaderLanguage source={require("../resources/imgs/drawable-xxxhdpi/bt_japan.png")} />
                                 </LanguageWrapper>
@@ -111,7 +111,7 @@ export const MainHeader = (props) => {
                         </MainMenuHeaderLanguageWrapper>
                         
                         <MainMenuHeaderLanguageWrapper >
-                            <Pressable onPress={() => {AsyncStorage.setItem("LAN",LAN_KO); dispatch(setCommon({selectedLanguage:LAN_KO})); setOpen(false);  }}>
+                            <Pressable onPress={() => {storage.set("LAN",LAN_KO); dispatch(setCommon({selectedLanguage:LAN_KO})); setOpen(false);  }}>
                                 <LanguageWrapper isSelected={selectedLanguage == LAN_KO}>
                                     <MainMenuHeaderLanguage source={require("../resources/imgs/drawable-xxxhdpi/bt_kor.png")} />
                                 </LanguageWrapper>

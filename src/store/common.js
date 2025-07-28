@@ -6,6 +6,7 @@ import { getStoreInfo, getTableData } from "./metaPos";
 import { ADMIN_API_BANNER, ADMIN_API_BASE_URL, ADMIN_API_CALL_SERVICE, ADMIN_API_POST_CALL_SERVICE } from "../resources/apiResources";
 import { apiRequest } from "../utils/apiRequest";
 import { openAlert } from "../utils/common";
+import { storage } from "../utils/localStorage";
 
 
 export const initCommon = createAsyncThunk("common/initCommon", async(data,{dispatch,getState, rejectWithValue}) =>{
@@ -74,7 +75,7 @@ export const setAdShow = createAsyncThunk("common/setAdShow", async(data,{dispat
 
 export const initializeApp  = createAsyncThunk("common/initializeApp", async(data,{dispatch,getState, rejectWithValue}) =>{
     // store id 여부
-    const storeID = await AsyncStorage.getItem("STORE_IDX");
+    const storeID = storage.getString("STORE_IDX");
 
     if(isEmpty(storeID)) {
 
@@ -91,7 +92,7 @@ export const initializeApp  = createAsyncThunk("common/initializeApp", async(dat
     return;
 })
 export const getBanner = createAsyncThunk("common/getBanner", async(_, {dispatch,rejectWithValue})=>{
-    const STORE_IDX = await AsyncStorage.getItem("STORE_IDX")
+    const STORE_IDX = storage.getString("STORE_IDX")
     if(!STORE_IDX) {
         return rejectWithValue();
     }
@@ -118,7 +119,7 @@ export const getBanner = createAsyncThunk("common/getBanner", async(_, {dispatch
 })
 
 export const postAssistance = createAsyncThunk("common/postHelp", async(_, {dispatch,rejectWithValue})=>{
-    const STORE_IDX = await AsyncStorage.getItem("STORE_IDX")
+    const STORE_IDX = storage.getString("STORE_IDX")
     if(!STORE_IDX) {
         return rejectWithValue();
     }

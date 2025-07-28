@@ -1,4 +1,4 @@
-import { DeviceEventEmitter, KeyboardAvoidingView, ScrollView, Text, TouchableWithoutFeedback, View } from "react-native";
+import { Alert, DeviceEventEmitter, KeyboardAvoidingView, ScrollView, Text, TouchableWithoutFeedback, View } from "react-native";
 import { BottomButton } from "../components/commonComponents";
 import { SettingButtonView, SettingSectionDetailWrapper, SettingSectionInput, SettingSectionLabel, SettingSectionTitle, SettingSectionWrapper, SettingSenctionInputView, SettingSenctionInputViewColumn, SettingWrapper } from "../style/setting";
 import { serviceCancelPayment } from "../utils/smartro";
@@ -18,6 +18,8 @@ import { setMenu } from "../store/menu";
 import { USBPrinter } from "react-native-thermal-receipt-printer-image-qr";
 import { printReceipt } from "../utils/common";
 import { NativeModules } from "react-native"
+import { storage } from "../utils/localStorage";
+import { MMKV, Mode } from 'react-native-mmkv'
 
 
 const SettingScreen = (props) =>{
@@ -43,6 +45,7 @@ const SettingScreen = (props) =>{
     const [table, setTable] = useState("");
     const [productName, setProductName] = useState("");
     const [weightProductName, setWeightProductName] = useState("");
+    const [weightPortNumber, setWeightPortNumber] = useState("");
     const [bellProductName, setBellProductName] = useState("");
     const [printerList, setPrinterList] = useState([]);
     const [cdcList, setCdcLIst] = useState([]);
@@ -98,121 +101,89 @@ const SettingScreen = (props) =>{
     }
 
     useEffect(()=>{
-        AsyncStorage.getItem("BSN_NO")
-        .then((result)=>{
-            setBsnNo(result);
-        })
-        AsyncStorage.getItem("TID_NO")
-        .then((result)=>{
-            setCatId(result);
-        });
-        AsyncStorage.getItem("SERIAL_NO")
-        .then((result)=>{
-            setSerialNo(`${result}`);
-        });
-        AsyncStorage.getItem("STORE_IDX")
-        .then((result)=>{
-            setStoreID(result);
-        })
-        AsyncStorage.getItem("TABLE_INFO")
-        .then((result)=>{
-            setTable(result);
-        })
-        AsyncStorage.getItem("POS_NO")
-        .then((result)=>{
-            setPosNo(result);
-        })
-        AsyncStorage.getItem("BREAD_STORE_ID")
-        .then((result)=>{
-            setBreadStoreId(result);
-        })
+        setBsnNo(storage.getString("BSN_NO"));    
+        setCatId(storage.getString("TID_NO"));
+        setSerialNo(storage.getString("SERIAL_NO"));
+        setTable(storage.getString("TABLE_INFO"));
+        setPosNo(storage.getString("POS_NO"));
+        setBreadStoreId(storage.getString("BREAD_STORE_ID")); 
+        setStoreID(storage.getString("STORE_IDX")); 
+
         dispatch(getStoreInfo());
 
         var deviceListStr = Printer.getAllUsbDeviceList();
         if(!isEmpty(deviceListStr)) {
             setPrinterList(JSON.parse(deviceListStr));
         }
-        AsyncStorage.getItem("productName")
-        .then(result=>{
-            setProductName(result);
-        })
-        if(printerPickerRef.current != null) {
-            AsyncStorage.getItem("productID")
-            .then(prodIDResult=>{
-                if(prodIDResult!=null) {
-                    AsyncStorage.getItem("vendorID")
-                    .then(vendorIDResult=>{
-                        if(vendorIDResult!=null) {
-                            console.log("printer:",printerPickerRef.current.selectedValue);
-                            if(printerPickerRef.current.selectedValue ) {
-                                printerPickerRef.current.selectedValue = {productID:Number(prodIDResult), vendorID:Number(vendorIDResult)}
-                            }
-                        }
-                    })
-                }
-            })
-        }
-        AsyncStorage.getItem("bellProductName")
-        .then(result=>{
-            setBellProductName(result);
-        })
-        
-        AsyncStorage.getItem("weightProductName")
-        .then(result=>{
-            setWeightProductName(result);
-        })
-        AsyncStorage.getItem("weightPortNumber")
-        .then(result=>{
-            setWeightProductName(result);
-        })
+    
+        setProductName(storage.getString("productName"));
         
 
         if(printerPickerRef.current != null) {
-            AsyncStorage.getItem("weightProductID")
-            .then(prodIDResult=>{
-                if(prodIDResult!=null) {
-                    AsyncStorage.getItem("weightVendorID")
-                    .then(vendorIDResult=>{
-                        if(vendorIDResult!=null) {
-                            if(printerPickerRef.current.selectedValue) {
-                                printerPickerRef.current.selectedValue = {productID:Number(prodIDResult), vendorID:Number(vendorIDResult)}
-                            }
-                        }
-                    })
+            const prodIDResult = storage.getString("productID");
+            const vendorIDResult = storage.getString("vendorID")
+            if(prodIDResult!=null) {
+                if(vendorIDResult!=null) {
+                    console.log("printer:",printerPickerRef.current.selectedValue);
+                    if(printerPickerRef.current.selectedValue ) {
+                        printerPickerRef.current.selectedValue = {productID:Number(prodIDResult), vendorID:Number(vendorIDResult)}
+                    }
                 }
-            })
+            }        
+        }
+
+        setBellProductName(storage.getString("bellProductName"));
+        setWeightProductName(storage.getString("weightProductName"));
+        setWeightPortNumber(storage.getString("weightPortNumber"));
+        
+        
+
+        if(printerPickerRef.current != null) {
+
+            const weightProdID = storage.getString("weightProductID")
+            const weightVendorID = storage.getString("weightVendorID");
+            if(weightProdID!=null) {
+                if(printerPickerRef.current.selectedValue) {
+                    printerPickerRef.current.selectedValue = {productID:Number(weightProdID), vendorID:Number(weightVendorID)}
+                }
+            }
         }
         
         const serialPortsList = Serial.getSerialPorts();        
         setCdcLIst(JSON.parse(serialPortsList))
         
     },[])
+
     useEffect(()=>{
         if(!isEmpty(storeInfo)) {
             if(!isEmpty(storeInfo.table_list)) {
+                console.log("storeInfo.table_list: ",storeInfo.table_list);
                 if(storeInfo?.table_list?.length>0) {
-                    AsyncStorage.getItem("TABLE_INFO")
-                    .then((result)=>{
-                        const tblList = storeInfo?.table_list;
-                        const tblFilter = tblList.filter(el=>el.t_num == result);
-                        if(tblFilter.length > 0) {
-                            setTable(tblFilter[0]);
-                        }
-                    })
+                    
+                    const tableResult = storage.getString("TABLE_INFO");
+                    if(!isEmpty(tableResult)){
+                        const tblList = tableResult?.table_list;
+                            if(tblList?.length>0) {
+                                const tblFilter = tblList.filter(el=>el.t_num == result);
+                                if(tblFilter.length > 0) {
+                                    setTable(tblFilter[0]);
+                                } 
+                            }
+                            
+                    }
                 }
             }
         }
     },[storeInfo])
 
     const setTableInfo = async (itemValue) =>{
-        const prevTableCode = await AsyncStorage.getItem("TABLE_INFO");
         console.log("itemValue: ",itemValue)
-        AsyncStorage.setItem("TABLE_INFO", itemValue.t_num);   
-        AsyncStorage.setItem("TABLE_NM", itemValue.t_name);   
-        AsyncStorage.setItem("TABLE_FLOOR",itemValue.floor);
-        AsyncStorage.setItem("BSN_NO",itemValue.business_no);
-        AsyncStorage.setItem("TID_NO",itemValue.terminal_id);
-        AsyncStorage.setItem("SERIAL_NO",itemValue.serial_no);
+        storage.set("TABLE_INFO", itemValue.t_num);   
+        storage.set("TABLE_NM", itemValue.t_name);   
+        storage.set("TABLE_FLOOR",itemValue.floor);
+        storage.set("BSN_NO",itemValue.business_no);
+        storage.set("TID_NO",itemValue.terminal_id);
+        storage.set("SERIAL_NO",itemValue.serial_no);
 
         setBsnNo(itemValue.business_no)
         setCatId(itemValue.terminal_id)
@@ -245,8 +216,9 @@ const SettingScreen = (props) =>{
     }
 
     async function completeStoreInfo() {
-        await AsyncStorage.setItem("BREAD_STORE_ID",breadStoreID); 
-        await AsyncStorage.setItem("STORE_IDX",storeID); 
+        storage.set("BREAD_STORE_ID",breadStoreID); 
+        storage.set("STORE_IDX",storeID)
+        console.log("OK");
         dispatch(getStoreInfo()); 
         dispatch(initializeApp());
         dispatch(getBanner());
@@ -255,9 +227,9 @@ const SettingScreen = (props) =>{
     }
     async function weightInitiate() {
         async function startMeasuring() {
-            const prodID = await AsyncStorage.getItem("weightProductID");
-            const vendorID = await AsyncStorage.getItem("weightVendorID");
-            const portNo = await AsyncStorage.getItem("weightPortNumber");
+            const prodID = storage.getString("weightProductID");
+            const vendorID = storage.getString("weightVendorID");
+            const portNo = storage.getString("weightPortNumber");
             console.log("connect: ",portNo);
             Weight.initiateWeight(Number(portNo));
         }
@@ -266,9 +238,9 @@ const SettingScreen = (props) =>{
     async function weighingTest() {
         
         async function startMeasuring() {
-            const prodID = await AsyncStorage.getItem("weightProductID");
-            const vendorID = await AsyncStorage.getItem("weightVendorID");
-            const portNo = await AsyncStorage.getItem("weightPortNumber");
+            const prodID = storage.getString("weightProductID");
+            const vendorID = storage.getString("weightVendorID");
+            const portNo = storage.getString("weightPortNumber");
             console.log("connect: ",portNo);
             Weight.closeSerialConnection();
             Weight.connectDevice(Number(portNo));
@@ -286,8 +258,8 @@ const SettingScreen = (props) =>{
     }
 
     async function testPrint() {
-        const productID = await AsyncStorage.getItem("productID");
-        const vendorID = await AsyncStorage.getItem("vendorID");
+        const productID = storage.getString("productID");
+        const vendorID = storage.getString("vendorID");
         console.log("productID: ",productID,"vendorID: ",vendorID);
         
         Printer.printWithID(Number(vendorID), Number(productID))
@@ -333,9 +305,9 @@ const SettingScreen = (props) =>{
                                                 console.log(itemValue.vendorID);
                                                 console.log(itemValue.productName);
                                                 //if(itemValue) {
-                                                    AsyncStorage.setItem("bellProductID",`${itemValue.productID}`);
-                                                    AsyncStorage.setItem("bellVendorID",`${itemValue.vendorID}`);
-                                                    AsyncStorage.setItem("bellProductName",`${itemValue.productName}`);
+                                                    storage.set("bellProductID",`${itemValue.productID}`);
+                                                    storage.set("bellVendorID",`${itemValue.vendorID}`);
+                                                    storage.set("bellProductName",`${itemValue.productName}`);
                                                     setBellProductName(itemValue.productName);
                                                 //}
                                             }}
@@ -359,8 +331,8 @@ const SettingScreen = (props) =>{
                                 <SettingSenctionInputView>
                                     <TouchableWithoutFeedback onPress={async()=>{  
                                             const {Bell} = NativeModules; 
-                                            const bellVID = await AsyncStorage.getItem("bellVendorID")
-                                            const bellPID = await AsyncStorage.getItem("bellProductID")
+                                            const bellVID = storage.getString("bellVendorID")
+                                            const bellPID = storage.getString("bellProductID")
                                             Bell.bellTest(bellVID,bellPID,"134");
                                             //Bell.bellCancel(bellVID,bellPID);
                                             //Printer.OpenPrinter()
@@ -381,7 +353,7 @@ const SettingScreen = (props) =>{
                                 <SettingSenctionInputView>
                                     <TouchableWithoutFeedback onPress={async()=>{  
                                             const {Printer} = NativeModules; 
-                                            //Printer.TestPrint();
+                                            Printer.TestPrint();
                                             //Printer.OpenPrinter()
                                             //Printer.usbDeviceList();
 
@@ -453,17 +425,21 @@ const SettingScreen = (props) =>{
                             <SettingSectionTitle>저울세팅</SettingSectionTitle>
                             <SettingSectionDetailWrapper>
                                 <SettingSenctionInputView>
-                                    <SettingSectionLabel>USB 연결 기기</SettingSectionLabel>
-                                    {cdcList &&
+                                    {/* <SettingSectionLabel>USB 연결 기기</SettingSectionLabel> */}
+                                    {/*cdcList &&
                                         <Picker
                                             ref={printerPickerRef}
                                             key={"tablePicker"}
                                             mode='dialog'
                                             onValueChange = {(itemValue, itemIndex) => {
                                                 //if(itemValue) {
-                                                    AsyncStorage.setItem("weightProductID",`${itemValue.productID}`);
-                                                    AsyncStorage.setItem("weightVendorID",`${itemValue.vendorID}`);
-                                                    AsyncStorage.setItem("weightPortNumber",`${itemValue.portNumber}`);
+                                                    //AsyncStorage.setItem("weightProductID",`${itemValue.productID}`);
+                                                    //AsyncStorage.setItem("weightVendorID",`${itemValue.vendorID}`);
+                                                    //AsyncStorage.setItem("weightPortNumber",`${itemValue.portNumber}`);
+
+                                                    storage.set("weightProductID",`${itemValue.productID}`);
+                                                    storage.set("weightVendorID",`${itemValue.vendorID}`);
+                                                    storage.set("weightPortNumber",`${itemValue.portNumber}`);
                                                     setWeightProductName(itemValue.portNumber);
                                                 //}
                                             }}
@@ -479,7 +455,7 @@ const SettingScreen = (props) =>{
                                             })
                                             }
                                         </Picker>
-                                    }
+                                        */}
                                     {/* printerList &&
                                         <Picker
                                             ref={printerPickerRef}
@@ -558,7 +534,7 @@ const SettingScreen = (props) =>{
                                     <SettingSectionInput inputMode="numeric" onChangeText={(val)=>{setPosNo(val)}} value={posNo} ></SettingSectionInput>
                                 </SettingSenctionInputView>
                                 <SettingSenctionInputView>
-                                    <TouchableWithoutFeedback onPress={()=>{AsyncStorage.setItem("POS_NO",posNo); EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"세팅", str:'저장되었습니다.'}); }} >
+                                    <TouchableWithoutFeedback onPress={()=>{ storage.set("POS_NO",posNo);/*  AsyncStorage.setItem("POS_NO",posNo); */ EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"세팅", str:'저장되었습니다.'}); }} >
                                         <SettingButtonView>
                                             <SettingSectionTitle>저장</SettingSectionTitle>
                                         </SettingButtonView>

@@ -11,7 +11,6 @@ import { AI_QUERY, AI_SERVER } from '../resources/apiResources';
 import { useDispatch, useSelector } from 'react-redux';
 import { EventRegister } from 'react-native-event-listeners';
 import { setMenu } from '../store/menu';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { CartList, CartListItem } from '../components/mainComponents';
 import { ButtonImage, ButtonText, ButtonView, SquareButtonView } from '../style/common';
 import { ScanProductCheckWrapper, ScanProductList } from '../style/scanScreenStyle';
@@ -29,6 +28,7 @@ import moment from "moment";
 import MainScreen from './mainScreen';
 import { setAlert } from '../store/alert';
 import {  useCameraDevice, useCameraFormat, useCameraPermission } from 'react-native-vision-camera';
+import { storage } from '../utils/localStorage';
 
 
 let timeoutSet = null;
@@ -45,7 +45,11 @@ const ScanScreen = () => {
      
     const cameraOpacity = useRef(new Animated.Value(1)).current;
     const imageOpacity = useRef(new Animated.Value(0)).current;
+    const { getCameraPermissionStatus, requestPermission } = useCameraPermission()
 
+    useEffect(()=>{
+        requestPermission();
+    },[])
     const device = useCameraDevice('back');
     const format = device?.formats.find(f => {
         const ratio = f.videoWidth / f.videoHeight;
@@ -58,7 +62,7 @@ const ScanScreen = () => {
     const dispatch = useDispatch();
 
     const [isCountStart, setCountStart] = useState(false);
-    const [scanType, setScanType] = useState("");
+    const [scanType, setScanType] = useState(INIT);
     const [rescanIndex, setRescanIndex] = useState();
     const [imgURL, setImgURL] = useState("");
     const [tmpBreadList, setTmpBreadList] = useState([]);
@@ -89,6 +93,25 @@ const ScanScreen = () => {
         outputRange: [colorPink, '#0000ff'], // 빨강 ↔ 파랑
     });
 
+    async function initScanScreen() {
+    /*      
+        const prodID = storage.getString("weightProductID");
+        const vendorID = storage.getString("weightVendorID");
+        const portNo = storage.getString("weightPortNumber");
+        console.log("connect: ",portNo);*/
+        Weight.connectDevice(); 
+        
+        DeviceEventEmitter.removeAllListeners("onWeightChanged"); 
+        DeviceEventEmitter.addListener("onWeightChanged",(data)=>{    
+            const result = data?.weight.replace(/[^0-9.]/g, ""); // 숫자와 소숫점 제외 모든 문자 제거
+            const weight = parseFloat(result);
+            if(Number(weight)>0) {
+                console.log("weight: ",weight);
+            }
+        });  
+
+    }
+
     useEffect(() => {
         if (imgURL !== "") {
           // 카메라 페이드아웃, 이미지 페이드인
@@ -103,7 +126,7 @@ const ScanScreen = () => {
             Animated.timing(imageOpacity, { toValue: 0, duration: 500, useNativeDriver: true })
           ]).start();
         }
-      }, [imgURL]);
+    }, [imgURL]);
     
     useEffect(() => {
         // 2. 깜빡이는 애니메이션 루프 설정
@@ -136,10 +159,8 @@ const ScanScreen = () => {
     }, [tmpBreadList, rescanIndex]);
 
     useEffect(()=>{
-        AsyncStorage.getItem("BREAD_STORE_ID")
-        .then(result=>{
-            setStoreID(result);
-        })
+        setStoreID(storage.getString("BREAD_STORE_ID"));
+        //initScanScreen();
     },[])
     
     function screenTimeOut(){
@@ -179,6 +200,7 @@ const ScanScreen = () => {
 
     function addToTmpList(addData) {
         var toSet = Object.assign([],tmpBreadList);
+        console.log("scanType: ",scanType)
         if(scanType == ADD) {
             // 추가 스캔
             toSet.push(addData);
@@ -203,36 +225,30 @@ const ScanScreen = () => {
         weightCountDown = 30;
     }
     
-    async function startScan(scanWeight) {
-        clearWeightInterval();
-        if(typeof(scanWeight)!="number") {
-            EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"스캔오류", str:"무게를 확인할 수 없습니다."});
-            return;
-        }
-        if(scanWeight=="NaN") {
-            EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"스캔오류", str:"무게를 확인할 수 없습니다."});
-            return;
-        }
+    async function startScan(currentWeight) {
+        Weight.closeSerialConnection();
+        DeviceEventEmitter.removeAllListeners("onWeightChanged"); 
+        console.log("scan");
         
-        /* try {
-            const breadStoreID = await AsyncStorage.getItem("BREAD_STORE_ID");
-        } catch (err) {
-            console.error("AsyncStorage 에러: ", err);
-        }   */
+        clearWeightInterval();
+        if(typeof(currentWeight)!="number") {
+            EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"스캔오류", str:"무게를 확인할 수 없습니다."});
+            return;
+        }
+        if(currentWeight=="NaN") {
+            EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"스캔오류", str:"무게를 확인할 수 없습니다."});
+            return;
+        } 
+  
         var breadStoreID = storeID;
 
         //var breadStoreID = "test";
         setImgURL("");
 
-       console.log("breadStoreID: ",breadStoreID);
-        
         try{
-            console.log("capture",camera.current);
+            
             const {uri} = await camera.current.capture();
             
-            
-            /* 
-            console.log("uri: ",uri);
             if (uri.startsWith('file://')) {
                 // Platform dependent, iOS & Android uses '/'
                 const pathSplitter = '/';
@@ -252,7 +268,7 @@ const ScanScreen = () => {
                 const formData = new FormData();
                 formData.append("image", {uri: `file://${RNFS.DownloadDirectoryPath}/${fileName}`,name:`${fileName}`, filename:`${fileName}`, type: "image/*"} );
                 formData.append("store_name", breadStoreID);
-                formData.append("input_weight", scanWeight);
+                formData.append("input_weight", currentWeight);
                 //formData.append("input_weight", 0.03);
                 console.log("foramdata: ",formData);
                 const aiResult = await formRequest(dispatch,`${AI_SERVER}${AI_QUERY}`, formData );
@@ -269,7 +285,7 @@ const ScanScreen = () => {
                 }
                 const data = aiResult.data;
                 console.log("aiResult data: ",data);
-                //RNFS.unlink(`${RNFS.DownloadDirectoryPath}/${fileName}`);
+                RNFS.unlink(`${RNFS.DownloadDirectoryPath}/${fileName}`);
                 if(isEmpty(data.item_counts)) {
                     setImgURL(``)
                     EventRegister.emit("showSpinner",{isSpinnerShow:false, msg:"", spinnerType:"",closeText:""})
@@ -356,7 +372,7 @@ const ScanScreen = () => {
                 EventRegister.emit("showSpinner",{isSpinnerShow:false, msg:"", spinnerType:"",closeText:""})
                 EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"스캔오류", str:"이미지를 저장할 수 없습니다."});
                 return;
-            } */
+            } 
         }catch(err) {
             console.log("err: ",err);
             DeviceEventEmitter.removeAllListeners("onWeightChanged");
@@ -367,6 +383,7 @@ const ScanScreen = () => {
             //addToTmpList(breadOrderList)
             return;
         }
+        
     }
 
     function selectPlate(index) {
@@ -430,20 +447,8 @@ const ScanScreen = () => {
 
     return(
         <>
-        <View style={{width:'100%', height:'100%', flexDirection:'row'}} onTouchStart={()=>{ /* screenTimeOut(); */ }} >
+        <View style={{width:'100%', height:'100%', flexDirection:'row'}} onTouchStart={()=>{  }} >
             <View style={{flex:1,}}>
-                {/* <Camera
-                    style={{width:'100%',height:'100%', flex:1}}
-                    ref={camera}
-                    flashMode="off"
-                    focusMode="off"
-                    zoomMode="off"
-                    torchMode="off"
-                    scanBarcode={false}
-                    showFrame={false}
-                    cameraType={CameraType.Back} // front/back(default)
-                    onError={()=>{console.log("error fail");}}
-                /> */}
                 <Animated.View style={{ flex: 1, opacity: cameraOpacity }}>
 
                     <Camera
@@ -453,6 +458,9 @@ const ScanScreen = () => {
                         format={format}
                         isActive={true}
                         resizeMode='contain'
+                        onError={(err)=>{
+                            console.log("err: ",err);
+                        }}
                     />
                 </Animated.View>
                 <Animated.View style={{ 
@@ -492,7 +500,7 @@ const ScanScreen = () => {
             
                 
                 <View style={{position:'absolute', zIndex:9999999, right:0, bottom:35, right:10}}>
-                    <TouchableWithoutFeedback onPress={()=>{ console.log("ok-=-==-=-=-"); setMainShow(true); dispatch(setCommon({isAddShow:false})); dispatch(setMenu({breadOrderList:totalBreadList}));setMainShow(true);initCamera(); clearWeightInterval(); DeviceEventEmitter.removeAllListeners("onWeightChanged"); /* navigate.navigate("main"); */ }} >
+                    <TouchableWithoutFeedback onPress={()=>{ setMainShow(true); dispatch(setCommon({isAddShow:false})); dispatch(setMenu({breadOrderList:totalBreadList}));setMainShow(true);initCamera(); setTmpBreadList([]);setTotalBreadList([]); clearWeightInterval(); DeviceEventEmitter.removeAllListeners("onWeightChanged"); }} >
                         <SquareButtonView backgroundColor={colorDarkGrey} >
                             <ButtonText>{strings["키오스크\n바로주문"][`${selectedLanguage}`]}</ButtonText>
                         </SquareButtonView>
@@ -508,14 +516,14 @@ const ScanScreen = () => {
                             }else {
                                 setScanType(RESCAN); 
                             }
-                            //startScan("")
-                             
-                            async function startMeasuring() {
-                                const prodID = await AsyncStorage.getItem("weightProductID");
-                                const vendorID = await AsyncStorage.getItem("weightVendorID");
-                                const portNo = await AsyncStorage.getItem("weightPortNumber");
+
+                              
+                            function startMeasuring() {
+                                const prodID = storage.getString("weightProductID");
+                                const vendorID = storage.getString("weightVendorID");
+                                const portNo = storage.getString("weightPortNumber");
                                 console.log("connect: ",portNo);
-                                Weight.connectDevice(Number(portNo));
+                                Weight.connectDevice();
                             }
                             startMeasuring();
                             weightCDInterval = setInterval(() => {
@@ -542,8 +550,7 @@ const ScanScreen = () => {
                                     //dispatch(setCommon({weight:weight}))
                                     
                                 }
-                            });  
-                            //startScan(1);
+                            });   
                             const sound = new Sound('z004.wav', Sound.MAIN_BUNDLE, (error) => {
                                 if (error) {
                                     console.log('오디오 로드 실패', error);

@@ -12,6 +12,7 @@ import { onConfirmCancelClick, setCommon } from "./common";
 import { KocesAppPay } from "../utils/kocess";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { increment, reset } from "./counter";
+import { storage } from "../utils/localStorage";
 
 export const initMenu = createAsyncThunk("menu/initMenu", async(_,{dispatch,getState, rejectWithValue}) =>{
     return;
@@ -21,9 +22,9 @@ export const setMenu = createAsyncThunk("menu/setMenu", async(data,{dispatch,get
 })
 export const getCategories = createAsyncThunk("menu/getCategories", async(_,{dispatch,getState, rejectWithValue}) =>{
     
-    const storeID = await AsyncStorage.getItem("STORE_IDX");
-    const bsnNo = await AsyncStorage.getItem("BSN_NO");
-    const tidNo = await AsyncStorage.getItem("TID_NO");
+    const storeID = storage.getString("STORE_IDX");
+    const bsnNo = storage.getString("BSN_NO");
+    const tidNo = storage.getString("TID_NO");
     const result = await apiRequest(`${ADMIN_API_BASE_URL}${ADMIN_API_CATEGORY}`,{"STORE_ID":`${storeID}`}).catch(error=>error);
     if(!isEmpty(result?.errorMsg)) {
         return rejectWithValue(result?.errorMsg);
@@ -33,9 +34,15 @@ export const getCategories = createAsyncThunk("menu/getCategories", async(_,{dis
 
 export const getMenu = createAsyncThunk("menu/getMenu", async(_,{dispatch,getState, rejectWithValue}) =>{
     
-    const storeID = await AsyncStorage.getItem("STORE_IDX");
-    const bsnNo = await AsyncStorage.getItem("BSN_NO");
-    const tidNo = await AsyncStorage.getItem("TID_NO");
+    //const storeID = await AsyncStorage.getItem("STORE_IDX");
+    //const bsnNo = await AsyncStorage.getItem("BSN_NO");
+    //const tidNo = await AsyncStorage.getItem("TID_NO");
+
+    const storeID = storage.getString("STORE_IDX");
+    const bsnNo = storage.getString("BSN_NO");
+    const tidNo = storage.getString("TID_NO");
+    
+
     const categoryResult = await apiRequest(`${ADMIN_API_BASE_URL}${ADMIN_API_CATEGORY}`,{"STORE_ID":`${storeID}`}).catch(error=>error);
     if(!isEmpty(categoryResult?.errorMsg)) {
         EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"초기화", str:categoryResult?.errorMsg});
@@ -103,7 +110,8 @@ export const initOrderList = createAsyncThunk("menu/initOrderList", async(data,{
 // 결제
 export const startPayment = createAsyncThunk("menu/startPayment", async(data,{dispatch,getState, rejectWithValue}) =>{
     EventRegister.emit("showSpinner",{isSpinnerShow:true, msg:"주문 중 입니다.", spinnerType:"",closeText:""})
-    const {STORE_IDX} = await getStoreID();
+    //const {STORE_IDX} = await getStoreID();
+    const STORE_IDX = storage.getString("STORE_IDX");
     const { orderList, breadOrderList, items } = getState().menu;
     const { weight, strings, selectedLanguage } = getState().common;
 
@@ -113,6 +121,7 @@ export const startPayment = createAsyncThunk("menu/startPayment", async(data,{di
     totalAmt = data?.totalPrice;
     surtax = data?.totalVat;
 
+    console.log("orderList: ",orderList);
     // 주문내역확인
     if(orderList.length <=0 && breadOrderList.length <=0 ) {
         EventRegister.emit("showSpinner",{isSpinnerShow:false, msg:"", spinnerType:"",closeText:""});
@@ -168,7 +177,7 @@ export const startPayment = createAsyncThunk("menu/startPayment", async(data,{di
 
     // 주문 가능 상태 확인
     console.log("check order av");
-    const POS_NO = await AsyncStorage.getItem("POS_NO").catch(err=>err);
+    const POS_NO = storage.getString("POS_NO");
     /*
     try {
         const isPostable = await isNetworkAvailable();
@@ -210,7 +219,7 @@ export const startPayment = createAsyncThunk("menu/startPayment", async(data,{di
     */
     /// 카트메뉴 주문 가능 여부 체크
     
-    const isItemOrderble = await itemEnableCheck(STORE_IDX,orderList).catch(err=>{ return{isAvailable:false, result:null} } );
+    const isItemOrderble = await itemEnableCheck(STORE_IDX,[...orderList,...breadOrderList]).catch(err=>{ return{isAvailable:false, result:null} } );
     if(isItemOrderble?.isAvailable == false) {
         EventRegister.emit("showSpinner",{isSpinnerShow:false, msg:"", spinnerType:"",closeText:""});
         EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"주문 오류", str:"수량을 초과해 주문을 할 수 없습니다."});
@@ -219,8 +228,8 @@ export const startPayment = createAsyncThunk("menu/startPayment", async(data,{di
     
     
 
-    const bsnNo = await AsyncStorage.getItem("BSN_NO");
-    const tidNo = await AsyncStorage.getItem("TID_NO");
+    const bsnNo = storage.getString("BSN_NO");
+    const tidNo = storage.getString("TID_NO");
     const amtData = {amt:totalAmt, taxAmt:surtax, months:installment, bsnNo:bsnNo,termID:tidNo }
     
 
@@ -229,8 +238,8 @@ export const startPayment = createAsyncThunk("menu/startPayment", async(data,{di
     //console.log("Test: ",test);
     //return;
     try{
-        //var result = await kocessAppPay.requestKocesPayment(amtData)
-        var result = {"AnsCode": "0000", "AnswerTrdNo": "null", "AuNo": "28872915", "AuthType": "null", "BillNo": "", "CardKind": "1", "CardNo": "9411-9400-****-****", "ChargeAmt": "null", "DDCYn": "1", "DisAmt": "null", "EDCYn": "0", "GiftAmt": "", "InpCd": "1107", "InpNm": "신한카드", "Keydate": "", "MchData": "wooriorder", "MchNo": "22101257", "Message": "마이신한P잔여 : 109                     ", "Month": "00", "OrdCd": "1107", "OrdNm": "개인신용", "PcCard": "null", "PcCoupon": "null", "PcKind": "null", "PcPoint": "null", "QrKind": "null", "RefundAmt": "null", "SvcAmt": "0", "TaxAmt": `${surtax}`, "TaxFreeAmt": "0", "TermID": "0710000900", "TradeNo": "000004689679", "TrdAmt": `${totalAmt}`, "TrdDate": "240902182728", "TrdType": "A15"}
+        var result = await kocessAppPay.requestKocesPayment(amtData)
+        //var result = {"AnsCode": "0000", "AnswerTrdNo": "null", "AuNo": "28872915", "AuthType": "null", "BillNo": "", "CardKind": "1", "CardNo": "9411-9400-****-****", "ChargeAmt": "null", "DDCYn": "1", "DisAmt": "null", "EDCYn": "0", "GiftAmt": "", "InpCd": "1107", "InpNm": "신한카드", "Keydate": "", "MchData": "wooriorder", "MchNo": "22101257", "Message": "마이신한P잔여 : 109                     ", "Month": "00", "OrdCd": "1107", "OrdNm": "개인신용", "PcCard": "null", "PcCoupon": "null", "PcKind": "null", "PcPoint": "null", "QrKind": "null", "RefundAmt": "null", "SvcAmt": "0", "TaxAmt": `${surtax}`, "TaxFreeAmt": "0", "TermID": "0710000900", "TradeNo": "000004689679", "TrdAmt": `${totalAmt}`, "TrdDate": "240902182728", "TrdType": "A15"}
         console.log("result: ",result);
     }catch(err) {
         console.log("err============",err);
@@ -239,16 +248,16 @@ export const startPayment = createAsyncThunk("menu/startPayment", async(data,{di
         EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"결제 오류", str:err.Message});    
         return rejectWithValue();
     }
-    const storedCount = await AsyncStorage.getItem("counterValue");
+    const storedCount = storage.getString("counterValue");
     if(storedCount == null) {
         var newCount = 1
     }else {
         var newCount = Number(storedCount)+1
     }
-    await AsyncStorage.setItem("counterValue",`${newCount}`);
+    storage.set("counterValue",`${newCount}`);
     var PRINT_ORDER_NO = `${POS_NO}-${newCount}`
     console.log("PRINT_ORDER_NO: ",PRINT_ORDER_NO);
-    await AsyncStorage.setItem("orderNo",`${PRINT_ORDER_NO}`); 
+    storage.set("orderNo",`${PRINT_ORDER_NO}`); 
 
 
     // 포스로 전달하기 위한 포멧으로 데이터 변경

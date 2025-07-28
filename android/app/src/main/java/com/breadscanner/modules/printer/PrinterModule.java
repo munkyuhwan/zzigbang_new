@@ -249,6 +249,8 @@ public class PrinterModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void TestPrint() {
+        System.out.println("TEST PRINT");
+
         final List<UsbPrinterDriver> drivers = UsbPrinterProber.getDefaultProber().findAllDrivers((UsbManager) Objects.requireNonNull(mContext.getSystemService(Context.USB_SERVICE)));
         Log.d("SAM4S", "drivers: "+drivers );
         final List<UsbPrinterPort> result = new ArrayList<UsbPrinterPort>();
@@ -318,6 +320,8 @@ public class PrinterModule extends ReactContextBaseJavaModule {
                 throw new RuntimeException(e);
             }
         }
+
+
 
         //addTextStyle
 

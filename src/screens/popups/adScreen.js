@@ -19,6 +19,7 @@ import {
 import { colorGreen, colorPink, colorRed } from "../../resources/colors";
 import FastImage from "react-native-fast-image";
 import Sound from "react-native-sound";
+import { storage } from "../../utils/localStorage";
   
 let swipeTimeOut;
 const AdScreen = (props) => {
@@ -145,7 +146,7 @@ const AdScreen = (props) => {
                 {//isOpen==true &&
                     <MainMenuHeaderSectionWrapper  flex={1} >
                         <MainMenuHeaderLanguageWrapper>
-                            <Pressable onPress={() => {AsyncStorage.setItem("LAN",LAN_EN); dispatch(setCommon({selectedLanguage:LAN_EN})); setOpen(false); }}>
+                            <Pressable onPress={() => {storage.set("LAN",LAN_EN); dispatch(setCommon({selectedLanguage:LAN_EN})); setOpen(false); }}>
                                 <LanguageWrapper isSelected={selectedLanguage == LAN_EN}  >
                                     <MainMenuHeaderLanguage source={require("../../resources/imgs/drawable-xxxhdpi/bt_american.png")} />
                                 </LanguageWrapper>
@@ -153,7 +154,7 @@ const AdScreen = (props) => {
                         </MainMenuHeaderLanguageWrapper>
                     
                         <MainMenuHeaderLanguageWrapper >
-                            <Pressable onPress={() => {AsyncStorage.setItem("LAN",LAN_CN);dispatch(setCommon({selectedLanguage:LAN_CN}));  setOpen(false);  }}>
+                            <Pressable onPress={() => {storage.set("LAN",LAN_CN);dispatch(setCommon({selectedLanguage:LAN_CN}));  setOpen(false);  }}>
                                 <LanguageWrapper isSelected={selectedLanguage == LAN_CN}>
                                     <MainMenuHeaderLanguage source={require("../../resources/imgs/drawable-xxxhdpi/bt_chan.png")} />
                                 </LanguageWrapper>
@@ -161,7 +162,7 @@ const AdScreen = (props) => {
                         </MainMenuHeaderLanguageWrapper>
                     
                         <MainMenuHeaderLanguageWrapper  >
-                            <Pressable onPress={() => {AsyncStorage.setItem("LAN",LAN_JP); dispatch(setCommon({selectedLanguage:LAN_JP})); setOpen(false);  }}>
+                            <Pressable onPress={() => {storage.set("LAN",LAN_JP); dispatch(setCommon({selectedLanguage:LAN_JP})); setOpen(false);  }}>
                                 <LanguageWrapper isSelected={selectedLanguage == LAN_JP}>
                                     <MainMenuHeaderLanguage source={require("../../resources/imgs/drawable-xxxhdpi/bt_japan.png")} />
                                 </LanguageWrapper>
@@ -169,7 +170,7 @@ const AdScreen = (props) => {
                         </MainMenuHeaderLanguageWrapper>
                         
                         <MainMenuHeaderLanguageWrapper >
-                            <Pressable onPress={() => {AsyncStorage.setItem("LAN",LAN_KO); dispatch(setCommon({selectedLanguage:LAN_KO})); setOpen(false);  }}>
+                            <Pressable onPress={() => {storage.set("LAN",LAN_KO); dispatch(setCommon({selectedLanguage:LAN_KO})); setOpen(false);  }}>
                                 <LanguageWrapper isSelected={selectedLanguage == LAN_KO}>
                                     <MainMenuHeaderLanguage source={require("../../resources/imgs/drawable-xxxhdpi/bt_kor.png")} />
                                 </LanguageWrapper>
@@ -178,36 +179,6 @@ const AdScreen = (props) => {
 
                     </MainMenuHeaderSectionWrapper>
                 }
-                    {/* <MainMenuHeaderSectionWrapper  flex={1} >
-                        <MainMenuHeaderLanguageWrapper>
-                            <Pressable onPress={() => {AsyncStorage.setItem("LAN",LAN_EN); dispatch(setCommon({selectedLanguage:LAN_EN})); }}>
-                                <LanguageWrapper isSelected={selectedLanguage == LAN_EN}  >
-                                    <MainMenuHeaderLanguage source={require("../../resources/imgs/drawable-xxxhdpi/bt_american.png")} />
-                                </LanguageWrapper>
-                            </Pressable>
-                        </MainMenuHeaderLanguageWrapper>
-                        <MainMenuHeaderLanguageWrapper >
-                            <Pressable onPress={() => {AsyncStorage.setItem("LAN",LAN_CN);dispatch(setCommon({selectedLanguage:LAN_CN}));  }}>
-                                <LanguageWrapper isSelected={selectedLanguage == LAN_CN}>
-                                    <MainMenuHeaderLanguage source={require("../../resources/imgs/drawable-xxxhdpi/bt_chan.png")} />
-                                </LanguageWrapper>
-                            </Pressable>
-                        </MainMenuHeaderLanguageWrapper>
-                        <MainMenuHeaderLanguageWrapper  >
-                            <Pressable onPress={() => {AsyncStorage.setItem("LAN",LAN_JP); dispatch(setCommon({selectedLanguage:LAN_JP})); }}>
-                                <LanguageWrapper isSelected={selectedLanguage == LAN_JP}>
-                                    <MainMenuHeaderLanguage source={require("../../resources/imgs/drawable-xxxhdpi/bt_japan.png")} />
-                                </LanguageWrapper>
-                            </Pressable>
-                        </MainMenuHeaderLanguageWrapper>
-                        <MainMenuHeaderLanguageWrapper >
-                            <Pressable onPress={() => {AsyncStorage.setItem("LAN",LAN_KO); dispatch(setCommon({selectedLanguage:LAN_KO})); }}>
-                                <LanguageWrapper isSelected={selectedLanguage == LAN_KO}>
-                                    <MainMenuHeaderLanguage source={require("../../resources/imgs/drawable-xxxhdpi/bt_kor.png")} />
-                                </LanguageWrapper>
-                            </Pressable>
-                        </MainMenuHeaderLanguageWrapper>
-                    </MainMenuHeaderSectionWrapper> */}
                 </View>
                 <AdButtonView>
                     <TouchableWithoutFeedback onPress={async()=>{ 

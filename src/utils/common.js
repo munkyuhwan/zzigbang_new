@@ -617,8 +617,8 @@ export const itemEnableCheck = async (STORE_IDX, items) => {
         }
     }
     //console.log("==============================================================================");
-    //console.log("url: ",`${ADMIN_API_BASE_URL}${ADMIN_API_MENU_CHECK}`)
-    //console.log("checkItemList: ",{"STORE_ID":`${STORE_IDX}`,"order":checkItemList});
+    console.log("url: ",`${ADMIN_API_BASE_URL}${ADMIN_API_MENU_CHECK}`)
+    console.log("checkItemList: ",{"STORE_ID":`${STORE_IDX}`,"order":checkItemList});
 
     return new Promise((resolve,reject)=>{
         apiRequest(`${ADMIN_API_BASE_URL}${ADMIN_API_MENU_CHECK}`,{"STORE_ID":`${STORE_IDX}`,"order":checkItemList}, {})
