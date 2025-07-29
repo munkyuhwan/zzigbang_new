@@ -43,6 +43,7 @@ const ScanScreen = () => {
     const { Weight } = NativeModules;
     const camera = useRef();
      
+    const [isScanning, setScanning] = useState(false);
     const cameraOpacity = useRef(new Animated.Value(1)).current;
     const imageOpacity = useRef(new Animated.Value(0)).current;
     const { getCameraPermissionStatus, requestPermission } = useCameraPermission()
@@ -232,10 +233,12 @@ const ScanScreen = () => {
         
         clearWeightInterval();
         if(typeof(currentWeight)!="number") {
+            setScanning(false);
             EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"스캔오류", str:"무게를 확인할 수 없습니다."});
             return;
         }
         if(currentWeight=="NaN") {
+            setScanning(false);
             EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"스캔오류", str:"무게를 확인할 수 없습니다."});
             return;
         } 
@@ -278,6 +281,7 @@ const ScanScreen = () => {
                     EventRegister.emit("showSpinner",{isSpinnerShow:false, msg:"", spinnerType:"",closeText:""})
                     EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"스캔오류", str:aiResult.message});
                     DeviceEventEmitter.removeAllListeners("onWeightChanged");
+                    setScanning(false);
      
                     //const breadOrderList = [{prodCD:900040, option:[], amt:1}, {prodCD:900041, option:[], amt:1}];
                     //addToTmpList(breadOrderList)
@@ -287,6 +291,7 @@ const ScanScreen = () => {
                 console.log("aiResult data: ",data);
                 RNFS.unlink(`${RNFS.DownloadDirectoryPath}/${fileName}`);
                 if(isEmpty(data.item_counts)) {
+                    setScanning(false);
                     setImgURL(``)
                     EventRegister.emit("showSpinner",{isSpinnerShow:false, msg:"", spinnerType:"",closeText:""})
                     EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"스캔오류", str:"스캔할 수 있는 빵이 없습니다."});
@@ -296,6 +301,7 @@ const ScanScreen = () => {
                     DeviceEventEmitter.removeAllListeners("onWeightChanged");
                     return;
                 }else {
+                    setScanning(false);
                     if(data.within_tolerance == false) {
                         EventRegister.emit("showSpinner",{isSpinnerShow:false, msg:"", spinnerType:"",closeText:""})
                         //EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"스캔오류", str:"스캔이 잘 될수있도록 가져오신 상품을 쟁반안에 넣어주세요. 빵이 겹치지 않은지 확인해주세요."});
@@ -366,6 +372,7 @@ const ScanScreen = () => {
                         DeviceEventEmitter.removeAllListeners("onWeightChanged");
                         EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"스캔오류", str:"등록되지 않은 빵입니다."});
                     }
+                    setScanning(false);
                 }
             }else {
                 DeviceEventEmitter.removeAllListeners("onWeightChanged");
@@ -500,7 +507,7 @@ const ScanScreen = () => {
             
                 
                 <View style={{position:'absolute', zIndex:9999999, right:0, bottom:35, right:10}}>
-                    <TouchableWithoutFeedback onPress={()=>{ setMainShow(true); dispatch(setCommon({isAddShow:false})); dispatch(setMenu({breadOrderList:totalBreadList}));setMainShow(true);initCamera(); setTmpBreadList([]);setTotalBreadList([]); clearWeightInterval(); DeviceEventEmitter.removeAllListeners("onWeightChanged"); }} >
+                    <TouchableWithoutFeedback onPress={()=>{if(isScanning==false){ setMainShow(true); dispatch(setCommon({isAddShow:false})); dispatch(setMenu({breadOrderList:totalBreadList}));setMainShow(true);initCamera(); setTmpBreadList([]);setTotalBreadList([]); clearWeightInterval(); DeviceEventEmitter.removeAllListeners("onWeightChanged"); }}} >
                         <SquareButtonView backgroundColor={colorDarkGrey} >
                             <ButtonText>{strings["키오스크\n바로주문"][`${selectedLanguage}`]}</ButtonText>
                         </SquareButtonView>
@@ -509,63 +516,65 @@ const ScanScreen = () => {
                 <View style={{position:'absolute', zIndex:9999999, right:250, bottom:35,}}>
                     <TouchableWithoutFeedback 
                         onPress={()=>{ 
-                            //EventRegister.emit("showSpinner",{isSpinnerShow:true, msg:"스캔 중 입니다.", spinnerType:"",closeText:""})
-                            setImgURL("");
-                            if(rescanIndex == null) {
-                                setScanType(ADD);
-                            }else {
-                                setScanType(RESCAN); 
-                            }
-
-                              
-                            function startMeasuring() {
-                                const prodID = storage.getString("weightProductID");
-                                const vendorID = storage.getString("weightVendorID");
-                                const portNo = storage.getString("weightPortNumber");
-                                console.log("connect: ",portNo);
-                                Weight.connectDevice();
-                            }
-                            startMeasuring();
-                            weightCDInterval = setInterval(() => {
-                                if(weightCountDown <= 0) {
-                                    clearWeightInterval();
-                                    DeviceEventEmitter.removeAllListeners("onWeightChanged");
-                                    EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"스캔오류", str:"쟁반을 올려주세요."});
-                                    EventRegister.emit("showSpinner",{isSpinnerShow:false, msg:"", spinnerType:"",closeText:""})
+                            if(isScanning==false){ 
+                                setScanning(true);
+                                //EventRegister.emit("showSpinner",{isSpinnerShow:true, msg:"스캔 중 입니다.", spinnerType:"",closeText:""})
+                                setImgURL("");
+                                if(rescanIndex == null) {
+                                    setScanType(ADD);
                                 }else {
-                                    weightCountDown = weightCountDown-1;
+                                    setScanType(RESCAN); 
                                 }
+
                                 
-                            }, 1000);
-                            //startScan(0.2);
-                            
-                            DeviceEventEmitter.removeAllListeners("onWeightChanged"); 
-                            DeviceEventEmitter.addListener("onWeightChanged",(data)=>{    
-                                const result = data?.weight.replace(/[^0-9.]/g, ""); // 숫자와 소숫점 제외 모든 문자 제거
-                                const weight = parseFloat(result);
-                                console.log("weight: ",weight);
-                                if(Number(weight)>0) {
-                                    console.log("start scan");
-                                    startScan(weight)
-                                    //dispatch(setCommon({weight:weight}))
-                                    
+                                function startMeasuring() {
+                                    const prodID = storage.getString("weightProductID");
+                                    const vendorID = storage.getString("weightVendorID");
+                                    const portNo = storage.getString("weightPortNumber");
+                                    console.log("connect: ",portNo);
+                                    Weight.connectDevice();
                                 }
-                            });   
-                            const sound = new Sound('z004.wav', Sound.MAIN_BUNDLE, (error) => {
-                                if (error) {
-                                    console.log('오디오 로드 실패', error);
-                                    return;
-                                }
-                                sound.play((success) => {
-                                    if (success) {
-                                        console.log('재생 성공');
-                                    } else {
-                                        console.log('재생 실패');
+                                startMeasuring();
+                                weightCDInterval = setInterval(() => {
+                                    if(weightCountDown <= 0) {
+                                        clearWeightInterval();
+                                        DeviceEventEmitter.removeAllListeners("onWeightChanged");
+                                        EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"스캔오류", str:"쟁반을 올려주세요."});
+                                        EventRegister.emit("showSpinner",{isSpinnerShow:false, msg:"", spinnerType:"",closeText:""})
+                                    }else {
+                                        weightCountDown = weightCountDown-1;
                                     }
+                                    
+                                }, 1000);
+                                //startScan(0.2);
+                                
+                                DeviceEventEmitter.removeAllListeners("onWeightChanged"); 
+                                DeviceEventEmitter.addListener("onWeightChanged",(data)=>{    
+                                    const result = data?.weight.replace(/[^0-9.]/g, ""); // 숫자와 소숫점 제외 모든 문자 제거
+                                    const weight = parseFloat(result);
+                                    console.log("weight: ",weight);
+                                    if(Number(weight)>0) {
+                                        console.log("start scan");
+                                        startScan(weight)
+                                        //dispatch(setCommon({weight:weight}))
+                                        
+                                    }
+                                });   
+                                const sound = new Sound('z004.wav', Sound.MAIN_BUNDLE, (error) => {
+                                    if (error) {
+                                        console.log('오디오 로드 실패', error);
+                                        return;
+                                    }
+                                    sound.play((success) => {
+                                        if (success) {
+                                            console.log('재생 성공');
+                                        } else {
+                                            console.log('재생 실패');
+                                        }
+                                    });
+                                    // 재생                            
                                 });
-                                // 재생                            
-                            });
-                            
+                            }
 
                         }} 
                     >

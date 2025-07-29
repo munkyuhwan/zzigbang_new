@@ -1,8 +1,8 @@
 import { NativeModules } from "react-native"
 import { BSN_ID, KOCES_CODE_KEY_RENEW, KOCES_CODE_STORE_DOWNLOAD, SN, TID } from "../resources/apiResources";
 import moment from "moment";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { removeUnicodeControls } from "./common";
+import { storage } from "./localStorage";
 
 export function KocesAppPay () {
     this.data = {};
@@ -16,9 +16,9 @@ KocesAppPay.prototype.init = function () {
 KocesAppPay.prototype.storeDownload = async function () {
     const {KocesPay} = NativeModules;
 
-    const bsnNo = await AsyncStorage.getItem("BSN_NO");
-    const tidNo = await AsyncStorage.getItem("TID_NO");
-    const serialNo = await AsyncStorage.getItem("SERIAL_NO");
+    const bsnNo = storage.getString("BSN_NO");
+    const tidNo = storage.getString("TID_NO");
+    const serialNo = storage.getString("SERIAL_NO");
     console.log("serial no type:",typeof serialNo);
     const storeData = {TrdType:"D10",TermID:`${tidNo}`, BsnNo:`${bsnNo}`, Serial:`${removeUnicodeControls(serialNo)}`, MchData:""};
     console.log("storeData: ",storeData);
@@ -39,15 +39,15 @@ KocesAppPay.prototype.storeDownload = async function () {
 } 
 // 키 갱신
 KocesAppPay.prototype.keyRenew = async function () {
-    const bsnNo = await AsyncStorage.getItem("BSN_NO");
-    const tidNo = await AsyncStorage.getItem("TID_NO");
-    const serialNo = await AsyncStorage.getItem("SERIAL_NO");
+    const bsnNo = storage.getString("BSN_NO");
+    const tidNo = storage.getString("TID_NO");
+    const serialNo = storage.getString("SERIAL_NO");
     this.data = {TrdType:KOCES_CODE_KEY_RENEW,TermID:tidNo, BsnNo:bsnNo, Serial:serialNo, MchData:""};
     
 } 
 // 결제 요청
 KocesAppPay.prototype.makePayment = async function ({amt,taxAmt,months}) {
-    const tidNo = await AsyncStorage.getItem("TID_NO");
+    const tidNo = storage.getString("TID_NO");
 
     this.data = {
         TrdType:'A10',
@@ -77,7 +77,7 @@ KocesAppPay.prototype.makePayment = async function ({amt,taxAmt,months}) {
 // 취소 요청
 KocesAppPay.prototype.cancelPayment = async function ({amt,taxAmt,auDate,auNo,tradeNo}) {
     const {KocesPay} = NativeModules;
-    const tidNo = await AsyncStorage.getItem("TID_NO");
+    const tidNo = storage.getString("TID_NO");
     const payData = {
         TrdType:'A20',
         TermID: tidNo, 
@@ -119,7 +119,7 @@ KocesAppPay.prototype.cancelPayment = async function ({amt,taxAmt,auDate,auNo,tr
 
 // 결제요청 하기
 KocesAppPay.prototype.requestKocesPayment = async function ({amt,taxAmt,months}) {
-    const tidNo = await AsyncStorage.getItem("TID_NO");
+    const tidNo = storage.getString("TID_NO");
     const {KocesPay} = NativeModules;
     const payData = {
         TrdType:'A10',

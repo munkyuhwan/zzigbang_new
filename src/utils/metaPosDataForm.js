@@ -3,7 +3,7 @@ import { POS_VERSION_CODE, POS_WORK_CD_POSTPAY_ORDER, POS_WORK_CD_PREPAY_ORDER_R
 import { getTableInfo, loadCounter, numberPad } from "./common";
 import { isEqual, isEmpty } from 'lodash'
 import { EventRegister } from "react-native-event-listeners";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { storage } from "./localStorage";
 /* 
 var itemDataFormat = 
 {
@@ -76,13 +76,14 @@ export const metaPostPayFormat = async (orderList,payData, allItems, PRINT_ORDER
     return new Promise(async(resolve,reject)=>{
         try{
             const date = new Date();
-            const tableNo = await getTableInfo().catch(err=>err);
+            //const tableNo = await getTableInfo().catch(err=>err);
+            const tableNo = storage.getString("TABLE_INFO");
             if(tableNo instanceof Error) {
                 reject("테이블 정보를 입력 하세요.");
             }
             //const orderNo = `${date.getFullYear().toString().substring(2,4)}${numberPad(date.getMonth()+1,2)}${numberPad(date.getDate(),2)}${moment().format("HHMMSSs")}`;
             const orderNo = `${date.getFullYear().toString().substring(2,4)}${numberPad(date.getMonth()+1,2)}${numberPad(date.getDate(),2)}${moment().valueOf()}`;
-            const POS_NO = await AsyncStorage.getItem("POS_NO").catch(err=>err);
+            const POS_NO = storage.getString("POS_NO");
             if(POS_NO instanceof Error) {
                 EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"주문 오류", str:"포스번호를 설정해 주세요."});
                 reject("포스번호를 설정해 주세요.");
@@ -93,17 +94,17 @@ export const metaPostPayFormat = async (orderList,payData, allItems, PRINT_ORDER
             }
 
 
-            const PRNT_ORD_NO = await loadCounter();
-            /* const storedCount = await AsyncStorage.getItem("counterValue");
+            //const PRNT_ORD_NO = loadCounter();
+            const storedCount = storage.getString("counterValue");
             if(storedCount == null) {
                 var newCount = 1
             }else {
                 var newCount = Number(storedCount)+1
             }
-            await AsyncStorage.setItem("counterValue",`${newCount}`);
+            storage.set("counterValue",`${newCount}`);
             var PRINT_ORDER_NO = `${POS_NO}-${newCount}`
             console.log("PRINT_ORDER_NO: ",PRINT_ORDER_NO);
- */
+ 
 
             //const printOrderNo = ``;
             // order item 

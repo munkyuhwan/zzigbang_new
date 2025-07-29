@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { setFullPopupContent, setFullPopupVisibility, setPopupContent, setPopupVisibility, setTransPopupContent, setTransPopupVisibility } from '../store/popup';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import {isEqual, isEmpty} from 'lodash';
 import RNFS from 'react-native-fs';
 import RNFetchBlob from 'rn-fetch-blob';
@@ -22,6 +21,7 @@ import { setAlert } from '../store/alert';
 import { NativeModules } from 'react-native';
 import { KocesAppPay } from './kocess';
 import store from '../store';
+import { storage } from './localStorage';
 
 const adminOrderHeader = {'Content-Type' : "text/plain"};
 
@@ -254,7 +254,9 @@ export function numberPad(n, width) {
     n = n + '';
     return n.length >= width ? n : new Array(width - n.length + 1).join('0') + n;
 }
-export async function getTableInfo() {
+export function getTableInfo() {
+    return storage.getString("TABLE_INFO");
+    /* 
     return await new Promise(function(resolve, reject){
         AsyncStorage.getItem("TABLE_INFO")
         .then((TABLE_INFO)=>{
@@ -264,7 +266,7 @@ export async function getTableInfo() {
                 reject();                
             }
         })
-    })
+    }) */
 }
 export function trimSmartroResultData(payData) {
     console.log("payData: ",payData);
@@ -281,7 +283,9 @@ export function trimSmartroResultData(payData) {
     return trimmedData;
 }
 /// ip받기
-export async function getIP() {
+export function getIP() {
+    return storage.getString("POS_IP");
+    /* 
     return await new Promise(function(resolve, reject){
         AsyncStorage.getItem("POS_IP")
         .then((POS_IP)=>{
@@ -294,14 +298,14 @@ export async function getIP() {
         .catch(err=>{
             reject();
         })
-    })
+    }) */
 }
 
 export async function postLog (payData,orderData) {
     const date = new Date();
-    const tableNo = await getTableInfo().catch(err=>{return {TABLE_INFO:""}});
+    const tableNo = getTableInfo();
     // admin log
-    const storeID = await AsyncStorage.getItem("STORE_IDX").catch("");
+    const storeID = storage.getString("STORE_IDX");
     let auData = [];
     //  [{"prod_cd": "900026", "qty": 1, "set_item": [[Object]]}, {"prod_cd": "900022", "qty": 1, "set_item": []}]
 
@@ -331,7 +335,7 @@ export async function adminDataPost(payData, orderData, allItems,phoneNumber) {
     new Promise(async (resolve,reject)=>{
         var postOrderData = Object.assign({}, orderData);
         const date = new Date();
-        const tableNo = await getTableInfo().catch(err=>err);
+        const tableNo = getTableInfo();
         if(tableNo instanceof Error) {
             reject("테이블을 선택 해 주세요.");
         }
@@ -341,7 +345,7 @@ export async function adminDataPost(payData, orderData, allItems,phoneNumber) {
             reject("테이블을 선택 해 주세요.");
         }
         //console.log("===========================")
-        const {STORE_IDX} = await getStoreID()
+        const STORE_IDX = getStoreID()
         // 결제시 추가 결제 결과 데이터
         let addOrderData = {};
         if(!isEmpty(payData)) {
@@ -437,7 +441,7 @@ export async function postOrderToPos(postData,orderData, PRINT_ORDER_NO) {
         };
         postOrderData = {...postOrderData,...addOrderData};
 
-        const {POS_IP} = await getIP();
+        const POS_IP = getIP ;
         try {
             console.log("postOrderData: ",postOrderData);
             //const data = await callApiWithExceptionHandling(`${POS_BASE_URL(POS_IP)}`,postOrderData, {}); 
@@ -470,7 +474,9 @@ export async function postOrderToPos(postData,orderData, PRINT_ORDER_NO) {
     })
 
 }
-export async function getStoreID() {
+export function getStoreID() {
+    return storage.getString("STORE_IDX");
+    /* 
     return await new Promise(function(resolve, reject){
         AsyncStorage.getItem("STORE_IDX")
         .then((STORE_IDX)=>{
@@ -480,7 +486,7 @@ export async function getStoreID() {
                 reject();                
             }
         })
-    })
+    }) */
 }
 
 export async function openInstallmentPopup(dispatch,getState) {
@@ -566,7 +572,7 @@ export const isNetworkAvailable = async () => {
     } )
 }
 export const StoreInfo = async(dispatch, data) =>{
-    const {POS_IP} = await getIP();
+    const POS_IP = getIP() ;
     console.log("POS_IP: ",POS_IP);
     return await new Promise(function(resolve, reject){
         axios.post(
@@ -653,12 +659,7 @@ export const itemEnableCheck = async (STORE_IDX, items) => {
 
 // 매장 정보 요청
 export const getPosStoreInfo = async(dispatch, data) =>{
-    const {POS_IP} = await getIP()
-    .catch((err)=>{
-        EventRegister.emit("showSpinner",{isSpinnerShow:false, msg:"", spinnerType:"",closeText:""});      
-        return;
-    }
-    )
+    const POS_IP = getIP();
     if(isEmpty(POS_IP)) {
         EventRegister.emit("showSpinner",{isSpinnerShow:false, msg:"", spinnerType:"",closeText:""}); 
         return;
@@ -687,27 +688,27 @@ export const isNewDay = (lastResetDate) => {
     const today = new Date().toDateString(); // 오늘 날짜
     return lastResetDate !== today; // 날짜가 다르면 true 반환
 };
-export const loadCounter = async () => {
+export const loadCounter = () => {
     // 날짜 키 상수
     const COUNT_KEY = 'counterValue';
     const DATE_KEY = 'lastResetDate';
     try {
-      const storedCount = await AsyncStorage.getItem(COUNT_KEY);
-      const storedDate = await AsyncStorage.getItem(DATE_KEY);
+      const storedCount =  storage.getString(COUNT_KEY);
+      const storedDate =   storage.getString.getString(DATE_KEY);
 
       const today = new Date().toDateString();
 
       if (storedDate && isNewDay(storedDate)) {
         // 날짜가 변경되었으면 초기화
-        await AsyncStorage.setItem(COUNT_KEY, '1');
-        await AsyncStorage.setItem(DATE_KEY, today);
+        storage.set(COUNT_KEY, '1');
+        storage.set(DATE_KEY, today);
         return (1);
       } else if (storedCount) {
         return (parseInt(storedCount, 10));
       } else {
         // 초기 상태 저장
-        await AsyncStorage.setItem(COUNT_KEY, '1');
-        await AsyncStorage.setItem(DATE_KEY, today);
+        storage.set(COUNT_KEY, '1');
+        storage.set(DATE_KEY, today);
         return (1);
       }
     } catch (error) {
@@ -871,13 +872,13 @@ export async function printReceipt(orderList, breadOrderList, items, payResultDa
     const {Printer} = NativeModules; 
     var kocessAppPay = new KocesAppPay();
     const storeDownload = await kocessAppPay.storeDownload();
-    const adminStoreName = await AsyncStorage.getItem("STORE_NAME");
+    const adminStoreName = storage.getString("STORE_NAME");
     const businessData = storeDownload;
     const finalOrderData = trimReceiptData([...orderList,...breadOrderList], items);
     //console.log(JSON.stringify(finalOrderData));
     //console.log( JSON.stringify(payResultData));
     //console.log( JSON.stringify(businessData));
-    const orderNo = await AsyncStorage.getItem("orderNo");
+    const orderNo = storage.getString("orderNo");
     console.log("orderNo: ",orderNo);
     Printer.Sam4sStartPrint(JSON.stringify(finalOrderData), JSON.stringify(payResultData), JSON.stringify(businessData), adminStoreName, orderNo);
 }
