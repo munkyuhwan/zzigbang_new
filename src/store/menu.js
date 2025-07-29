@@ -178,7 +178,7 @@ export const startPayment = createAsyncThunk("menu/startPayment", async(data,{di
     // 주문 가능 상태 확인
     console.log("check order av");
     const POS_NO = storage.getString("POS_NO");
-    /*
+    
     try {
         const isPostable = await isNetworkAvailable();
         if(!isPostable) {
@@ -216,7 +216,7 @@ export const startPayment = createAsyncThunk("menu/startPayment", async(data,{di
         EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"포스 오류", str:err.errorMsg});
         return rejectWithValue();
     }
-    */
+    
     /// 카트메뉴 주문 가능 여부 체크
     
     const isItemOrderble = await itemEnableCheck(STORE_IDX,[...orderList,...breadOrderList]).catch(err=>{ return{isAvailable:false, result:null} } );
@@ -268,13 +268,13 @@ export const startPayment = createAsyncThunk("menu/startPayment", async(data,{di
         return rejectWithValue();
     }
     // 포스에 요청
-    /* const posOrderResult = await postOrderToPos(result,orderFinalData, PRINT_ORDER_NO).catch(err=>err);  
+    const posOrderResult = await postOrderToPos(result,orderFinalData, PRINT_ORDER_NO).catch(err=>err);  
     //console.log("posOrderResult: ",posOrderResult)
     if(posOrderResult instanceof Error) {
         EventRegister.emit("showSpinner",{isSpinnerShow:false, msg:"", spinnerType:"",closeText:""});
         EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"주문 오류", str:posOrderResult.errorMsg});    
         return rejectWithValue();
-    } */
+    }
 
 
 

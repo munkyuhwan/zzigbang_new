@@ -421,7 +421,7 @@ export async function postOrderToPos(postData,orderData, PRINT_ORDER_NO) {
             TOTAL_DC:Number(postData?.SvcAmt),
             ORDER_STATUS:"3",
             CANCEL_YN:"N",
-            PREPAYMENT_YN:"N",
+            PREPAYMENT_YN:"Y",
             CUST_CARD_NO:`${postData?.CardNo}`,
             CUST_NM:``,
             PAYMENT_CNT:1,
@@ -441,7 +441,7 @@ export async function postOrderToPos(postData,orderData, PRINT_ORDER_NO) {
         };
         postOrderData = {...postOrderData,...addOrderData};
 
-        const POS_IP = getIP ;
+        const POS_IP = getIP() ;
         try {
             console.log("postOrderData: ",postOrderData);
             //const data = await callApiWithExceptionHandling(`${POS_BASE_URL(POS_IP)}`,postOrderData, {}); 
@@ -460,7 +460,7 @@ export async function postOrderToPos(postData,orderData, PRINT_ORDER_NO) {
                     //return new Error(data?.ERROR_MSG)
                 }
             }else {
-                emit("showAlert",{showAlert:true, msg:"", title:"주문오류", str:"포스주문 실패."});
+                EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"주문오류", str:"포스주문 실패."});
                 EventRegister.emit("showSpinner",{isSpinnerShow:false, msg:"", spinnerType:"",closeText:""});
                 reject(new Error("POS ERROR"));
             }
@@ -880,6 +880,13 @@ export async function printReceipt(orderList, breadOrderList, items, payResultDa
     //console.log( JSON.stringify(businessData));
     const orderNo = storage.getString("orderNo");
     console.log("orderNo: ",orderNo);
+    console.log("====================================================================");
+    console.log(JSON.stringify(finalOrderData));
+    console.log(JSON.stringify(payResultData));
+    console.log(JSON.stringify(businessData));
+    console.log(adminStoreName);
+    console.log(orderNo);
+    console.log("====================================================================");
     Printer.Sam4sStartPrint(JSON.stringify(finalOrderData), JSON.stringify(payResultData), JSON.stringify(businessData), adminStoreName, orderNo);
 }
 

@@ -518,7 +518,7 @@ const ScanScreen = () => {
                         onPress={()=>{ 
                             if(isScanning==false){ 
                                 setScanning(true);
-                                //EventRegister.emit("showSpinner",{isSpinnerShow:true, msg:"스캔 중 입니다.", spinnerType:"",closeText:""})
+                                EventRegister.emit("showSpinner",{isSpinnerShow:true, msg:"스캔 중 입니다.", spinnerType:"",closeText:""})
                                 setImgURL("");
                                 if(rescanIndex == null) {
                                     setScanType(ADD);

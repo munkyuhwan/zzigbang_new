@@ -455,10 +455,13 @@ public class PrinterModule extends ReactContextBaseJavaModule {
                         builder.addTextSize(1, 1);
                         builder.addTextBold(false);
 
+                        builder.addText("                                                \n");
+                        builder.addTextAlign(Sam4sBuilder.ALIGN_CENTER);
+                        builder.addText("주문번호\n");
                         builder.addTextSize(3, 3);
                         builder.addText(orderNo+"\n");
 
-
+                        builder.addTextSize(1, 1);
                         builder.addText("                                                \n");
                         builder.addText("                                                \n");
                         builder.addCut(Sam4sBuilder.CUT_NO_FEED); // Sam4sBuilder.CUT_FEED

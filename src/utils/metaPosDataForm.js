@@ -78,6 +78,7 @@ export const metaPostPayFormat = async (orderList,payData, allItems, PRINT_ORDER
             const date = new Date();
             //const tableNo = await getTableInfo().catch(err=>err);
             const tableNo = storage.getString("TABLE_INFO");
+            console.log("tableNo: ",tableNo);
             if(tableNo instanceof Error) {
                 reject("테이블 정보를 입력 하세요.");
             }
@@ -151,9 +152,9 @@ export const metaPostPayFormat = async (orderList,payData, allItems, PRINT_ORDER
             }
             let orderData = {
                 "VERSION" : POS_VERSION_CODE,
-                "WORK_CD" : !isEmpty(payData)?POS_WORK_CD_PREPAY_ORDER_REQUEST:POS_WORK_CD_POSTPAY_ORDER, //선불 후불에 따라 코드 다름
+                "WORK_CD" : POS_WORK_CD_PREPAY_ORDER_REQUEST, //선불 후불에 따라 코드 다름
                 "ORDER_NO" : orderNo,
-                "TBL_NO" : `${tableNo.TABLE_INFO}`, 
+                "TBL_NO" : `${tableNo}`, 
                 "PRINT_YN" : "Y",
                 "USER_PRINT_YN" : "N",
                 "PRINT_ORDER_NO" : PRINT_ORDER_NO, 
