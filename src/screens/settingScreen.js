@@ -243,15 +243,16 @@ const SettingScreen = (props) =>{
             const portNo = storage.getString("weightPortNumber");
             console.log("connect: ",portNo);
             Weight.closeSerialConnection();
-            Weight.connectDevice(Number(portNo));
+            Weight.connectDevice();
         }
         startMeasuring();
         DeviceEventEmitter.removeAllListeners("onWeightChanged"); 
         DeviceEventEmitter.addListener("onWeightChanged",(data)=>{    
             const result = data?.weight.replace(/[^0-9.]/g, ""); // 숫자와 소숫점 제외 모든 문자 제거
             const weight = parseFloat(result);
+            console.log("weight: ",weight);
             //if(Number(weight)>0) {
-                dispatch(setCommon({weight:weight}))
+                dispatch(setCommon({weight:weight*1000}))
                 //startScan(weight);
             //}
         });  
@@ -368,7 +369,7 @@ const SettingScreen = (props) =>{
                                         </SettingButtonView>
                                     </TouchableWithoutFeedback>
                                 </SettingSenctionInputView>
-                                <SettingSenctionInputView>
+                                {/* <SettingSenctionInputView>
                                     <TouchableWithoutFeedback onPress={async()=>{  
                                             const {Printer} = NativeModules; 
                                             Printer.getDeviceList();
@@ -380,7 +381,7 @@ const SettingScreen = (props) =>{
                                             <SettingSectionTitle>프린트 리스트</SettingSectionTitle>
                                         </SettingButtonView>
                                     </TouchableWithoutFeedback>
-                                </SettingSenctionInputView>
+                                </SettingSenctionInputView> */}
                             </SettingSectionDetailWrapper>
                         </SettingSectionWrapper>
                         {/* <SettingSectionWrapper>
@@ -493,21 +494,21 @@ const SettingScreen = (props) =>{
                                     <SettingSectionLabel>{weightProductName}</SettingSectionLabel>
                                 </SettingSenctionInputView>
                                 <SettingSenctionInputView>
-                                    <SettingSectionLabel>{weight} kg</SettingSectionLabel>
+                                    <SettingSectionLabel>{weight} g</SettingSectionLabel>
                                     <TouchableWithoutFeedback onPress={async()=>{ weighingTest(); }} >
                                         <SettingButtonView>
                                             <SettingSectionTitle>연결</SettingSectionTitle>
                                         </SettingButtonView>
                                     </TouchableWithoutFeedback>
                                 </SettingSenctionInputView>
-                                <SettingSenctionInputView>
+                                {/* <SettingSenctionInputView>
                                     <SettingSectionLabel>{weight} kg</SettingSectionLabel>
                                     <TouchableWithoutFeedback onPress={async()=>{ weightInitiate(); }} >
                                         <SettingButtonView>
                                             <SettingSectionTitle>영점맞추기</SettingSectionTitle>
                                         </SettingButtonView>
                                     </TouchableWithoutFeedback>
-                                </SettingSenctionInputView>
+                                </SettingSenctionInputView> */}
                             </SettingSectionDetailWrapper>
                         </SettingSectionWrapper>
                         <SettingSectionWrapper>

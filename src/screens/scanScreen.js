@@ -555,7 +555,7 @@ const ScanScreen = () => {
                                     console.log("weight: ",weight);
                                     if(Number(weight)>0) {
                                         console.log("start scan");
-                                        startScan(weight)
+                                        startScan(weight*1000)
                                         //dispatch(setCommon({weight:weight}))
                                         
                                     }

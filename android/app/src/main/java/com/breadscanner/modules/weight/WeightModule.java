@@ -98,7 +98,7 @@ public class WeightModule extends ReactContextBaseJavaModule {
                     mJSModule.emit("onWeightChanged", params);
                 }
 
-                Thread.sleep(1000); // 1초 주기
+                Thread.sleep(300); // 1초 주기
             }
         } catch (Exception e) {
             Log.e("WeightModule", "Error reading weight: " + e.getMessage());

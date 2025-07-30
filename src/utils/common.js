@@ -660,6 +660,7 @@ export const itemEnableCheck = async (STORE_IDX, items) => {
 // 매장 정보 요청
 export const getPosStoreInfo = async(dispatch, data) =>{
     const POS_IP = getIP();
+    console.log("POS_IP: ",POS_IP);
     if(isEmpty(POS_IP)) {
         EventRegister.emit("showSpinner",{isSpinnerShow:false, msg:"", spinnerType:"",closeText:""}); 
         return;

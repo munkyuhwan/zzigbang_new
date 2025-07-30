@@ -45,6 +45,7 @@ export const getStoreInfo = createAsyncThunk("meta/getStoreInfo", async(data, {d
             return rejectWithValue("DATA DOES NOT EXIST");
         }else {
             if(data.result == true){
+                console.log("data: ",data);
                 //AsyncStorage.setItem("POS_IP", data?.data.ip);
                 //AsyncStorage.setItem("STORE_NAME", data?.data.store_name);
                 storage.set("POS_IP", data?.data.ip);
