@@ -421,7 +421,7 @@ export async function postOrderToPos(postData,orderData, PRINT_ORDER_NO) {
             TOTAL_DC:Number(postData?.SvcAmt),
             ORDER_STATUS:"3",
             CANCEL_YN:"N",
-            PREPAYMENT_YN:"Y",
+            PREPAYMENT_YN:"N",
             CUST_CARD_NO:`${postData?.CardNo}`,
             CUST_NM:``,
             PAYMENT_CNT:1,

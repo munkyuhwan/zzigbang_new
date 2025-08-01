@@ -7,7 +7,7 @@ import { setError } from '../store/error';
 export async function formRequest(dispatch, url, postData) {
   
   const MAX_RETRIES = 5;
-  const RETRY_DELAY = 100; // 0.5초
+  const RETRY_DELAY = 50; // 0.5초
 
   for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
     try {

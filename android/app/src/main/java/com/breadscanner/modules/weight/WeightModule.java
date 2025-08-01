@@ -80,11 +80,11 @@ public class WeightModule extends ReactContextBaseJavaModule {
         byte[] buffer = new byte[64];
 
         try {
-            port.write(command, 1000);
+            port.write(command, 90);
             Log.d("WeightModule", "Command sent: " + Arrays.toString(command));
 
             while (isReading && port != null) {
-                int len = port.read(buffer, 1000);
+                int len = port.read(buffer, 90);
                 if (len > 0) {
                     String response = new String(buffer, 0, len, StandardCharsets.UTF_8);
                     Log.d("WeightModule", "Weight response: " + response);
@@ -98,7 +98,7 @@ public class WeightModule extends ReactContextBaseJavaModule {
                     mJSModule.emit("onWeightChanged", params);
                 }
 
-                Thread.sleep(300); // 1초 주기
+                Thread.sleep(100); // 1초 주기
             }
         } catch (Exception e) {
             Log.e("WeightModule", "Error reading weight: " + e.getMessage());

@@ -220,6 +220,12 @@ export const commonSlice = createSlice({
                 cn:"won",
                 ko:"원",
             },
+            "개":{
+                en:"ea",
+                jp:"ea",
+                cn:"ea",
+                ko:"개",
+            },
             "스캔하기":{
                 en:"SCAN",
                 jp:"スキャンする",
@@ -320,7 +326,7 @@ export const commonSlice = createSlice({
                 en:"Rescan",
                 jp:"再スキャンする",
                 cn:"重新扫描",
-                ko:"다시스캔\n(다시찍기)",
+                ko:"다시찍기",
             },       
             "총 금액":{
                 en:"Total Amount",

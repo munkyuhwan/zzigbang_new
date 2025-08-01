@@ -57,6 +57,8 @@ const SettingScreen = (props) =>{
     const [catId, setCatId] = useState("");
     const [serialNo, setSerialNo] = useState("");
 
+    const [tmpWeight, setTmpWeight] = useState("");
+
     const isFocused = useIsFocused();
 
 
@@ -252,7 +254,7 @@ const SettingScreen = (props) =>{
             const weight = parseFloat(result);
             console.log("weight: ",weight);
             //if(Number(weight)>0) {
-                dispatch(setCommon({weight:weight*1000}))
+                setTmpWeight(weight*1000);    //dispatch(setCommon({weight:weight*1000}))
                 //startScan(weight);
             //}
         });  
@@ -283,7 +285,7 @@ const SettingScreen = (props) =>{
                             <SettingSectionTitle>카트 초기화</SettingSectionTitle>
                             <SettingSectionDetailWrapper>
                                 <SettingSenctionInputView>
-                                    <TouchableWithoutFeedback onPress={async()=>{ dispatch(setMenu({orderList:[],breadOrderList:[]})); }} >
+                                    <TouchableWithoutFeedback onPress={async()=>{ dispatch(setMenu({orderList:[],breadOrderList:[]}));EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"세팅", str:'초기화 되었습니다.'}); }} >
                                         <SettingButtonView>
                                             <SettingSectionTitle>초기화</SettingSectionTitle>
                                         </SettingButtonView>
@@ -302,9 +304,6 @@ const SettingScreen = (props) =>{
                                             key={"tablePicker"}
                                             mode='dialog'
                                             onValueChange = {(itemValue, itemIndex) => {
-                                                console.log(itemValue.productID);
-                                                console.log(itemValue.vendorID);
-                                                console.log(itemValue.productName);
                                                 //if(itemValue) {
                                                     storage.set("bellProductID",`${itemValue.productID}`);
                                                     storage.set("bellVendorID",`${itemValue.vendorID}`);
@@ -494,7 +493,7 @@ const SettingScreen = (props) =>{
                                     <SettingSectionLabel>{weightProductName}</SettingSectionLabel>
                                 </SettingSenctionInputView>
                                 <SettingSenctionInputView>
-                                    <SettingSectionLabel>{weight} g</SettingSectionLabel>
+                                    <SettingSectionLabel>{tmpWeight} g</SettingSectionLabel>
                                     <TouchableWithoutFeedback onPress={async()=>{ weighingTest(); }} >
                                         <SettingButtonView>
                                             <SettingSectionTitle>연결</SettingSectionTitle>

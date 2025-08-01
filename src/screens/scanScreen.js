@@ -13,7 +13,7 @@ import { EventRegister } from 'react-native-event-listeners';
 import { setMenu } from '../store/menu';
 import { CartList, CartListItem } from '../components/mainComponents';
 import { ButtonImage, ButtonText, ButtonView, SquareButtonView } from '../style/common';
-import { ScanProductCheckWrapper, ScanProductList } from '../style/scanScreenStyle';
+import { RescanText, RescanView, ScanProductCheckWrapper, ScanProductList } from '../style/scanScreenStyle';
 import {isEmpty} from 'lodash';
 import { numberWithCommas, speak, trimBreadList, updateList } from '../utils/common';
 import { getBanner, setAdShow, setCommon } from '../store/common';
@@ -72,10 +72,10 @@ const ScanScreen = () => {
     const [amt,setAmt] = useState(0);
     const [isMainShow, setMainShow] = useState(true);
     const [storeID, setStoreID] = useState("");
+    const [currentWeight, setCurrentWeight] = useState(0);
 
     const { items, orderList } = useSelector(state=>state.menu);
     const {strings,selectedLanguage, isAddShow, weight} = useSelector(state=>state.common);
-    
     // 깜빡깜빡이는
     const opacity = useRef(new Animated.Value(1)).current;
     const colorAnim = useRef(new Animated.Value(0)).current;
@@ -95,23 +95,21 @@ const ScanScreen = () => {
     });
 
     async function initScanScreen() {
-    /*      
-        const prodID = storage.getString("weightProductID");
-        const vendorID = storage.getString("weightVendorID");
-        const portNo = storage.getString("weightPortNumber");
-        console.log("connect: ",portNo);*/
         Weight.connectDevice(); 
         
-        DeviceEventEmitter.removeAllListeners("onWeightChanged"); 
+        //DeviceEventEmitter.removeAllListeners("onWeightChanged"); 
         DeviceEventEmitter.addListener("onWeightChanged",(data)=>{    
             const result = data?.weight.replace(/[^0-9.]/g, ""); // 숫자와 소숫점 제외 모든 문자 제거
             const weight = parseFloat(result);
             if(Number(weight)>0) {
-                console.log("weight: ",weight);
+                setCurrentWeight(weight*1000);
             }
         });  
-
     }
+
+    useEffect(()=>{
+        //console.log("currentWeight: ",currentWeight);
+    },[currentWeight])
 
     useEffect(() => {
         if (imgURL !== "") {
@@ -198,20 +196,27 @@ const ScanScreen = () => {
         setAmt(numberWithCommas(tmpAmt));
         setPrice(numberWithCommas(tmpPrice));
     },[totalBreadList])
+    useEffect(()=>{
+        if(isMainShow==false) {
+            initScanScreen();
+        }else {
+            DeviceEventEmitter.removeAllListeners("onWeightChanged"); 
 
-    function addToTmpList(addData) {
+        }
+    },[isMainShow])
+
+    function addToTmpList(addData,type,index) {
         var toSet = Object.assign([],tmpBreadList);
-        console.log("scanType: ",scanType)
-        if(scanType == ADD) {
+        if(type == ADD) {
             // 추가 스캔
             toSet.push(addData);
             setTmpBreadList(toSet);
-        }else if(scanType == INIT) {
+        }else if(type == INIT) {
             // 초기화 스캔
             setTmpBreadList([addData]);
-        }else if(scanType == RESCAN) {
+        }else if(type == RESCAN) {
             // 다시 스캔
-            toSet[rescanIndex] = addData;
+            toSet[index] = addData;
             setTmpBreadList(toSet);
         }else {
 
@@ -220,19 +225,18 @@ const ScanScreen = () => {
 
     function clearWeightInterval() {
         DeviceEventEmitter.removeAllListeners("onWeightChanged"); 
-        //Weight.closeSerialConnection();
+        Weight.closeSerialConnection();
         clearInterval(weightCDInterval);
         weightCDInterval = null
         weightCountDown = 30;
     }
     
-    async function startScan(currentWeight) {
-        Weight.closeSerialConnection();
-        DeviceEventEmitter.removeAllListeners("onWeightChanged"); 
+    async function startScan(type,index=null) {
+        //Weight.closeSerialConnection();
         console.log("scan");
         
-        clearWeightInterval();
-        if(typeof(currentWeight)!="number") {
+        //clearWeightInterval();
+        /* if(typeof(currentWeight)!="number") {
             setScanning(false);
             EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"스캔오류", str:"무게를 확인할 수 없습니다."});
             return;
@@ -241,7 +245,7 @@ const ScanScreen = () => {
             setScanning(false);
             EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"스캔오류", str:"무게를 확인할 수 없습니다."});
             return;
-        } 
+        }  */
   
         var breadStoreID = storeID;
 
@@ -280,7 +284,6 @@ const ScanScreen = () => {
                 if(aiResult instanceof Error) {
                     EventRegister.emit("showSpinner",{isSpinnerShow:false, msg:"", spinnerType:"",closeText:""})
                     EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"스캔오류", str:aiResult.message});
-                    DeviceEventEmitter.removeAllListeners("onWeightChanged");
                     setScanning(false);
      
                     //const breadOrderList = [{prodCD:900040, option:[], amt:1}, {prodCD:900041, option:[], amt:1}];
@@ -298,7 +301,6 @@ const ScanScreen = () => {
                     //setRescanIndex();
                     //const breadOrderList = [{prodCD:900040, option:[], amt:3}, {prodCD:900041, option:[], amt:3}];
                     //addToTmpList(breadOrderList)
-                    DeviceEventEmitter.removeAllListeners("onWeightChanged");
                     return;
                 }else {
                     setScanning(false);
@@ -319,7 +321,7 @@ const ScanScreen = () => {
                                 clickType:"",
                             }
                         ));
-                        const sound = new Sound("z004.wav", null, (error) => {
+                        /* const sound = new Sound("z004.wav", null, (error) => {
                             if (error) {
                                 console.log('오디오 로드 실패', error);
                                 return;
@@ -331,9 +333,8 @@ const ScanScreen = () => {
                                     console.log('재생 실패');
                                 }
                             });
-                        });
+                        }); */
                         //speak(selectedLanguage, strings["무게오류"][selectedLanguage]);
-                        DeviceEventEmitter.removeAllListeners("onWeightChanged");
                         return;
                     }
     
@@ -359,30 +360,26 @@ const ScanScreen = () => {
                         //setTmpBreadList([...finalBreadList]);
 
                         //const breadOrderList = [{prodCD:900040, option:[], amt:1}, {prodCD:900041, option:[], amt:1}];
-                        addToTmpList(breadOrderList)
+                        addToTmpList(breadOrderList, type, index)
                         if(tmpBreadList.length<=0) {
                             //speak(selectedLanguage, strings["추가스캔안내"][selectedLanguage]);
                         }else {
                             //speak(selectedLanguage, strings["추가스캔확인"][selectedLanguage]);
                         }
                       
-                        DeviceEventEmitter.removeAllListeners("onWeightChanged");
 
                     }else {
-                        DeviceEventEmitter.removeAllListeners("onWeightChanged");
                         EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"스캔오류", str:"등록되지 않은 빵입니다."});
                     }
                     setScanning(false);
                 }
             }else {
-                DeviceEventEmitter.removeAllListeners("onWeightChanged");
                 EventRegister.emit("showSpinner",{isSpinnerShow:false, msg:"", spinnerType:"",closeText:""})
                 EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"스캔오류", str:"이미지를 저장할 수 없습니다."});
                 return;
             } 
         }catch(err) {
             console.log("err: ",err);
-            DeviceEventEmitter.removeAllListeners("onWeightChanged");
             EventRegister.emit("showSpinner",{isSpinnerShow:false, msg:"", spinnerType:"",closeText:""})
             EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"스캔오류", str:err.errorMsg});
             setCountStart(false);
@@ -394,9 +391,6 @@ const ScanScreen = () => {
     }
 
     function selectPlate(index) {
-        //setImgURL(""); 
-        //setScanType(RESCAN); 
-        //setCountStart(true); 
         console.log("index: ",index," recanIndex: ",rescanIndex);
         if(index == rescanIndex) {
             setRescanIndex();
@@ -415,8 +409,8 @@ const ScanScreen = () => {
 
                             return(
                                 <>
-                                    <View style={{ flex:1, marginTop:7,gap:10, borderColor:colorDarkGrey, backgroundColor:colorLightGrey, borderWidth:1, padding:4, borderRadius:10}} >
-                                        <TouchableWithoutFeedback onPress={()=>{ selectPlate(index); }} >
+                                    <View style={{ flex:1,width:'90%', marginTop:7,gap:10, borderColor:colorDarkGrey, backgroundColor:colorLightGrey, borderWidth:1, padding:4, borderRadius:10}} >
+                                       {/*  <TouchableWithoutFeedback onPress={()=>{ selectPlate(index); }} >
                                             <ScanProductCheckWrapper>
                                                 {index != rescanIndex &&
                                                     <FastImage resizeMode={FastImage.resizeMode.contain} source={require("../resources/imgs/drawable-xxxhdpi/checked.png")} style={{width:34,height:34}} />
@@ -425,7 +419,7 @@ const ScanScreen = () => {
                                                     <FastImage resizeMode={FastImage.resizeMode.contain} source={require("../resources/imgs/drawable-xxxhdpi/check_red.png")} style={{width:34,height:34}} />
                                                 }
                                             </ScanProductCheckWrapper>
-                                        </TouchableWithoutFeedback>
+                                        </TouchableWithoutFeedback> */}
                                         {
                                             el.map(item=>{
                                                 return(
@@ -436,7 +430,19 @@ const ScanScreen = () => {
                                                     </>
                                                 )
                                             })
-                                        }              
+                                        }        
+                                        <TouchableWithoutFeedback
+                                            onPress={()=>{
+                                                EventRegister.emit("showSpinner",{isSpinnerShow:true, msg:"스캔 중 입니다.", spinnerType:"",closeText:""})
+                                                //setScanType(RESCAN);
+                                                //setRescanIndex(index);
+                                                startScan(RESCAN, index);
+                                            }}
+                                        >
+                                            <RescanView>
+                                                <RescanText>{strings["다시스캔"][`${selectedLanguage}`]}</RescanText>
+                                            </RescanView>
+                                        </TouchableWithoutFeedback>      
                                     </View>
                                 </>
                             )
@@ -456,36 +462,24 @@ const ScanScreen = () => {
         <>
         <View style={{width:'100%', height:'100%', flexDirection:'row'}} onTouchStart={()=>{  }} >
             <View style={{flex:1,}}>
-                <Animated.View style={{ flex: 1, opacity: cameraOpacity }}>
-
                     <Camera
                         ref={camera}
                         style={{flex:1, aspectRatio: 4 / 3}}
                         device={device}
                         format={format}
                         isActive={true}
+                        shutterPhotoSound={true}
                         resizeMode='contain'
                         onError={(err)=>{
                             console.log("err: ",err);
                         }}
                     />
-                </Animated.View>
-                <Animated.View style={{ 
-                    width: '100%', 
-                    height: '100%', 
-                    backgroundColor: colorBlack, 
-                    position: 'absolute', 
-                    opacity: imageOpacity 
-                }}>
-
                     {imgURL!="" &&
-                        <Image style={{width:'100%', height:'100%', backgroundColor:colorBlack, position:'absolute'}} resizeMode='contain' source={{uri:imgURL}} />
+                        <FastImage style={{width:'100%', height:'100%', backgroundColor:colorBlack, position:'absolute'}} resizeMode='contain' source={{uri:imgURL}} />
                     }
-                </Animated.View>
-
             </View>
             <View style={{flex:0.343}} >
-
+            {tmpBreadList.length > 0 &&
                 <View style={{flex:1, backgroundColor:'yellow', backgroundColor:imgURL==""?"transparent":colorLightGrey }} >
                     <ScrollView style={{marginTop:10, marginLeft:10,marginRight:10, paddingBottom:140, width:530, height:'68%', position:'absolute', zIndex:99, backgroundColor:colorLightGrey }} keyboardShouldPersistTaps={"handled"} flexGrow={1} contentContainerStyle={{ flexGrow: 1 }} >
                         {tmpBreadList.length > 0 &&
@@ -495,7 +489,7 @@ const ScanScreen = () => {
                     <View style={{ marginLeft:10,marginRight:10, padding:10, backgroundColor:colorPink, width:480, height:100, bottom:240, position:'absolute', zIndex:9999999, }} >                
                         <View style={{flexDirection:'row'}} >
                             <CartItemTitleText style={{fontSize:30,flex:1}} >{`총 수량`}</CartItemTitleText>
-                            <CartItemTitleText style={{fontSize:30,flex:1,textAlign:'right'}} >{`${amt}`}</CartItemTitleText>
+                            <CartItemTitleText style={{fontSize:30,flex:1,textAlign:'right'}} >{`${amt+strings["개"][`${selectedLanguage}`]}`}</CartItemTitleText>
                         </View>
                         <View style={{flexDirection:'row'}} >
                             <CartItemTitleText style={{fontSize:30,flex:1}} >{`총 금액`}</CartItemTitleText>
@@ -503,9 +497,7 @@ const ScanScreen = () => {
                         </View>
                     </View>
                 </View>
-            
-            
-                
+            }
                 <View style={{position:'absolute', zIndex:9999999, right:0, bottom:35, right:10}}>
                     <TouchableWithoutFeedback onPress={()=>{if(isScanning==false){ setMainShow(true); dispatch(setCommon({isAddShow:false})); dispatch(setMenu({breadOrderList:totalBreadList}));setMainShow(true);initCamera(); setTmpBreadList([]);setTotalBreadList([]); clearWeightInterval(); DeviceEventEmitter.removeAllListeners("onWeightChanged"); }}} >
                         <SquareButtonView backgroundColor={colorDarkGrey} >
@@ -520,47 +512,10 @@ const ScanScreen = () => {
                                 setScanning(true);
                                 EventRegister.emit("showSpinner",{isSpinnerShow:true, msg:"스캔 중 입니다.", spinnerType:"",closeText:""})
                                 setImgURL("");
-                                if(rescanIndex == null) {
-                                    setScanType(ADD);
-                                }else {
-                                    setScanType(RESCAN); 
-                                }
-
+                                //setScanType(ADD);
+                                startScan(ADD);
                                 
-                                function startMeasuring() {
-                                    const prodID = storage.getString("weightProductID");
-                                    const vendorID = storage.getString("weightVendorID");
-                                    const portNo = storage.getString("weightPortNumber");
-                                    console.log("connect: ",portNo);
-                                    Weight.connectDevice();
-                                }
-                                startMeasuring();
-                                weightCDInterval = setInterval(() => {
-                                    if(weightCountDown <= 0) {
-                                        clearWeightInterval();
-                                        DeviceEventEmitter.removeAllListeners("onWeightChanged");
-                                        EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"스캔오류", str:"쟁반을 올려주세요."});
-                                        EventRegister.emit("showSpinner",{isSpinnerShow:false, msg:"", spinnerType:"",closeText:""})
-                                    }else {
-                                        weightCountDown = weightCountDown-1;
-                                    }
-                                    
-                                }, 1000);
-                                //startScan(0.2);
-                                
-                                DeviceEventEmitter.removeAllListeners("onWeightChanged"); 
-                                DeviceEventEmitter.addListener("onWeightChanged",(data)=>{    
-                                    const result = data?.weight.replace(/[^0-9.]/g, ""); // 숫자와 소숫점 제외 모든 문자 제거
-                                    const weight = parseFloat(result);
-                                    console.log("weight: ",weight);
-                                    if(Number(weight)>0) {
-                                        console.log("start scan");
-                                        startScan(weight*1000)
-                                        //dispatch(setCommon({weight:weight}))
-                                        
-                                    }
-                                });   
-                                const sound = new Sound('z004.wav', Sound.MAIN_BUNDLE, (error) => {
+                                /* const sound = new Sound('z004.wav', Sound.MAIN_BUNDLE, (error) => {
                                     if (error) {
                                         console.log('오디오 로드 실패', error);
                                         return;
@@ -573,24 +528,24 @@ const ScanScreen = () => {
                                         }
                                     });
                                     // 재생                            
-                                });
+                                }); */
                             }
 
                         }} 
                     >
                         <SquareButtonView backgroundColor={colorRed}  >
-                            {tmpBreadList.length>0 &&rescanIndex==null &&
+                            {//tmpBreadList.length>0 &&rescanIndex==null &&
                                 <ButtonText>{strings["쟁반추가"][`${selectedLanguage}`]}</ButtonText>
                             }
-                            {(tmpBreadList.length>0 &&rescanIndex!=null) &&
+                            {/*(tmpBreadList.length>0 &&rescanIndex!=null) &&
                                 <>
                                     <BlinkingView style={{opacity}}/>
-                                    <ButtonText style={{margin:'auto',animatedColor}} >{strings["다시스캔"][`${selectedLanguage}`]}</ButtonText>
+                                    <ButtonText style={{margin:'auto'}} >{strings["다시스캔"][`${selectedLanguage}`]}</ButtonText>
                                 </>
                             }
                             {tmpBreadList.length<=0 &&
                                 <ButtonText>{strings["스캔하기"][`${selectedLanguage}`]}</ButtonText>
-                            }
+                            */}
                         </SquareButtonView>
                     </TouchableWithoutFeedback>
                 </View>

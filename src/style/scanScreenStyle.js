@@ -1,5 +1,5 @@
 import { styled } from "styled-components";
-import { colorBlack, colorGrey } from "../resources/colors";
+import { colorBlack, colorGreen, colorGrey, colorLightGreen, colorWhite, colorYellow } from "../resources/colors";
 import { ScrollView } from "react-native";
 
 
@@ -22,4 +22,18 @@ export const ScanProductCheckWrapper = styled.View`
     borderRadius:100px;
     backgroundColor:red;
     justifyContents:center;
+`
+
+export const RescanView = styled.View`
+    width:100%;
+    height:50px;
+    justifyContents:center;
+    alignItems:center;
+    backgroundColor:${colorLightGreen};
+    borderRadius:13px;
+`
+export const RescanText = styled.Text`
+    fontSize:30px;
+    fontWeight:bold;
+    color:${colorWhite};
 `

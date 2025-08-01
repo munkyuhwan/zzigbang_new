@@ -450,7 +450,7 @@ const MainScreen = (props) =>{
                     <ButtonWrapper>
                         <TouchableWithoutFeedback 
                             onPress={()=>{ 
-                                const sound = new Sound('z001.wav', Sound.MAIN_BUNDLE, (error) => {
+                               /*  const sound = new Sound('z001.wav', Sound.MAIN_BUNDLE, (error) => {
                                     if (error) {
                                         console.log('오디오 로드 실패', error);
                                         return;
@@ -462,7 +462,7 @@ const MainScreen = (props) =>{
                                             console.log('재생 실패');
                                         }
                                     });
-                                });
+                                }); */
                                 if(breadOrderList?.length>0){  
 
                                 }else {

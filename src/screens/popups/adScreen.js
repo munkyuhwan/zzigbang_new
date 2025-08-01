@@ -182,7 +182,7 @@ const AdScreen = (props) => {
                 </View>
                 <AdButtonView>
                     <TouchableWithoutFeedback onPress={async()=>{ 
-                         const sound = new Sound('z001.wav', Sound.MAIN_BUNDLE, (error) => {
+                         /* const sound = new Sound('z001.wav', Sound.MAIN_BUNDLE, (error) => {
                             if (error) {
                                 console.log('오디오 로드 실패', error);
                                 return;
@@ -195,7 +195,7 @@ const AdScreen = (props) => {
                                 }
                             });
                             // 재생                            
-                        });
+                        }); */
                         props.setMainShow(false);
                         /* navigate.navigate("scan"); */ }} >
                         <AdButtonSquare bgColor={colorGreen} >
