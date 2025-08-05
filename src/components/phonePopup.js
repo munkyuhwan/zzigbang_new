@@ -15,6 +15,7 @@ import Immersive from "react-native-immersive-mode";
 import { EventRegister } from 'react-native-event-listeners';
 import { initOrderList } from '../store/menu';
 import { adminDataPost, printReceipt } from '../utils/common';
+import { setFullPopup } from '../store/fullPopup';
 
 
 export const PhonePopup = () => {
@@ -22,7 +23,8 @@ export const PhonePopup = () => {
     const savedNumber = useSelector((state) => state.phone);
     const {isPhonePopup, adminPostData} = useSelector(state => state.common);
     const {orderList, breadOrderList, items, payResultData} = useSelector(state => state.menu);
-        
+    const {strings,selectedLanguage} = useSelector(state=>state.common);
+
     const [phoneNumber, setPhoneNumberState] = useState("");
 
     
@@ -50,7 +52,7 @@ export const PhonePopup = () => {
             dispatch(setPhoneNumber(""));
             setPhoneNumberState("");
             onClose(); // 팝업 닫기
-            dispatch(dispatchShowAlert({title:"영수증", msg:"영수증을 출력하시겠습니까?", okFunction:()=>{ printReceipt(orderList, breadOrderList, items, payResultData); dispatch(initOrderList());  }, cancelFunction:()=>{dispatch(initOrderList());console.log("on cancel clicked")} } )); 
+            dispatch(dispatchShowAlert({title:"영수증", msg:"영수증을 출력하시겠습니까?", okFunction:()=>{ printReceipt(orderList, breadOrderList, items, payResultData); dispatch(initOrderList()); dispatch(setFullPopup({isShow:true,fullPopupText:strings["주문완료"][`${selectedLanguage}`]}));dispatch(setCommon({isAddShow:true})); }, cancelFunction:()=>{dispatch(initOrderList());dispatch(setFullPopup({isShow:true,fullPopupText:strings["주문완료"][`${selectedLanguage}`]}));dispatch(setCommon({isAddShow:true})); } } )); 
         }
     };
     if(isPhonePopup == false) {

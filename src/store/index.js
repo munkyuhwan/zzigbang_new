@@ -9,6 +9,7 @@ import { commonSlice } from './common';
 import { metaSlice } from './metaPos';
 import {phoneSlice} from './phone';
 import { alertSlice } from './alert';
+import { fullPopupSlice } from './fullPopup';
 
 //slices
 
@@ -20,6 +21,7 @@ const store = configureStore({
         meta:metaSlice.reducer,
         phone:phoneSlice.reducer,
         alert:alertSlice.reducer,
+        fullPopup:fullPopupSlice.reducer,
     },
     devTools:true
 })

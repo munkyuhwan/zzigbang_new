@@ -7,12 +7,13 @@ import FastImage from "react-native-fast-image";
 import { serviceFunction, servicePayment } from "../utils/smartro";
 import { EventRegister } from "react-native-event-listeners";
 import { metaPostPayFormat } from "../utils/metaPosDataForm";
-import { adminDataPost, getPosStoreInfo, getStoreID, isNetworkAvailable, isNewDay, itemEnableCheck, openAlert, openInstallmentPopup, postLog, postOrderToPos, trimSmartroResultData } from "../utils/common";
-import { onConfirmCancelClick, setCommon } from "./common";
+import { adminDataPost, getPosStoreInfo, getStoreID, isNetworkAvailable, isNewDay, itemEnableCheck, openAlert, openInstallmentPopup, postLog, postOrderToPos, printReceipt, trimSmartroResultData } from "../utils/common";
+import { dispatchShowAlert, onConfirmCancelClick, setCommon } from "./common";
 import { KocesAppPay } from "../utils/kocess";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { increment, reset } from "./counter";
 import { storage } from "../utils/localStorage";
+import { setFullPopup } from "./fullPopup";
 
 export const initMenu = createAsyncThunk("menu/initMenu", async(_,{dispatch,getState, rejectWithValue}) =>{
     return;
@@ -178,7 +179,7 @@ export const startPayment = createAsyncThunk("menu/startPayment", async(data,{di
     // 주문 가능 상태 확인
     console.log("check order av");
     const POS_NO = storage.getString("POS_NO");
-
+    /* 
     try {
         const isPostable = await isNetworkAvailable();
         if(!isPostable) {
@@ -217,7 +218,7 @@ export const startPayment = createAsyncThunk("menu/startPayment", async(data,{di
         EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"포스 오류", str:err.errorMsg});
         return rejectWithValue();
     }
-    
+     
     /// 카트메뉴 주문 가능 여부 체크
     
     const isItemOrderble = await itemEnableCheck(STORE_IDX,[...orderList,...breadOrderList]).catch(err=>{ return{isAvailable:false, result:null} } );
@@ -226,7 +227,7 @@ export const startPayment = createAsyncThunk("menu/startPayment", async(data,{di
         EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"주문 오류", str:"수량을 초과해 주문을 할 수 없습니다."});
         return rejectWithValue();
     }
-    
+    */
     
 
     const bsnNo = storage.getString("BSN_NO");
@@ -239,8 +240,8 @@ export const startPayment = createAsyncThunk("menu/startPayment", async(data,{di
     //console.log("Test: ",test);
     //return;
     try{
-        var result = await kocessAppPay.requestKocesPayment(amtData)
-        //var result = {"AnsCode": "0000", "AnswerTrdNo": "null", "AuNo": "28872915", "AuthType": "null", "BillNo": "", "CardKind": "1", "CardNo": "9411-9400-****-****", "ChargeAmt": "null", "DDCYn": "1", "DisAmt": "null", "EDCYn": "0", "GiftAmt": "", "InpCd": "1107", "InpNm": "신한카드", "Keydate": "", "MchData": "wooriorder", "MchNo": "22101257", "Message": "마이신한P잔여 : 109                     ", "Month": "00", "OrdCd": "1107", "OrdNm": "개인신용", "PcCard": "null", "PcCoupon": "null", "PcKind": "null", "PcPoint": "null", "QrKind": "null", "RefundAmt": "null", "SvcAmt": "0", "TaxAmt": `${surtax}`, "TaxFreeAmt": "0", "TermID": "0710000900", "TradeNo": "000004689679", "TrdAmt": `${totalAmt}`, "TrdDate": "240902182728", "TrdType": "A15"}
+        //var result = await kocessAppPay.requestKocesPayment(amtData)
+        var result = {"AnsCode": "0000", "AnswerTrdNo": "null", "AuNo": "28872915", "AuthType": "null", "BillNo": "", "CardKind": "1", "CardNo": "9411-9400-****-****", "ChargeAmt": "null", "DDCYn": "1", "DisAmt": "null", "EDCYn": "0", "GiftAmt": "", "InpCd": "1107", "InpNm": "신한카드", "Keydate": "", "MchData": "wooriorder", "MchNo": "22101257", "Message": "마이신한P잔여 : 109                     ", "Month": "00", "OrdCd": "1107", "OrdNm": "개인신용", "PcCard": "null", "PcCoupon": "null", "PcKind": "null", "PcPoint": "null", "QrKind": "null", "RefundAmt": "null", "SvcAmt": "0", "TaxAmt": `${surtax}`, "TaxFreeAmt": "0", "TermID": "0710000900", "TradeNo": "000004689679", "TrdAmt": `${totalAmt}`, "TrdDate": "240902182728", "TrdType": "A15"}
         console.log("result: ",result);
     }catch(err) {
         console.log("err============",err);
@@ -269,13 +270,13 @@ export const startPayment = createAsyncThunk("menu/startPayment", async(data,{di
         return rejectWithValue();
     }
     // 포스에 요청
-    const posOrderResult = await postOrderToPos(result,orderFinalData, PRINT_ORDER_NO).catch(err=>err);  
+    /* const posOrderResult = await postOrderToPos(result,orderFinalData, PRINT_ORDER_NO).catch(err=>err);  
     //console.log("posOrderResult: ",posOrderResult)
     if(posOrderResult instanceof Error) {
         EventRegister.emit("showSpinner",{isSpinnerShow:false, msg:"", spinnerType:"",closeText:""});
         EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"주문 오류", str:posOrderResult.errorMsg});    
         return rejectWithValue();
-    }
+    } */
 
 
 
@@ -287,7 +288,12 @@ export const startPayment = createAsyncThunk("menu/startPayment", async(data,{di
     EventRegister.emit("showSpinner",{isSpinnerShow:false, msg:"", spinnerType:"",closeText:""});
     //EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"주문 완료", str:"주문완료"});  
     
-    dispatch(onConfirmCancelClick({confirmType:"pay",payData:{result,orderFinalData,items}}));
+    if(orderList.length<=0 && breadOrderList.length>0) {
+        dispatch(dispatchShowAlert({title:"영수증", msg:"영수증을 출력하시겠습니까?", okFunction:()=>{ printReceipt(orderList, breadOrderList, items, result); dispatch(initOrderList());  dispatch(setFullPopup({isShow:true,fullPopupText:strings["주문완료"][`${selectedLanguage}`]}));dispatch(setCommon({isAddShow:true}));    }, cancelFunction:()=>{dispatch(initOrderList());dispatch(setFullPopup({isShow:true,fullPopupText:strings["주문완료"][`${selectedLanguage}`]}));dispatch(setCommon({isAddShow:true}));     }})); 
+    }else {
+        dispatch(onConfirmCancelClick({confirmType:"pay",payData:{result,orderFinalData,items}}));
+    }
+
     //openAlert(dispatch,getState, "영수증", "영수증을 출력하시겠습니까?", ()=>{console.log("on ok clicked");})
 
     return {payResultData:result};

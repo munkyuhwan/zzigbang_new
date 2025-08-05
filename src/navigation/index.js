@@ -20,6 +20,7 @@ import { CallAssistance } from '../components/callAssistance';
 import { AlertPopup } from '../components/alertPopup';
 import { PhonePopup } from '../components/phonePopup';
 import { storage } from '../utils/localStorage';
+import { FullAutoClosePopup } from '../components/fullAutoclosePopup';
 
 const Stack = createStackNavigator()
 var statusInterval;
@@ -148,6 +149,7 @@ export default function Navigation() {
             {isIndicatorShow &&
                 <PopupIndicator text={spinnerText} setText={setSpinnerText} closeText={closeText} setCloseText={setCloseText} onClosePress={()=>{  setCloseText(""); setSpinnerText(""); setIndicatorShow(""); onCloseSpinner(); }}/>
             }
+            <FullAutoClosePopup/>
             <NavigationContainer
                 ref={navigate}   
             >

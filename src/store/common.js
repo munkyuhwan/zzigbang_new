@@ -417,6 +417,12 @@ export const commonSlice = createSlice({
                 jp:"閉じる",
                 cn:"关闭",
                 ko:"닫기",
+            },     
+            "주문완료":{
+                en:"Your order has been completed.",
+                jp:"ご注文が完了しました。",
+                cn:"订单已完成。",
+                ko:"주문을 완료했습니다.",
             },   
             
                 
