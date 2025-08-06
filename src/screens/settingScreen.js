@@ -364,7 +364,7 @@ const SettingScreen = (props) =>{
 
                                      }} >
                                         <SettingButtonView>
-                                            <SettingSectionTitle>초기화</SettingSectionTitle>
+                                            <SettingSectionTitle>프린트</SettingSectionTitle>
                                         </SettingButtonView>
                                     </TouchableWithoutFeedback>
                                 </SettingSenctionInputView>

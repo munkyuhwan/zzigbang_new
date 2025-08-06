@@ -179,7 +179,7 @@ export const startPayment = createAsyncThunk("menu/startPayment", async(data,{di
     // 주문 가능 상태 확인
     console.log("check order av");
     const POS_NO = storage.getString("POS_NO");
-    /* 
+    
     try {
         const isPostable = await isNetworkAvailable();
         if(!isPostable) {
@@ -227,7 +227,7 @@ export const startPayment = createAsyncThunk("menu/startPayment", async(data,{di
         EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"주문 오류", str:"수량을 초과해 주문을 할 수 없습니다."});
         return rejectWithValue();
     }
-    */
+    
     
 
     const bsnNo = storage.getString("BSN_NO");
@@ -240,8 +240,8 @@ export const startPayment = createAsyncThunk("menu/startPayment", async(data,{di
     //console.log("Test: ",test);
     //return;
     try{
-        //var result = await kocessAppPay.requestKocesPayment(amtData)
-        var result = {"AnsCode": "0000", "AnswerTrdNo": "null", "AuNo": "28872915", "AuthType": "null", "BillNo": "", "CardKind": "1", "CardNo": "9411-9400-****-****", "ChargeAmt": "null", "DDCYn": "1", "DisAmt": "null", "EDCYn": "0", "GiftAmt": "", "InpCd": "1107", "InpNm": "신한카드", "Keydate": "", "MchData": "wooriorder", "MchNo": "22101257", "Message": "마이신한P잔여 : 109                     ", "Month": "00", "OrdCd": "1107", "OrdNm": "개인신용", "PcCard": "null", "PcCoupon": "null", "PcKind": "null", "PcPoint": "null", "QrKind": "null", "RefundAmt": "null", "SvcAmt": "0", "TaxAmt": `${surtax}`, "TaxFreeAmt": "0", "TermID": "0710000900", "TradeNo": "000004689679", "TrdAmt": `${totalAmt}`, "TrdDate": "240902182728", "TrdType": "A15"}
+        var result = await kocessAppPay.requestKocesPayment(amtData)
+        //var result = {"AnsCode": "0000", "AnswerTrdNo": "null", "AuNo": "28872915", "AuthType": "null", "BillNo": "", "CardKind": "1", "CardNo": "9411-9400-****-****", "ChargeAmt": "null", "DDCYn": "1", "DisAmt": "null", "EDCYn": "0", "GiftAmt": "", "InpCd": "1107", "InpNm": "신한카드", "Keydate": "", "MchData": "wooriorder", "MchNo": "22101257", "Message": "마이신한P잔여 : 109                     ", "Month": "00", "OrdCd": "1107", "OrdNm": "개인신용", "PcCard": "null", "PcCoupon": "null", "PcKind": "null", "PcPoint": "null", "QrKind": "null", "RefundAmt": "null", "SvcAmt": "0", "TaxAmt": `${surtax}`, "TaxFreeAmt": "0", "TermID": "0710000900", "TradeNo": "000004689679", "TrdAmt": `${totalAmt}`, "TrdDate": "240902182728", "TrdType": "A15"}
         console.log("result: ",result);
     }catch(err) {
         console.log("err============",err);
@@ -270,13 +270,13 @@ export const startPayment = createAsyncThunk("menu/startPayment", async(data,{di
         return rejectWithValue();
     }
     // 포스에 요청
-    /* const posOrderResult = await postOrderToPos(result,orderFinalData, PRINT_ORDER_NO).catch(err=>err);  
+    const posOrderResult = await postOrderToPos(result,orderFinalData, PRINT_ORDER_NO).catch(err=>err);  
     //console.log("posOrderResult: ",posOrderResult)
     if(posOrderResult instanceof Error) {
         EventRegister.emit("showSpinner",{isSpinnerShow:false, msg:"", spinnerType:"",closeText:""});
         EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"주문 오류", str:posOrderResult.errorMsg});    
         return rejectWithValue();
-    } */
+    }
 
 
 
@@ -289,7 +289,7 @@ export const startPayment = createAsyncThunk("menu/startPayment", async(data,{di
     //EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"주문 완료", str:"주문완료"});  
     
     if(orderList.length<=0 && breadOrderList.length>0) {
-        dispatch(dispatchShowAlert({title:"영수증", msg:"영수증을 출력하시겠습니까?", okFunction:()=>{ printReceipt(orderList, breadOrderList, items, result); dispatch(initOrderList());  dispatch(setFullPopup({isShow:true,fullPopupText:strings["주문완료"][`${selectedLanguage}`]}));dispatch(setCommon({isAddShow:true}));    }, cancelFunction:()=>{dispatch(initOrderList());dispatch(setFullPopup({isShow:true,fullPopupText:strings["주문완료"][`${selectedLanguage}`]}));dispatch(setCommon({isAddShow:true}));     }})); 
+        dispatch(dispatchShowAlert({title:"영수증", msg:"영수증을 출력하시겠습니까?", okFunction:()=>{ printReceipt(orderList, breadOrderList, items, result); dispatch(initOrderList());  /* dispatch(setFullPopup({isShow:true,fullPopupText:strings["주문완료"][`${selectedLanguage}`]})); */ dispatch(setCommon({isAddShow:true}));    }, cancelFunction:()=>{dispatch(initOrderList());/* dispatch(setFullPopup({isShow:true,fullPopupText:strings["주문완료"][`${selectedLanguage}`]})); */dispatch(setCommon({isAddShow:true}));     }})); 
     }else {
         dispatch(onConfirmCancelClick({confirmType:"pay",payData:{result,orderFinalData,items}}));
     }
