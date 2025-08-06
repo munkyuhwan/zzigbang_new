@@ -49,6 +49,7 @@ const SettingScreen = (props) =>{
     const [bellProductName, setBellProductName] = useState("");
     const [printerList, setPrinterList] = useState([]);
     const [cdcList, setCdcLIst] = useState([]);
+    const [isWeight, setWeight] = useState(true);
 
     const {storeInfo, tableList} = useSelector(state=>state.meta);
     const {weight} = useSelector(state=>state.common);
@@ -110,6 +111,7 @@ const SettingScreen = (props) =>{
         setPosNo(storage.getString("POS_NO"));
         setBreadStoreId(storage.getString("BREAD_STORE_ID")); 
         setStoreID(storage.getString("STORE_IDX")); 
+        setWeight(storage.getBoolean("WEIGHT_SET"));
 
         dispatch(getStoreInfo());
 
@@ -282,6 +284,32 @@ const SettingScreen = (props) =>{
                     </View>
                     <SettingWrapper>
                         <SettingSectionWrapper>
+                            <SettingSectionTitle>저울 사용 설정</SettingSectionTitle>
+                            <SettingSectionDetailWrapper>
+                                <SettingSenctionInputView>
+                                    <TouchableWithoutFeedback onPress={async()=>{  
+                                        storage.set("WEIGHT_SET",!storage.getBoolean("WEIGHT_SET")); 
+                                        setWeight(storage.getBoolean("WEIGHT_SET"));
+                                        EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"세팅", str:'설정 되었습니다.'}); 
+                                        
+                                        }} >
+                                        <SettingButtonView>
+                                            <SettingSectionTitle>{isWeight?"사용":'미사용'}</SettingSectionTitle>
+                                        </SettingButtonView>
+                                    </TouchableWithoutFeedback>
+                                </SettingSenctionInputView>
+                            </SettingSectionDetailWrapper>
+                            {/* <SettingSectionDetailWrapper>
+                                <SettingSenctionInputView>
+                                    <TouchableWithoutFeedback onPress={()=>{ Serial.getSerialPorts() }} >
+                                        <SettingButtonView>
+                                            <SettingSectionTitle>시리얼</SettingSectionTitle>
+                                        </SettingButtonView>
+                                    </TouchableWithoutFeedback>
+                                </SettingSenctionInputView>
+                            </SettingSectionDetailWrapper> */}
+                        </SettingSectionWrapper>
+                        <SettingSectionWrapper>
                             <SettingSectionTitle>카트 초기화</SettingSectionTitle>
                             <SettingSectionDetailWrapper>
                                 <SettingSenctionInputView>
@@ -292,6 +320,15 @@ const SettingScreen = (props) =>{
                                     </TouchableWithoutFeedback>
                                 </SettingSenctionInputView>
                             </SettingSectionDetailWrapper>
+                            {/* <SettingSectionDetailWrapper>
+                                <SettingSenctionInputView>
+                                    <TouchableWithoutFeedback onPress={()=>{ Serial.getSerialPorts() }} >
+                                        <SettingButtonView>
+                                            <SettingSectionTitle>시리얼</SettingSectionTitle>
+                                        </SettingButtonView>
+                                    </TouchableWithoutFeedback>
+                                </SettingSenctionInputView>
+                            </SettingSectionDetailWrapper> */}
                         </SettingSectionWrapper>
                         <SettingSectionWrapper>
                             <SettingSectionTitle>진동벨</SettingSectionTitle>

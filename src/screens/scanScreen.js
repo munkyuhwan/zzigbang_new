@@ -198,7 +198,9 @@ const ScanScreen = () => {
     },[totalBreadList])
     useEffect(()=>{
         if(isMainShow==false) {
-            initScanScreen();
+            if(storage.getBoolean("WEIGHT_SET")) {
+                initScanScreen();
+            }
         }else {
             DeviceEventEmitter.removeAllListeners("onWeightChanged"); 
 
@@ -275,7 +277,11 @@ const ScanScreen = () => {
                 const formData = new FormData();
                 formData.append("image", {uri: `file://${RNFS.DownloadDirectoryPath}/${fileName}`,name:`${fileName}`, filename:`${fileName}`, type: "image/*"} );
                 formData.append("store_name", breadStoreID);
-                formData.append("input_weight", currentWeight);
+                if(storage.getBoolean("WEIGHT_SET")) {
+                    formData.append("input_weight", currentWeight);
+                }else {
+                    formData.append("input_weight", 0.0);
+                }
                 //formData.append("input_weight", 0.03);
                 console.log("foramdata: ",formData);
                 const aiResult = await formRequest(dispatch,`${AI_SERVER}${AI_QUERY}`, formData );
@@ -425,7 +431,7 @@ const ScanScreen = () => {
                                                 return(
                                                     <>
                                                         {
-                                                            <CartListItem isImageUse={false} data={item} isCancelUse={false} onCancelPress={()=>{ }}  />
+                                                            <CartListItem isScan={true} isImageUse={false} data={item} isCancelUse={false} onCancelPress={()=>{ }}  />
                                                         }
                                                     </>
                                                 )
@@ -534,7 +540,7 @@ const ScanScreen = () => {
                         }} 
                     >
                         <SquareButtonView backgroundColor={colorRed}  >
-                            {//tmpBreadList.length>0 &&rescanIndex==null &&
+                            {tmpBreadList.length>0 &&rescanIndex==null &&
                                 <ButtonText>{strings["쟁반추가"][`${selectedLanguage}`]}</ButtonText>
                             }
                             {/*(tmpBreadList.length>0 &&rescanIndex!=null) &&
@@ -542,10 +548,10 @@ const ScanScreen = () => {
                                     <BlinkingView style={{opacity}}/>
                                     <ButtonText style={{margin:'auto'}} >{strings["다시스캔"][`${selectedLanguage}`]}</ButtonText>
                                 </>
-                            }
+                            */}
                             {tmpBreadList.length<=0 &&
                                 <ButtonText>{strings["스캔하기"][`${selectedLanguage}`]}</ButtonText>
-                            */}
+                            }
                         </SquareButtonView>
                     </TouchableWithoutFeedback>
                 </View>

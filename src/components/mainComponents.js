@@ -430,7 +430,7 @@ export const CartList = (props) =>{
                     orderList.map((el,index)=>{
                         return(
                             <>
-                                <CartListItem  isImageUse={isImageUse} data={el} isCancelUse={isCancelUse} onCancelPress={()=>{props.onCancelPress(index)}}  />
+                                <CartListItem isScan={false} isImageUse={isImageUse} data={el} isCancelUse={isCancelUse} onCancelPress={()=>{props.onCancelPress(index)}}  />
                             </>
                         )
                     })
@@ -493,13 +493,15 @@ export const CartListItem = (props) =>{
             <CartItemPriceWrapper>
                 <CartItemPriceText>{numberWithCommas(Number(data.amt)*(Number(item[0].sal_tot_amt)+Number(optTotal)))} {strings["원"][`${selectedLanguage}`]}</CartItemPriceText>
             </CartItemPriceWrapper>
+            {!props.isScan &&
                 <CartItemCancelWrapper>
-            {isCancelUse &&
-                    <TouchableWithoutFeedback onPress={()=>{props.onCancelPress();}}>
-                        <CartItemCancelImage source={require("../resources/imgs/drawable-xxxhdpi/bt_delect.png")} resizeMode={"contain"} />
-                    </TouchableWithoutFeedback>
-            }
+                    {isCancelUse &&
+                        <TouchableWithoutFeedback onPress={()=>{props.onCancelPress();}}>
+                            <CartItemCancelImage source={require("../resources/imgs/drawable-xxxhdpi/bt_delect.png")} resizeMode={"contain"} />
+                        </TouchableWithoutFeedback>
+                    }
                 </CartItemCancelWrapper>
+            }
         </CartItemView>
         
         </>

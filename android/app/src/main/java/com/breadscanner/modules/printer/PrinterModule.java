@@ -212,13 +212,13 @@ public class PrinterModule extends ReactContextBaseJavaModule {
             UsbDevice usbDevice = usbManager.getDeviceList().get(key);
             System.out.println("************************************************************************************");
             System.out.println("usb device");
-            System.out.println(usbDevice.getProductName());
+            //System.out.println(usbDevice.getProductName());
             System.out.println(usbDevice.getDeviceName());
-            System.out.println(usbDevice.getVendorId());
-            System.out.println(usbDevice.getProductId());
-            System.out.println(usbDevice.getSerialNumber() );
-            System.out.println(usbDevice.getDeviceId() );
-            System.out.println(usbDevice );
+            //System.out.println(usbDevice.getVendorId());
+            //System.out.println(usbDevice.getProductId());
+            //System.out.println(usbDevice.getSerialNumber() );
+            //System.out.println(usbDevice.getDeviceId() );
+            //System.out.println(usbDevice );
             JSONObject jsonObject = new JSONObject();
             try {
                 jsonObject.put("productName",usbDevice.getProductName());

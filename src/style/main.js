@@ -249,6 +249,8 @@ export const CartItemView = styled.View`
     flexDirection:row;
     paddingRight:10px;
     borderRadius:10px;
+    alignItems:center;
+    justifyContents:center;
 `
 export const CartItemImage = styled(FastImage)`
     width:130px;
@@ -279,7 +281,7 @@ export const CartItemOptionText = styled.Text`
 `
 // 수량 
 export const CartItemAmtWrapper = styled.View`
-    flex:0.9;
+    flex:1.6;
     justifyContent:center;
     marginRight:10px;
 `
@@ -296,7 +298,7 @@ export const CartItemAmtText = styled.Text`
 `
 // 금액
 export const CartItemPriceWrapper = styled.View`
-    flex:0.6;
+    flex:1;
     flexDirection:row;
     justifyContent:flex-end;
     paddingLeft:10px;
