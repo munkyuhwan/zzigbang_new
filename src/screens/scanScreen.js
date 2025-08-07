@@ -107,9 +107,6 @@ const ScanScreen = () => {
         });  
     }
 
-    useEffect(()=>{
-        //console.log("currentWeight: ",currentWeight);
-    },[currentWeight])
 
     useEffect(() => {
         if (imgURL !== "") {

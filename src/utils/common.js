@@ -22,6 +22,7 @@ import { NativeModules } from 'react-native';
 import { KocesAppPay } from './kocess';
 import store from '../store';
 import { storage } from './localStorage';
+import { metaPostPayFormat } from './metaPosDataForm';
 
 const adminOrderHeader = {'Content-Type' : "text/plain"};
 
@@ -872,23 +873,33 @@ export function openAlert(dispatch,getState, titleStr, msgStr, okFunction, cance
 export async function printReceipt(orderList, breadOrderList, items, payResultData) {
     const {Printer} = NativeModules; 
     var kocessAppPay = new KocesAppPay();
-    const storeDownload = await kocessAppPay.storeDownload();
+    //const storeDownload = await kocessAppPay.storeDownload();
+    const businessData = storage.getString("STORE INFO");
     const adminStoreName = storage.getString("STORE_NAME");
-    const businessData = storeDownload;
     const finalOrderData = trimReceiptData([...orderList,...breadOrderList], items);
     //console.log(JSON.stringify(finalOrderData));
     //console.log( JSON.stringify(payResultData));
     //console.log( JSON.stringify(businessData));
+
+    const orderFinalData = await metaPostPayFormat([...orderList,...breadOrderList],payResultData, items, null);
+    if(orderFinalData instanceof Error) {
+        EventRegister.emit("showSpinner",{isSpinnerShow:false, msg:"", spinnerType:"",closeText:""});
+        EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"주문 오류", str:orderFinalData.errorMsg});    
+        return rejectWithValue();
+    }
+
+
     const orderNo = storage.getString("orderNo");
-    console.log("orderNo: ",orderNo);
+    /*console.log("orderNo: ",orderNo);
     console.log("====================================================================");
+    console.log(JSON.stringify(orderFinalData));
     console.log(JSON.stringify(finalOrderData));
     console.log(JSON.stringify(payResultData));
     console.log(JSON.stringify(businessData));
     console.log(adminStoreName);
     console.log(orderNo);
-    console.log("====================================================================");
-    Printer.Sam4sStartPrint(JSON.stringify(finalOrderData), JSON.stringify(payResultData), JSON.stringify(businessData), adminStoreName, orderNo);
+    console.log("====================================================================");*/
+    Printer.Sam4sStartPrint(JSON.stringify(orderFinalData), JSON.stringify(finalOrderData), JSON.stringify(payResultData), businessData, adminStoreName, orderNo);
 }
 
 export function trimReceiptData(data, items) {

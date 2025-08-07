@@ -3,6 +3,7 @@ import { getIP, getStoreID } from "../utils/common";
 import { apiRequest, callApiWithExceptionHandling, posApiRequest } from "../utils/apiRequest";
 import { ADMIN_API_BANNER, ADMIN_API_BASE_URL, ADMIN_API_STORE_INFO, POS_BASE_URL } from "../resources/apiResources";
 import { storage } from "../utils/localStorage";
+import { KocesAppPay } from "../utils/kocess";
 
 
 export const initMeta = createAsyncThunk("meta/initMeta", async(data,{dispatch,getState, rejectWithValue}) =>{
@@ -50,6 +51,33 @@ export const getStoreInfo = createAsyncThunk("meta/getStoreInfo", async(data, {d
                 //AsyncStorage.setItem("STORE_NAME", data?.data.store_name);
                 storage.set("POS_IP", data?.data.ip);
                 storage.set("STORE_NAME", data?.data.store_name);
+
+                const tableData = data?.data?.table_list;
+                console.log("table data: ",tableData);
+                
+                const tblInfo =storage.getString("TABLE_INFO");   
+                console.log("tblInfo: ",tblInfo);
+
+                if(tableData.length>0) {
+                    const tableFiltered = tableData.filter(el=>el.t_id == tblInfo);
+                    console.log("tableFiltered: ",tableFiltered);
+                    if(tableFiltered.length>0) {
+                        storage.set("BSN_NO",tableFiltered[0].business_no);
+                        storage.set("TID_NO",tableFiltered[0].terminal_id);
+                        storage.set("SERIAL_NO",tableFiltered[0].serial_no);
+                    }
+                }
+
+
+                var kocessAppPay = new KocesAppPay();
+                kocessAppPay.storeDownload()
+                .then(storeDownload=>{
+                    console.log("storeDownload: ",storeDownload);
+                    storage.set("STORE INFO",JSON.stringify(storeDownload));
+                })
+                .catch(err=>{
+
+                });
 
                 //AsyncStorage.setItem("BSN_NO",bsnNo);
                 //AsyncStorage.setItem("TID_NO",catId); 

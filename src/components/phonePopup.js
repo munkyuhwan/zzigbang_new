@@ -52,7 +52,8 @@ export const PhonePopup = () => {
             dispatch(setPhoneNumber(""));
             setPhoneNumberState("");
             onClose(); // 팝업 닫기
-            dispatch(dispatchShowAlert({title:"영수증", msg:"영수증을 출력하시겠습니까?", okFunction:()=>{ printReceipt(orderList, breadOrderList, items, payResultData); dispatch(initOrderList()); dispatch(setFullPopup({isShow:true,fullPopupText:strings["주문완료"][`${selectedLanguage}`]}));dispatch(setCommon({isAddShow:true})); }, cancelFunction:()=>{dispatch(initOrderList());dispatch(setFullPopup({isShow:true,fullPopupText:strings["주문완료"][`${selectedLanguage}`]}));dispatch(setCommon({isAddShow:true})); } } )); 
+            
+            dispatch(dispatchShowAlert({title:"영수증", msg:"영수증을 출력하시겠습니까?", okFunction:()=>{ printReceipt(orderList, breadOrderList, items, payResultData); dispatch(initOrderList()); /* dispatch(setFullPopup({isShow:true,fullPopupText:strings["주문완료"][`${selectedLanguage}`]})); */dispatch(setCommon({isAddShow:true})); }, cancelFunction:()=>{dispatch(initOrderList());/* dispatch(setFullPopup({isShow:true,fullPopupText:strings["주문완료"][`${selectedLanguage}`]})); */dispatch(setCommon({isAddShow:true})); } } )); 
         }
     };
     if(isPhonePopup == false) {

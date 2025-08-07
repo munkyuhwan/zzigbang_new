@@ -7,6 +7,7 @@ import { ADMIN_API_BANNER, ADMIN_API_BASE_URL, ADMIN_API_CALL_SERVICE, ADMIN_API
 import { apiRequest } from "../utils/apiRequest";
 import { openAlert } from "../utils/common";
 import { storage } from "../utils/localStorage";
+import { KocesAppPay } from "../utils/kocess";
 
 
 export const initCommon = createAsyncThunk("common/initCommon", async(data,{dispatch,getState, rejectWithValue}) =>{
@@ -85,6 +86,7 @@ export const initializeApp  = createAsyncThunk("common/initializeApp", async(dat
     dispatch(getMenu());
     dispatch(getStoreInfo());
     dispatch(getBanner());
+
     //AsyncStorage.removeItem("POS_NO");
     //dispatch(getTableData({}));
 
