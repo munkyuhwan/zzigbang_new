@@ -65,6 +65,11 @@ public class PrinterModule extends ReactContextBaseJavaModule {
     private UsbPrinterPort mUsbPort;
     private USBPrinterInfo mUSBPrinterInfo;
 
+    // 영수증 포지션
+    int ITEM_NAME_POSITION = 0;
+    int ITEM_AMT_POSITION = 320;
+    int ITEM_AMT_COLUMN_TITLE_POSITION = 300;
+    int ITEM_PRICE_POSITION = 420;
 
     PrinterModule(ReactApplicationContext context) {
         super(context);
@@ -326,8 +331,22 @@ public class PrinterModule extends ReactContextBaseJavaModule {
 
         //addTextStyle
 
+    }
 
-
+    private int getAlign(int value) {
+        if(value < 10 && value >= 0 ) {
+            return (ITEM_PRICE_POSITION+65);
+        }else if(value < 100 && value >= 10 ) {
+            return (ITEM_PRICE_POSITION+55);
+        }else if(value < 1000 && value >= 100 ) {
+            return (ITEM_PRICE_POSITION+40);
+        }else if(value < 10000 && value >= 1000) {
+            return (ITEM_PRICE_POSITION+20);
+        }else if(value < 100000 && value >= 10000) {
+            return (ITEM_PRICE_POSITION+15);
+        }else {
+            return (ITEM_PRICE_POSITION+10);
+        }
     }
 
     @ReactMethod
@@ -401,7 +420,7 @@ public class PrinterModule extends ReactContextBaseJavaModule {
                         //builder.addText(testString);
                         int COLUMN_POSITION = 150;
                         int BUSNISSINFO_POSITION = 180;
-                        builder.addText("==========================================\n");
+                        builder.addText("------------------------------------------\n");
 
                         builder.addTextBold(true);
                         // 사업자명
@@ -450,18 +469,13 @@ public class PrinterModule extends ReactContextBaseJavaModule {
 
                         ///  결제 내역 영역
 
-                        int ITEM_NAME_POSITION = 0;
-                        int ITEM_AMT_POSITION = 320;
-                        int ITEM_AMT_COLUMN_TITLE_POSITION = 300;
-                        int ITEM_PRICE_POSITION = 420;
-
                         builder.addTextPosition(ITEM_NAME_POSITION);
                         builder.addText("\n품명");
                         builder.addTextPosition(ITEM_AMT_COLUMN_TITLE_POSITION);
                         builder.addText("수량");
                         builder.addTextPosition(ITEM_PRICE_POSITION);
                         builder.addText("금액\n");
-                        builder.addText("==========================================\n");
+                        builder.addText("------------------------------------------\n");
 
                         Log.d("SAM4S", "finalData: "+finalData );
                         Log.d("SAM4S", "ITEM_INFO: "+finalData.getJSONArray("ITEM_INFO") );
@@ -471,14 +485,13 @@ public class PrinterModule extends ReactContextBaseJavaModule {
                                 JSONObject itemDetail = itemInfo.getJSONObject(i);
 
                                 builder.addTextPosition(ITEM_NAME_POSITION);
-                                builder.addTextDirection(Sam4sBuilder.ALIGN_LEFT);
                                 builder.addText((i+1)+"."+itemDetail.getString("ITEM_NM"));
                                 builder.addTextPosition(ITEM_AMT_POSITION);
-                                builder.addTextDirection(Sam4sBuilder.ALIGN_RIGHT);
                                 builder.addText(itemDetail.getString("ITEM_QTY"));
                                 builder.addTextPosition(ITEM_PRICE_POSITION);
-                                builder.addTextDirection(Sam4sBuilder.ALIGN_LEFT);
-                                builder.addTextAlign(Sam4sBuilder.ALIGN_RIGHT);
+
+                                builder.addTextPosition(getAlign(Integer.parseInt(itemDetail.getString("ITEM_AMT"))) );
+
                                 builder.addText(df.format(Integer.parseInt(itemDetail.getString("ITEM_AMT")) )+"\n");
 
                                 // 옵션 가격
@@ -493,8 +506,7 @@ public class PrinterModule extends ReactContextBaseJavaModule {
                                         builder.addText("->"+setItemInfo.getJSONObject(j).getString("PROD_I_NM"));
                                         builder.addTextPosition(ITEM_AMT_POSITION);
                                         builder.addText(setItemInfo.getJSONObject(j).getString("QTY"));
-                                        builder.addTextPosition(ITEM_PRICE_POSITION);
-                                        builder.addTextAlign(Sam4sBuilder.ALIGN_RIGHT);
+                                        builder.addTextPosition(getAlign( Integer.parseInt(setItemInfo.getJSONObject(j).getString("AMT"))+Integer.parseInt(setItemInfo.getJSONObject(j).getString("VAT"))  ));
                                         builder.addText(df.format(Integer.parseInt(setItemInfo.getJSONObject(j).getString("AMT"))+Integer.parseInt(setItemInfo.getJSONObject(j).getString("VAT")) )+"\n");
 
                                     }
@@ -503,13 +515,36 @@ public class PrinterModule extends ReactContextBaseJavaModule {
                             }
                         }
 
-                        builder.addText("==========================================\n");
-                        builder.addTextSize(1, 1);
+                        builder.addText("------------------------------------------\n");
+                        builder.addTextSize(1, 2);
                         builder.addTextBold(true);
                         builder.addTextPosition(ITEM_NAME_POSITION);
-                        builder.addText(" 총 금액");
-                        builder.addTextPosition(ITEM_PRICE_POSITION);
+                        builder.addText("소  계");
+                        builder.addTextPosition(getAlign(Integer.parseInt(payData.getString("TrdAmt"))+Integer.parseInt(payData.getString("TaxAmt"))) );
                         builder.addText(df.format(Integer.parseInt(payData.getString("TrdAmt"))+Integer.parseInt(payData.getString("TaxAmt"))) +"\n");
+
+                        builder.addTextSize(1, 1);
+                        builder.addTextPosition(ITEM_NAME_POSITION);
+                        builder.addText("순 매 출");
+                        builder.addTextPosition(ITEM_PRICE_POSITION);
+                        builder.addTextPosition(getAlign(Integer.parseInt(payData.getString("TrdAmt"))) );
+                        builder.addText(df.format(Integer.parseInt(payData.getString("TrdAmt"))) +"\n");
+
+                        builder.addTextSize(1, 1);
+                        builder.addTextPosition(ITEM_NAME_POSITION);
+                        builder.addText("부 가 세");
+                        builder.addTextPosition(ITEM_PRICE_POSITION);
+                        builder.addTextPosition(getAlign(Integer.parseInt(payData.getString("TaxAmt"))) );
+                        builder.addText(df.format(Integer.parseInt(payData.getString("TaxAmt"))) +"\n");
+
+                        builder.addTextSize(1, 2);
+                        builder.addTextPosition(ITEM_NAME_POSITION);
+                        builder.addText("매출합계");
+                        builder.addTextPosition(ITEM_PRICE_POSITION);
+                        builder.addTextPosition(getAlign(Integer.parseInt(payData.getString("TrdAmt"))+Integer.parseInt(payData.getString("TaxAmt"))) );
+                        builder.addText(df.format(Integer.parseInt(payData.getString("TrdAmt"))+Integer.parseInt(payData.getString("TaxAmt"))) +"\n");
+
+
                         builder.addTextSize(1, 1);
                         builder.addTextBold(false);
 
@@ -518,7 +553,7 @@ public class PrinterModule extends ReactContextBaseJavaModule {
                         //builder.addText(testString);
                         int PAY_COLUMN_POSITION = 150;
                         int PAY_INFO_POSITION = 180;
-                        builder.addText("==========================================\n");
+                        builder.addText("------------------------------------------\n");
 
                         // 카드번호
                         builder.addTextAlign(Sam4sBuilder.ALIGN_LEFT);

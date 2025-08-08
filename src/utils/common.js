@@ -877,9 +877,6 @@ export async function printReceipt(orderList, breadOrderList, items, payResultDa
     const businessData = storage.getString("STORE INFO");
     const adminStoreName = storage.getString("STORE_NAME");
     const finalOrderData = trimReceiptData([...orderList,...breadOrderList], items);
-    //console.log(JSON.stringify(finalOrderData));
-    //console.log( JSON.stringify(payResultData));
-    //console.log( JSON.stringify(businessData));
 
     const orderFinalData = await metaPostPayFormat([...orderList,...breadOrderList],payResultData, items, null);
     if(orderFinalData instanceof Error) {
@@ -890,7 +887,7 @@ export async function printReceipt(orderList, breadOrderList, items, payResultDa
 
 
     const orderNo = storage.getString("orderNo");
-    /*console.log("orderNo: ",orderNo);
+    console.log("orderNo: ",orderNo);
     console.log("====================================================================");
     console.log(JSON.stringify(orderFinalData));
     console.log(JSON.stringify(finalOrderData));
@@ -898,7 +895,7 @@ export async function printReceipt(orderList, breadOrderList, items, payResultDa
     console.log(JSON.stringify(businessData));
     console.log(adminStoreName);
     console.log(orderNo);
-    console.log("====================================================================");*/
+    console.log("====================================================================");
     Printer.Sam4sStartPrint(JSON.stringify(orderFinalData), JSON.stringify(finalOrderData), JSON.stringify(payResultData), businessData, adminStoreName, orderNo);
 }
 
