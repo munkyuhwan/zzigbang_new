@@ -39,6 +39,10 @@ const screenWidth = Dimensions.get('window').width; // 전체 너비 가져오�
 let weightCDInterval = null
 let weightCountDown = 30;
 
+var startTime = 0;
+var endTime = 0;
+var duration = 0;
+
 const ScanScreen = () => {
     const { Weight } = NativeModules;
     const camera = useRef();
@@ -232,7 +236,7 @@ const ScanScreen = () => {
     
     async function startScan(type,index=null) {
         //Weight.closeSerialConnection();
-        console.log("scan");
+        //console.log("scan");
         
         //clearWeightInterval();
         /* if(typeof(currentWeight)!="number") {
@@ -280,7 +284,9 @@ const ScanScreen = () => {
                     formData.append("input_weight", 0.0);
                 }
                 //formData.append("input_weight", 0.03);
-                console.log("foramdata: ",formData);
+                //console.log("foramdata: ",formData);
+                
+
                 const aiResult = await formRequest(dispatch,`${AI_SERVER}${AI_QUERY}`, formData );
                 console.log("aiResult: ",aiResult);
 
@@ -294,7 +300,7 @@ const ScanScreen = () => {
                     return;
                 }
                 const data = aiResult.data;
-                console.log("aiResult data: ",data);
+                //console.log("aiResult data: ",data);
                 RNFS.unlink(`${RNFS.DownloadDirectoryPath}/${fileName}`);
                 if(isEmpty(data.item_counts)) {
                     setScanning(false);
@@ -342,12 +348,10 @@ const ScanScreen = () => {
                     }
     
                     setImgURL(`${AI_SERVER}${data.detected_image_path}`)
-                    RNFS.unlink(`${RNFS.DownloadDirectoryPath}/${fileName}`);
                     const itemData = data.item_counts;
                     const keys = Object.keys(itemData);
                     var breadOrderList = [];
                     for(const bread of keys) {
-                        console.log("bread: ",bread);
                         const itemCheck = items.filter(el=>{return el.prod_cd == bread});
                         if(itemCheck.length<=0) {
                             break;
@@ -369,12 +373,11 @@ const ScanScreen = () => {
                         }else {
                             //speak(selectedLanguage, strings["추가스캔확인"][selectedLanguage]);
                         }
-                      
-
                     }else {
                         EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"스캔오류", str:"등록되지 않은 빵입니다."});
                     }
                     setScanning(false);
+                    
                 }
             }else {
                 EventRegister.emit("showSpinner",{isSpinnerShow:false, msg:"", spinnerType:"",closeText:""})
@@ -390,7 +393,10 @@ const ScanScreen = () => {
             //addToTmpList(breadOrderList)
             return;
         }
-        
+
+        endTime = performance.now();
+        duration = (endTime - startTime) / 1000; // 초 단위 변환
+        console.log("data sent: ",duration);
     }
 
     function selectPlate(index) {
@@ -471,6 +477,9 @@ const ScanScreen = () => {
                         device={device}
                         format={format}
                         isActive={true}
+                        flashMode='off'
+                        focusMode='off'
+                        zoomMode='off'
                         shutterPhotoSound={true}
                         resizeMode='contain'
                         onError={(err)=>{
@@ -511,6 +520,8 @@ const ScanScreen = () => {
                 <View style={{position:'absolute', zIndex:9999999, right:250, bottom:35,}}>
                     <TouchableWithoutFeedback 
                         onPress={()=>{ 
+                            startTime = performance.now();
+
                             if(isScanning==false){ 
                                 setScanning(true);
                                 EventRegister.emit("showSpinner",{isSpinnerShow:true, msg:"스캔 중 입니다.", spinnerType:"",closeText:""})

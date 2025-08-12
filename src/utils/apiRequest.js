@@ -7,19 +7,18 @@ import { setError } from '../store/error';
 export async function formRequest(dispatch, url, postData) {
   
   const MAX_RETRIES = 5;
-  const RETRY_DELAY = 50; // 0.5초
-
+  const RETRY_DELAY = 0.001; // 0.5초
   for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
     try {
       const response = await axios.post(url, postData, {
         headers: { 'Content-Type': 'multipart/form-data; boundary=boundary' },
         transformRequest: formData => formData,
-        timeout:30000
+        timeout:0
       });
       return response;
     } catch (err) {
       if (attempt < MAX_RETRIES) {
-        console.log(`요청 실패 (${attempt}/${MAX_RETRIES}) - 0.5초 후 재시도`);
+        console.log(`요청 실패 (${attempt}/${MAX_RETRIES}) - 0.1초 후 재시도`);
         await new Promise(resolve => setTimeout(resolve, RETRY_DELAY));
       } else {
         console.log('모든 재시도 실패');
