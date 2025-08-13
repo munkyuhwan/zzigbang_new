@@ -250,8 +250,6 @@ const ScanScreen = () => {
             return;
         }  */
   
-        var breadStoreID = storeID;
-
         //var breadStoreID = "test";
         setImgURL("");
 
@@ -277,14 +275,15 @@ const ScanScreen = () => {
 
                 const formData = new FormData();
                 formData.append("image", {uri: `file://${RNFS.DownloadDirectoryPath}/${fileName}`,name:`${fileName}`, filename:`${fileName}`, type: "image/*"} );
-                formData.append("store_name", breadStoreID);
+                formData.append("store_name", storage.getString("BREAD_STORE_ID"));
+                formData.append("store_id", storage.getString("STORE_IDX"));
                 if(storage.getBoolean("WEIGHT_SET")) {
                     formData.append("input_weight", currentWeight);
                 }else {
                     formData.append("input_weight", 0.0);
                 }
                 //formData.append("input_weight", 0.03);
-                //console.log("foramdata: ",formData);
+                console.log("foramdata: ",formData);
                 
 
                 const aiResult = await formRequest(dispatch,`${AI_SERVER}${AI_QUERY}`, formData );
@@ -511,7 +510,7 @@ const ScanScreen = () => {
                 </View>
             }
                 <View style={{position:'absolute', zIndex:9999999, right:0, bottom:35, right:10}}>
-                    <TouchableWithoutFeedback onPress={()=>{if(isScanning==false){ setMainShow(true); dispatch(setCommon({isAddShow:false})); dispatch(setMenu({breadOrderList:totalBreadList}));setMainShow(true);initCamera(); setTmpBreadList([]);setTotalBreadList([]); clearWeightInterval(); DeviceEventEmitter.removeAllListeners("onWeightChanged"); }}} >
+                    <TouchableWithoutFeedback onPress={()=>{if(isScanning==false){ setMainShow(true); dispatch(setCommon({isAddShow:false})); dispatch(setMenu({breadOrderList:totalBreadList})); initCamera(); setTmpBreadList([]);setTotalBreadList([]); clearWeightInterval(); DeviceEventEmitter.removeAllListeners("onWeightChanged"); }}} >
                         <SquareButtonView backgroundColor={colorDarkGrey} >
                             <ButtonText>{strings["키오스크\n바로주문"][`${selectedLanguage}`]}</ButtonText>
                         </SquareButtonView>

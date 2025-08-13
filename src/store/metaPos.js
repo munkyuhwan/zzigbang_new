@@ -4,7 +4,7 @@ import { apiRequest, callApiWithExceptionHandling, posApiRequest } from "../util
 import { ADMIN_API_BANNER, ADMIN_API_BASE_URL, ADMIN_API_STORE_INFO, POS_BASE_URL } from "../resources/apiResources";
 import { storage } from "../utils/localStorage";
 import { KocesAppPay } from "../utils/kocess";
-
+import {isEmpty} from "lodash";
 
 export const initMeta = createAsyncThunk("meta/initMeta", async(data,{dispatch,getState, rejectWithValue}) =>{
     return;
@@ -69,16 +69,17 @@ export const getStoreInfo = createAsyncThunk("meta/getStoreInfo", async(data, {d
                 }
 
 
-                var kocessAppPay = new KocesAppPay();
-                kocessAppPay.storeDownload()
-                .then(storeDownload=>{
-                    console.log("storeDownload: ",storeDownload);
-                    storage.set("STORE INFO",JSON.stringify(storeDownload));
-                })
-                .catch(err=>{
+                if(isEmpty(storage.getString("STORE_INFO"))) {
+                    var kocessAppPay = new KocesAppPay();
+                    kocessAppPay.storeDownload()
+                    .then(storeDownload=>{
+                        console.log("storeDownload: ",storeDownload);
+                        storage.set("STORE_INFO",JSON.stringify(storeDownload));
+                    })
+                    .catch(err=>{
 
-                });
-
+                    });
+                }
                 //AsyncStorage.setItem("BSN_NO",bsnNo);
                 //AsyncStorage.setItem("TID_NO",catId); 
                 dispatch(setMeta({storeInfo:data?.data}));

@@ -333,12 +333,12 @@ export const CartPaymentWrapper = styled.View`
 export const CartPaymentLabel = styled.Text`
     flex:0.8;
     color:${colorWhite};
-    fontSize:28px;
+    fontSize:26px;
 `
 export const CartPaymentTotalAmt = styled.Text`
     flex:1;
     color:${colorPink};
-    fontSize:28px;
+    fontSize:26px;
     textAlign:right;
     fontWeight:bold;
 `
