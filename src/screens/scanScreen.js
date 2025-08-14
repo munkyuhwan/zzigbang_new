@@ -11,7 +11,7 @@ import { AI_QUERY, AI_SERVER } from '../resources/apiResources';
 import { useDispatch, useSelector } from 'react-redux';
 import { EventRegister } from 'react-native-event-listeners';
 import { setMenu } from '../store/menu';
-import { CartList, CartListItem } from '../components/mainComponents';
+import { CartList, CartListItem, ScannListItem } from '../components/mainComponents';
 import { ButtonImage, ButtonText, ButtonView, SquareButtonView } from '../style/common';
 import { RescanText, RescanView, ScanProductCheckWrapper, ScanProductList } from '../style/scanScreenStyle';
 import {isEmpty} from 'lodash';
@@ -111,6 +111,9 @@ const ScanScreen = () => {
         });  
     }
 
+    useEffect(()=>{
+        console.log("currentWeight",currentWeight);
+    },[currentWeight])
 
     useEffect(() => {
         if (imgURL !== "") {
@@ -411,6 +414,7 @@ const ScanScreen = () => {
 
         return(
             <>
+            
                 <View style={{padding:10}} pointerEvents='box-none' >
                     {
                         tmpBreadList.map((el,index) => {
@@ -433,7 +437,7 @@ const ScanScreen = () => {
                                                 return(
                                                     <>
                                                         {
-                                                            <CartListItem isScan={true} isImageUse={false} data={item} isCancelUse={false} onCancelPress={()=>{ }}  />
+                                                            <ScannListItem isScan={true} isImageUse={false} data={item} isCancelUse={false} onCancelPress={()=>{ }}  />
                                                         }
                                                     </>
                                                 )
@@ -468,6 +472,14 @@ const ScanScreen = () => {
 
     return(
         <>
+        {(currentWeight<=90 && !isMainShow && (storage.getBoolean("WEIGHT_SET")) )&&
+
+            <View style={{width:'100%' ,height:'100%',position:'absolute',zIndex:999999999,justifyContent:'center'}}>
+                <View style={{width:'100%',height:'100%', position:'absolute',backgroundColor:'rgba(0,0,0,0.2)'}} ></View>
+                <Text style={{fontSize:250, fontWeight:'900',color:'white'}} >쟁반을 올려주세요</Text>
+            </View>
+
+        }
         <View style={{width:'100%', height:'100%', flexDirection:'row'}} onTouchStart={()=>{  }} >
             <View style={{flex:1,}}>
                     <Camera
@@ -497,6 +509,7 @@ const ScanScreen = () => {
                             <BreadTmpCartList/>
                         }
                     </ScrollView>
+                    
                     <View style={{ marginLeft:10,marginRight:10, padding:10, backgroundColor:colorPink, width:480, height:100, bottom:240, position:'absolute', zIndex:9999999, }} >                
                         <View style={{flexDirection:'row'}} >
                             <CartItemTitleText style={{fontSize:30,flex:1}} >{`총 수량`}</CartItemTitleText>
@@ -509,6 +522,9 @@ const ScanScreen = () => {
                     </View>
                 </View>
             }
+                <View style={{position:'absolute', right:20, bottom:120, zIndex:999999999}}>
+                        <Text style={{fontSize:100,color:colorBlack}}>{currentWeight}</Text>
+                    </View>
                 <View style={{position:'absolute', zIndex:9999999, right:0, bottom:35, right:10}}>
                     <TouchableWithoutFeedback onPress={()=>{if(isScanning==false){ setMainShow(true); dispatch(setCommon({isAddShow:false})); dispatch(setMenu({breadOrderList:totalBreadList})); initCamera(); setTmpBreadList([]);setTotalBreadList([]); clearWeightInterval(); DeviceEventEmitter.removeAllListeners("onWeightChanged"); }}} >
                         <SquareButtonView backgroundColor={colorDarkGrey} >

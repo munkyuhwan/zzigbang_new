@@ -21,6 +21,7 @@ import { AlertPopup } from '../components/alertPopup';
 import { PhonePopup } from '../components/phonePopup';
 import { storage } from '../utils/localStorage';
 import { FullAutoClosePopup } from '../components/fullAutoclosePopup';
+import { KocesAppPay } from '../utils/kocess';
 
 const Stack = createStackNavigator()
 var statusInterval;
@@ -142,6 +143,16 @@ export default function Navigation() {
             initializeApp();
             console.log("result: ",result);
         })
+
+        var kocessAppPay = new KocesAppPay();
+        kocessAppPay.storeDownload()
+        .then(storeDownload=>{
+            console.log("storeDownload: ",storeDownload);
+            storage.set("STORE_INFO",JSON.stringify(storeDownload));
+        })
+        .catch(err=>{
+        });
+    
     },[])
 
     return (

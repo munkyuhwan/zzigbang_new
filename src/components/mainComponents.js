@@ -442,6 +442,73 @@ export const CartList = (props) =>{
         </View>
     )
 }
+
+export const ScannListItem = (props) =>{
+    const {strings, selectedLanguage} = useSelector(state=>state.common);
+    const {items} = useSelector(state=>state.menu);
+    const data = props.data;
+    const isCancelUse = props.isCancelUse;
+    const isImageUse = props.isImageUse;
+    const item = items.filter(el=>el.prod_cd == data.prodCD);
+    const options = data.option;
+    var optTotal = 0;
+    
+    if(options.length>0) {
+        for(var j=0;j<options.length;j++) {
+            const optionItemAmt = options[j].amt;
+            const optionItem = items.filter(el=>el.prod_cd == options[j].prodCD);
+            if(optionItem.length>0) {
+                optTotal = Number(optTotal)+(Number(optionItem[0].sal_tot_amt)*Number(optionItemAmt));
+            }
+        }
+    }
+
+    if(item.length<=0) {
+        return(<></>)
+    }
+    var newStr = "";
+    options.map((item)=>{
+        const itemData = items.filter(el=>el.prod_cd==item.prodCD);
+        if(itemData.length>0) {
+            newStr += menuName(itemData[0],selectedLanguage)+item.amt+"+";
+        }
+    })
+    newStr.substring(-1,newStr.length-1);
+    return(
+        <>
+        <CartItemView>
+            {isImageUse &&
+               <CartItemImage source={{uri:item[0]?.gimg_chg}} resizeMode={FastImage.resizeMode.cover}  />
+            }
+            <CartItemTextView>
+                <CartItemTitleText>{menuName(item[0], selectedLanguage)}</CartItemTitleText>
+                {newStr!="" &&
+                    <CartItemOptionText>{newStr}</CartItemOptionText>
+                }
+            </CartItemTextView>
+            <CartItemAmtWrapper>
+                <CartItemAmtBorderWrapper>
+                    <CartItemAmtText textColor={colorBlack} >X {data.amt}</CartItemAmtText>
+                </CartItemAmtBorderWrapper>
+            </CartItemAmtWrapper>
+            <CartItemPriceWrapper>
+                <CartItemPriceText>{numberWithCommas(Number(data.amt)*(Number(item[0].sal_tot_amt)+Number(optTotal)))} {strings["원"][`${selectedLanguage}`]}</CartItemPriceText>
+            </CartItemPriceWrapper>
+            {!props.isScan &&
+                <CartItemCancelWrapper>
+                    {isCancelUse &&
+                        <TouchableWithoutFeedback onPress={()=>{props.onCancelPress();}}>
+                            <CartItemCancelImage source={require("../resources/imgs/drawable-xxxhdpi/bt_delect.png")} resizeMode={"contain"} />
+                        </TouchableWithoutFeedback>
+                    }
+                </CartItemCancelWrapper>
+            }
+        </CartItemView>
+        
+        </>
+    )
+}
+
 export const CartListItem = (props) =>{
     const {strings, selectedLanguage} = useSelector(state=>state.common);
     const {items} = useSelector(state=>state.menu);

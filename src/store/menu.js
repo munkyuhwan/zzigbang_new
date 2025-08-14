@@ -269,7 +269,7 @@ export const startPayment = createAsyncThunk("menu/startPayment", async(data,{di
         EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"주문 오류", str:orderFinalData.errorMsg});    
         return rejectWithValue();
     }
-  /*   // 포스에 요청
+    // 포스에 요청
     const posOrderResult = await postOrderToPos(result,orderFinalData, PRINT_ORDER_NO).catch(err=>err);  
     //console.log("posOrderResult: ",posOrderResult)
     if(posOrderResult instanceof Error) {
@@ -277,7 +277,7 @@ export const startPayment = createAsyncThunk("menu/startPayment", async(data,{di
         EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"주문 오류", str:posOrderResult.errorMsg});    
         return rejectWithValue();
     }
- */
+ 
 
 
     // 서버에 올림
