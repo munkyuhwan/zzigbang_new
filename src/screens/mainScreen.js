@@ -1,5 +1,5 @@
 import { act, useCallback, useEffect, useReducer, useRef, useState } from "react";
-import { ScrollView, Text, TouchableWithoutFeedback, View } from "react-native";
+import { InteractionManager, ScrollView, Text, TouchableWithoutFeedback, View } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import { getCategories, getMenu, setMenu, startPayment } from "../store/menu";
 import { ButtonGradientWrapper, CartFloatingBtnBg, CartFloatingBtnImg, CartFloatingBtnImgFullWidth, CartFloatingBtnText, CartFloatingBtnWrapper, CartFloatingBtnWrapperFullWidth, CartItemAmtBorderWrapper, CartItemAmtText, CartItemAmtWrapper, CartPaymentLabel, CartPaymentTotalAmt, CartPaymentWrapper, FloatingBtnImg, FloatingBtnText, FloatingBtnWrapper, InnerWrapper, InnerWrapperFullWidth, MainCartWrapper, MainMenuHeaderLogo, MainMenuWrapper, MainWrapper, MenuButtonWrapper, MenuItemWrapper, PayBtnWrapper } from "../style/main";
@@ -33,6 +33,8 @@ const MainScreen = (props) =>{
     const cartListRef = useRef();
     const navigate = useNavigation();
 
+    const itemLayouts = useRef({}); 
+
     const [scrollPosition, setScrollPosition] = useState(0);
     const [cartScrollPosition, setCartScrollPosition] = useState(0);
     const [isCartBottom, setCartBottom] = useState(false);
@@ -40,6 +42,7 @@ const MainScreen = (props) =>{
     const SCROLL_INCREMENT = 200; // 스크롤 이동 거리
     const MENU_SCROLL_INCREMENT = 400; // 스크롤 이동 거리
 
+    const [lastAdded, setLastAdded] = useState("");
 
     // 번역
     const {strings,selectedLanguage, isAddShow} = useSelector(state=>state.common);
@@ -238,7 +241,24 @@ const MainScreen = (props) =>{
             <SettingScreen setSetting={setSetting} />
         )
     }
-    
+    const findYOffsetCodeByCate = (catId) => {
+        //dispatch(setSelectedItems());
+        setTimeout(() => {
+            const targetY = itemLayouts.current[`${catId}`];
+            if (targetY !== undefined && cartListRef.current) {
+                cartListRef.current.scrollTo({ y: targetY, animated: false });
+                setLastAdded(catId);
+            }    
+        }, 200);
+        
+    }
+    function onListLayout(el){
+        const layout = el.layout.nativeEvent.layout;
+        // 렌더 완료 후 layout.y 기록
+        InteractionManager.runAfterInteractions(() => {
+            itemLayouts.current[el.item] = layout.y;
+        });
+    }
     return(
         <>
         {isAddShow &&
@@ -275,12 +295,12 @@ const MainScreen = (props) =>{
 
                             const { layoutMeasurement, contentOffset, contentSize } = ev.nativeEvent;
                             const isBottom = layoutMeasurement.height + contentOffset.y >= contentSize.height - 350; // 20은 여유 여백
-                            console.log("isBottom: ",isBottom);
                             setCartBottom(isBottom)
                         }}
                         >
                         {breadOrderList.length>0 && 
                             <CartList
+                                onLayout={onListLayout}
                                 data={breadOrderList}
                                 isCancelUse={false}
                                 isImageUse={true}
@@ -291,13 +311,15 @@ const MainScreen = (props) =>{
                         }
                         {orderList.length>0 &&       
                             <CartList
+                                onLayout={onListLayout}
+                                lastAdded={lastAdded}
                                 data={orderList}
                                 isCancelUse={true}
                                 isImageUse={true}
                                 isMargin={breadOrderList.length>0}
                                 placeHolder={strings["음료"][`${selectedLanguage}`]}
                                 onCancelPress={(index)=>{ cancelList(index); }}
-                                />
+                            />
                         }
                     </ScrollView>
                     
@@ -491,7 +513,7 @@ const MainScreen = (props) =>{
                     </ButtonWrapper>
                 </LinearGradient>
             </MainMenuWrapper>
-            <MenuMetaDetailPopup/>
+            <MenuMetaDetailPopup onItemAdd={findYOffsetCodeByCate} />
             <MenuSmartroDetailPopup/> 
             {isPayStarted &&
                 <PaymentSelectionPopup totalPrice={totalPrice} totalVat={totalVat} />

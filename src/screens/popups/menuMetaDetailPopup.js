@@ -13,7 +13,7 @@ import { useEffect, useState } from "react";
 import { EventRegister } from "react-native-event-listeners";
 import { colorRed } from "../../resources/colors";
 
-export const MenuMetaDetailPopup = () => {
+export const MenuMetaDetailPopup = (props) => {
     const dispatch = useDispatch();
     // 번역
     const {strings,selectedLanguage} = useSelector(state=>state.common);
@@ -77,27 +77,57 @@ export const MenuMetaDetailPopup = () => {
                     // 옵션있는 메뉴 옵션 선택 구분
                     const compareResult = compareArrays(checkDuple[0].option, optionSelect);
                     if(compareResult == true) {
+                        // 이미 있는 메뉴
                         var tmpDuple = Object.assign({},checkDuple[0]);
                         tmpDuple = {...tmpDuple, ...{amt:(Number(tmpDuple.amt)+Number(amt))}};
                         var orderListExc = orderList.filter(el=>el.prodCD != detailItem.prod_cd);
-                        orderListExc.push(tmpDuple);
-                        dispatch(setMenu({orderList:orderListExc,detailItem:{}}));
+                        
+                        var dupleIndex = 0;
+                        for(var i=0; i<orderList.length; i++) {
+                            if(orderList[i].prodCD == detailItem.prod_cd){
+                                dupleIndex = i;
+                            }
+                        }
+                    
+                        var tmpOrderList = Object.assign([], orderList);
+                        tmpOrderList[dupleIndex] = tmpDuple;
+                        dispatch(setMenu({orderList:tmpOrderList,detailItem:{}}));
+
+                        //orderListExc.push(tmpDuple);
+                        //dispatch(setMenu({orderList:orderListExc,detailItem:{}}));
+                        props.onItemAdd(detailItem.prod_cd);
                     }else {
                         var tmpOrderList = [...orderList,...[orderItemData]];
                         dispatch(setMenu({orderList:tmpOrderList,detailItem:{}}));
+                        props.onItemAdd(detailItem.prod_cd);
                     }
                 }else {
+                    // 이미 있는 메뉴
                     var tmpDuple = Object.assign({},checkDuple[0]);
                     tmpDuple = {...tmpDuple, ...{amt:(Number(tmpDuple.amt)+Number(amt))}};
                     var orderListExc = orderList.filter(el=>el.prodCD != detailItem.prod_cd);
-                    orderListExc.push(tmpDuple);
-                    dispatch(setMenu({orderList:orderListExc,detailItem:{}}));
+                    var dupleIndex = 0;
+                    for(var i=0; i<orderList.length; i++) {
+                        if(orderList[i].prodCD == detailItem.prod_cd){
+                            dupleIndex = i;
+                        }
+                    }
+                 
+                    var tmpOrderList = Object.assign([], orderList);
+                    tmpOrderList[dupleIndex] = tmpDuple;
+                    dispatch(setMenu({orderList:tmpOrderList,detailItem:{}}));
+
+                    //orderListExc.push(tmpDuple);
+                    //dispatch(setMenu({orderList:orderListExc,detailItem:{}}));
+
+                    props.onItemAdd(detailItem.prod_cd);
                 }
             }
 
         }else {
             var tmpOrderList = [...orderList,...[orderItemData]];
             dispatch(setMenu({orderList:tmpOrderList,detailItem:{}}));
+            props.onItemAdd(detailItem.prod_cd);
         }
 
         const data1 = [{"amt": 2, "groupIdx": "3", "prodCD": "2828"},{"amt": 1, "groupIdx": "3", "prodCD": "10012"}, {"amt": 1, "groupIdx": "2", "prodCD": "10003"}, {"amt": 2, "groupIdx": "1", "prodCD": "78098"}, {"amt": 1, "groupIdx": "1", "prodCD": "1111111"}]

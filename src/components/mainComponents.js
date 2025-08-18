@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { ArrowImg, ArrowWrapper, CartItemAmtBorderWrapper, CartItemAmtText, CartItemAmtWrapper, CartItemCancelImage, CartItemCancelWrapper, CartItemImage, CartItemOptionText, CartItemPriceText, CartItemPriceWrapper, CartItemTextView, CartItemTitleText, CartItemView, CategoryItem, CategoryListWrapper, CategoryText, CategoryWrapper, ItemGroupWrapper, ItemImage, ItemInnerWrapper, ItemPrice, ItemTextWrapper, ItemTitle, ItemWrapper, LanguageWrapper, MainMenuHeaderDateTime, MainMenuHeaderLanguage, MainMenuHeaderLanguageWrapper, MainMenuHeaderLogo, MainMenuHeaderSectionWrapper, MainMenuHeaderWrapper, MenuCategoryTitle, MenuCategoryTitleWrapper, MenuItemListWrapper, MenuListItemImage, MenuListItemTitle, MenuListItemWrapper, NewCategoryItem } from "../style/main"
 import moment, { lang } from "moment";
-import { Pressable, ScrollView, SectionList, Text, TouchableWithoutFeedback, View } from "react-native";
+import { Animated, Pressable, ScrollView, SectionList, Text, TouchableWithoutFeedback, View } from "react-native";
 import FastImage from "react-native-fast-image";
 import { categoryName, menuCatName, menuName, numberWithCommas, paginateArray } from "../utils/common";
 import {isEmpty} from 'lodash';
 import { useDispatch, useSelector } from "react-redux";
-import { colorBlack, colorDarkGrey } from "../resources/colors";
+import { colorBlack, colorDarkGrey, colorRed } from "../resources/colors";
 import { useNavigation } from "@react-navigation/native";
 import { setCommon } from "../store/common";
 import { LAN_CN, LAN_EN, LAN_JP, LAN_KO } from "../resources/values";
@@ -413,33 +413,126 @@ export const CartList = (props) =>{
 
     if(orderList.length<=0) {
         return(
-            <View style={{flex:1}}>
-                {/* <Text style={{flex:1,position:'absolute', top:60, fontSize:115,width:'100%', opacity:0.1, textAlign:'center',justifyContent:'center',verticalAlign:'middle',}} >{props.placeHolder}</Text>    
-                <ScrollView style={{flex:1,gap:20, width:'100%', borderColor:colorDarkGrey, borderWidth:1,borderRadius:10, marginBottom:20}} >
-                </ScrollView> */}
+            <View style={{flex:1}}> 
             </View>
         )
     }
-
+    console.log();
+    console.log("=======================================================================");
     return(
         <View style={isMargin?{marginTop:20}:{}} >
 
-        {/* <ScrollView style={{flex:1, borderColor:colorDarkGrey, borderWidth:1,borderRadius:10, marginBottom:10, backgroundColor:'transparent'}} > */}
             <View style={{gap:4}}>
                 {
                     orderList.map((el,index)=>{
                         return(
                             <>
-                                <CartListItem isScan={false} isImageUse={isImageUse} data={el} isCancelUse={isCancelUse} onCancelPress={()=>{props.onCancelPress(index)}}  />
+                                <CartListItem lastAdded={props.lastAdded} onLayout={(pr)=>{ props.onLayout({item:el.prodCD,layout:pr})}} isScan={false} isImageUse={isImageUse} data={el} isCancelUse={isCancelUse} onCancelPress={()=>{props.onCancelPress(index)}}  />
                             </>
                         )
                     })
 
                 }
             </View>
-       {/*  </ScrollView> */}
-        {/* <Text style={{flex:1,position:'absolute', top:60, fontSize:115,width:'100%', opacity:0.1, textAlign:'center',justifyContent:'center',verticalAlign:'middle',}} >{props.placeHolder}</Text>    */}
         </View>
+    )
+}
+
+
+export const CartListItem = (props) =>{
+    const {strings, selectedLanguage} = useSelector(state=>state.common);
+    const {items} = useSelector(state=>state.menu);
+    const data = props.data;
+    const isCancelUse = props.isCancelUse;
+    const isImageUse = props.isImageUse;
+    const item = items.filter(el=>el.prod_cd == data.prodCD);
+    const options = data.option;
+    var optTotal = 0;
+    const opacity = useRef(new Animated.Value(0)).current;
+
+    if(options.length>0) {
+        for(var j=0;j<options.length;j++) {
+            const optionItemAmt = options[j].amt;
+            const optionItem = items.filter(el=>el.prod_cd == options[j].prodCD);
+            if(optionItem.length>0) {
+                optTotal = Number(optTotal)+(Number(optionItem[0].sal_tot_amt)*Number(optionItemAmt));
+            }
+        }
+    }
+
+    if(item.length<=0) {
+        return(<></>)
+    }
+    var newStr = "";
+    options.map((item)=>{
+        const itemData = items.filter(el=>el.prod_cd==item.prodCD);
+        if(itemData.length>0) {
+            newStr += menuName(itemData[0],selectedLanguage)+item.amt+"+";
+        }
+    })
+
+    useEffect(() => {
+        // 1) 페이드인 → 2) 유지 → 3) 페이드아웃
+        if(props?.lastAdded ==item[0]?.prod_cd){
+            Animated.sequence([
+            Animated.timing(opacity, {
+                toValue: 1,
+                duration: 500, // 0.5초 동안 페이드인
+                useNativeDriver: true,
+            }),
+            Animated.delay(100), // 1초 유지
+            Animated.timing(opacity, {
+                toValue: 0,
+                duration: 500, // 0.5초 동안 페이드아웃
+                useNativeDriver: true,
+            }),
+            ]).start();
+        }
+    }, [props?.lastAdded]);
+    
+    newStr.substring(-1,newStr.length-1);
+    return(
+        <>
+        <View
+            onLayout={props.onLayout}
+        >
+
+            <CartItemView>
+                
+                {isImageUse &&
+                <CartItemImage source={{uri:item[0]?.gimg_chg}} resizeMode={FastImage.resizeMode.cover}  />
+                }
+                <CartItemTextView>
+                    <CartItemTitleText>{menuName(item[0], selectedLanguage)}</CartItemTitleText>
+                    {newStr!="" &&
+                        <CartItemOptionText>{newStr}</CartItemOptionText>
+                    }
+                </CartItemTextView>
+                <CartItemAmtWrapper>
+                    <CartItemAmtBorderWrapper>
+                        <CartItemAmtText textColor={colorBlack} >X {data.amt}</CartItemAmtText>
+                    </CartItemAmtBorderWrapper>
+                </CartItemAmtWrapper>
+                <CartItemPriceWrapper>
+                    <CartItemPriceText>{numberWithCommas(Number(data.amt)*(Number(item[0].sal_tot_amt)+Number(optTotal)))} {strings["원"][`${selectedLanguage}`]}</CartItemPriceText>
+                </CartItemPriceWrapper>
+                {!props.isScan &&
+                    <CartItemCancelWrapper>
+                        {isCancelUse &&
+                            <TouchableWithoutFeedback onPress={()=>{props.onCancelPress();}}>
+                                <CartItemCancelImage source={require("../resources/imgs/drawable-xxxhdpi/bt_delect.png")} resizeMode={"contain"} />
+                            </TouchableWithoutFeedback>
+                        }
+                    </CartItemCancelWrapper>
+                }
+                
+            </CartItemView>
+            {
+                <Animated.View style={{height:95,position:'absolute', backgroundColor:'rgba(210,27,25,0.5)',borderRadius:10, width:'100%',opacity}} />
+            }  
+        </View>
+
+        </>
     )
 }
 
@@ -487,72 +580,6 @@ export const ScannListItem = (props) =>{
                 <CartItemPriceText>{numberWithCommas(Number(data.amt)*(Number(item[0].sal_tot_amt)+Number(optTotal)))} {strings["원"][`${selectedLanguage}`]}</CartItemPriceText>
             </CartItemPriceWrapper>
         </View>
-        
-        </>
-    )
-}
-
-export const CartListItem = (props) =>{
-    const {strings, selectedLanguage} = useSelector(state=>state.common);
-    const {items} = useSelector(state=>state.menu);
-    const data = props.data;
-    const isCancelUse = props.isCancelUse;
-    const isImageUse = props.isImageUse;
-    const item = items.filter(el=>el.prod_cd == data.prodCD);
-    const options = data.option;
-    var optTotal = 0;
-    
-    if(options.length>0) {
-        for(var j=0;j<options.length;j++) {
-            const optionItemAmt = options[j].amt;
-            const optionItem = items.filter(el=>el.prod_cd == options[j].prodCD);
-            if(optionItem.length>0) {
-                optTotal = Number(optTotal)+(Number(optionItem[0].sal_tot_amt)*Number(optionItemAmt));
-            }
-        }
-    }
-
-    if(item.length<=0) {
-        return(<></>)
-    }
-    var newStr = "";
-    options.map((item)=>{
-        const itemData = items.filter(el=>el.prod_cd==item.prodCD);
-        if(itemData.length>0) {
-            newStr += menuName(itemData[0],selectedLanguage)+item.amt+"+";
-        }
-    })
-    newStr.substring(-1,newStr.length-1);
-    return(
-        <>
-        <CartItemView>
-            {isImageUse &&
-               <CartItemImage source={{uri:item[0]?.gimg_chg}} resizeMode={FastImage.resizeMode.cover}  />
-            }
-            <CartItemTextView>
-                <CartItemTitleText>{menuName(item[0], selectedLanguage)}</CartItemTitleText>
-                {newStr!="" &&
-                    <CartItemOptionText>{newStr}</CartItemOptionText>
-                }
-            </CartItemTextView>
-            <CartItemAmtWrapper>
-                <CartItemAmtBorderWrapper>
-                    <CartItemAmtText textColor={colorBlack} >X {data.amt}</CartItemAmtText>
-                </CartItemAmtBorderWrapper>
-            </CartItemAmtWrapper>
-            <CartItemPriceWrapper>
-                <CartItemPriceText>{numberWithCommas(Number(data.amt)*(Number(item[0].sal_tot_amt)+Number(optTotal)))} {strings["원"][`${selectedLanguage}`]}</CartItemPriceText>
-            </CartItemPriceWrapper>
-            {!props.isScan &&
-                <CartItemCancelWrapper>
-                    {isCancelUse &&
-                        <TouchableWithoutFeedback onPress={()=>{props.onCancelPress();}}>
-                            <CartItemCancelImage source={require("../resources/imgs/drawable-xxxhdpi/bt_delect.png")} resizeMode={"contain"} />
-                        </TouchableWithoutFeedback>
-                    }
-                </CartItemCancelWrapper>
-            }
-        </CartItemView>
         
         </>
     )
