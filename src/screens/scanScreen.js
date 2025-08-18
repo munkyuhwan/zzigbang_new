@@ -5,7 +5,7 @@ import RNFS from 'react-native-fs';
 import { CountdownCircleTimer } from 'react-native-countdown-circle-timer'
 import { BottomButton } from '../components/commonComponents';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
-import { colorBlack, colorDarkGrey, colorGreen, colorGrey, colorLightGrey, colorPink, colorRed, colorWhite } from '../resources/colors';
+import { colorBlack, colorDarkGrey, colorGreen, colorGrey, colorLightGrey, colorPink, colorRed, colorWhite, colorYellow } from '../resources/colors';
 import { apiRequest, callApiWithExceptionHandling, formRequest } from '../utils/apiRequest';
 import { AI_QUERY, AI_SERVER } from '../resources/apiResources';
 import { useDispatch, useSelector } from 'react-redux';
@@ -15,7 +15,7 @@ import { CartList, CartListItem, ScannListItem } from '../components/mainCompone
 import { ButtonImage, ButtonText, ButtonView, SquareButtonView } from '../style/common';
 import { RescanText, RescanView, ScanProductCheckWrapper, ScanProductList } from '../style/scanScreenStyle';
 import {isEmpty} from 'lodash';
-import { numberWithCommas, speak, trimBreadList, updateList } from '../utils/common';
+import { numberWithCommas, parseValue, speak, trimBreadList, updateList } from '../utils/common';
 import { getBanner, setAdShow, setCommon } from '../store/common';
 import { SCREEN_TIMEOUT } from '../resources/values';
 import { CartItemTitleText } from '../style/main';
@@ -77,6 +77,7 @@ const ScanScreen = () => {
     const [isMainShow, setMainShow] = useState(true);
     const [storeID, setStoreID] = useState("");
     const [currentWeight, setCurrentWeight] = useState(0);
+    const [scannedWeight, setScannedWeight] = useState("0");
 
     const { items, orderList } = useSelector(state=>state.menu);
     const {strings,selectedLanguage, isAddShow, weight} = useSelector(state=>state.common);
@@ -103,17 +104,13 @@ const ScanScreen = () => {
         
         //DeviceEventEmitter.removeAllListeners("onWeightChanged"); 
         DeviceEventEmitter.addListener("onWeightChanged",(data)=>{    
-            const result = data?.weight.replace(/[^0-9.]/g, ""); // 숫자와 소숫점 제외 모든 문자 제거
-            const weight = parseFloat(result);
-            if(Number(weight)>0) {
+            //const result = data?.weight.replace(/[^0-9.]/g, ""); // 숫자와 소숫점 제외 모든 문자 제거
+            const weight = parseFloat(data?.weight);
+            if(Number(weight)>=0) {
                 setCurrentWeight(weight*1000);
             }
         });  
     }
-
-    useEffect(()=>{
-        console.log("currentWeight",currentWeight);
-    },[currentWeight])
 
     useEffect(() => {
         if (imgURL !== "") {
@@ -361,6 +358,7 @@ const ScanScreen = () => {
                         const orderItem = {prodCD:bread, option:[], amt:itemData[bread]};
                         breadOrderList.push(orderItem);
                     }
+                    setScannedWeight(`${data?.total_registered_weight}g±${(data?.total_tolerance.toFixed(2))}`);
                     EventRegister.emit("showSpinner",{isSpinnerShow:false, msg:"", spinnerType:"",closeText:""})
                     if(keys.length == breadOrderList.length) {
                         setRescanIndex(); 
@@ -422,16 +420,6 @@ const ScanScreen = () => {
                             return(
                                 <>
                                     <View style={{ flex:1,width:'90%', marginTop:7,gap:10, borderColor:colorDarkGrey, backgroundColor:colorLightGrey, borderWidth:1, padding:4, borderRadius:10}} >
-                                       {/*  <TouchableWithoutFeedback onPress={()=>{ selectPlate(index); }} >
-                                            <ScanProductCheckWrapper>
-                                                {index != rescanIndex &&
-                                                    <FastImage resizeMode={FastImage.resizeMode.contain} source={require("../resources/imgs/drawable-xxxhdpi/checked.png")} style={{width:34,height:34}} />
-                                                }
-                                                {index == rescanIndex &&
-                                                    <FastImage resizeMode={FastImage.resizeMode.contain} source={require("../resources/imgs/drawable-xxxhdpi/check_red.png")} style={{width:34,height:34}} />
-                                                }
-                                            </ScanProductCheckWrapper>
-                                        </TouchableWithoutFeedback> */}
                                         {
                                             el.map(item=>{
                                                 return(
@@ -472,14 +460,17 @@ const ScanScreen = () => {
 
     return(
         <>
-        {(currentWeight<=90 && !isMainShow && (storage.getBoolean("WEIGHT_SET")) )&&
-
+        {/* 안내 UI */}
+        {(currentWeight<=0 && !isMainShow && (storage.getBoolean("WEIGHT_SET")) )&&
             <View style={{width:'100%' ,height:'100%',position:'absolute',zIndex:999999999,justifyContent:'center'}}>
                 <View style={{width:'100%',height:'100%', position:'absolute',backgroundColor:'rgba(0,0,0,0.2)'}} ></View>
-                <Text style={{fontSize:250, fontWeight:'900',color:'white'}} >쟁반을 올려주세요</Text>
+                <Text style={{fontSize:240, fontWeight:'900',color:'white', textAlign:'center'}} >{strings["쟁반을 올려주세요."][`${selectedLanguage}`]}</Text>
             </View>
-
         }
+        {/* <View style={{ padding:10, position:'absolute',zIndex:999999999, right:340, bottom:200, justifyContent:'center', alignItems:'center', width:300,height:180}}>
+            <View style={{width:'100%',height:'100%',  position:'absolute',backgroundColor:'rgba(0,0,0,0.8)'}} ></View>
+            <Text style={{fontSize:28, fontWeight:'900',color:colorYellow, textAlign:'center'}} >{strings["스캔하기버튼안내"][`${selectedLanguage}`]}</Text>
+        </View> */}
         <View style={{width:'100%', height:'100%', flexDirection:'row'}} onTouchStart={()=>{  }} >
             <View style={{flex:1,}}>
                     <Camera
@@ -522,9 +513,10 @@ const ScanScreen = () => {
                     </View>
                 </View>
             }
-                <View style={{position:'absolute', right:20, bottom:120, zIndex:999999999}}>
-                        <Text style={{fontSize:100,color:colorBlack}}>{currentWeight}</Text>
-                    </View>
+                <View style={{position:'absolute', flexDirection:'column', backgroundColor:colorBlack, right:520, bottom:20,padding:6, zIndex:999999999}}>
+                    <Text style={{fontSize:30,color:colorYellow}}>{strings["측정무게"][`${selectedLanguage}`]}: {currentWeight}g</Text>
+                    <Text style={{fontSize:30,color:colorYellow}}>{strings["실제무게"][`${selectedLanguage}`]}: {scannedWeight}g</Text>
+                </View>
                 <View style={{position:'absolute', zIndex:9999999, right:0, bottom:35, right:10}}>
                     <TouchableWithoutFeedback onPress={()=>{if(isScanning==false){ setMainShow(true); dispatch(setCommon({isAddShow:false})); dispatch(setMenu({breadOrderList:totalBreadList})); initCamera(); setTmpBreadList([]);setTotalBreadList([]); clearWeightInterval(); DeviceEventEmitter.removeAllListeners("onWeightChanged"); }}} >
                         <SquareButtonView backgroundColor={colorDarkGrey} >

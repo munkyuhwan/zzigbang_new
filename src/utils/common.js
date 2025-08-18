@@ -917,8 +917,7 @@ export function paginateArray(data, pageSize = 10) {
       paginated.push(data.slice(i, i + pageSize));
     }
     return paginated;
-  }
-  
+}
 /*
 export function grandTotalCalculate(data) {
     let amt = 0;

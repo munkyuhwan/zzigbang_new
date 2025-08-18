@@ -281,7 +281,7 @@ export const CartItemOptionText = styled.Text`
 `
 // 수량 
 export const CartItemAmtWrapper = styled.View`
-    flex:1.6;
+    flex:1;
     justifyContent:center;
     marginRight:10px;
 `
@@ -293,7 +293,7 @@ export const CartItemAmtBorderWrapper = styled.View`
 `
 export const CartItemAmtText = styled.Text`
     color:${props=>props?.textColor};
-    fontSize:28px;
+    fontSize:30px;
     fontWeight:bold;
 `
 // 금액
@@ -331,14 +331,14 @@ export const CartPaymentWrapper = styled.View`
     paddingRight:10px;
 `
 export const CartPaymentLabel = styled.Text`
-    flex:0.8;
+    flex:1;
     color:${colorWhite};
-    fontSize:26px;
+    fontSize:32px;
 `
 export const CartPaymentTotalAmt = styled.Text`
-    flex:1;
+    flex:1.2;
     color:${colorPink};
-    fontSize:26px;
+    fontSize:32px;
     textAlign:right;
     fontWeight:bold;
 `

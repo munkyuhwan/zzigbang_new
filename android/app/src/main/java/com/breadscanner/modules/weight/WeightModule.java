@@ -87,14 +87,17 @@ public class WeightModule extends ReactContextBaseJavaModule {
                 int len = port.read(buffer, 90);
                 if (len > 0) {
                     String response = new String(buffer, 0, len, StandardCharsets.UTF_8);
-                    Log.d("WeightModule", "Weight response: " + response);
+                    Common common = new Common();
+                    //Log.d("WeightModule", "==========================================================");
+                    //Log.d("WeightModule", "Weight response: " + (response));
+                    //Log.d("WeightModule", "Weight response: " + common.parseValue(response));
 
                     if (mJSModule == null) {
                         mJSModule = mContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class);
                     }
 
                     WritableMap params = new WritableNativeMap();
-                    params.putString("weight", response);
+                    params.putString("weight", common.parseValue(response)+"");
                     mJSModule.emit("onWeightChanged", params);
                 }
 

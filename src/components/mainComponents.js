@@ -476,34 +476,17 @@ export const ScannListItem = (props) =>{
     newStr.substring(-1,newStr.length-1);
     return(
         <>
-        <CartItemView>
-            {isImageUse &&
-               <CartItemImage source={{uri:item[0]?.gimg_chg}} resizeMode={FastImage.resizeMode.cover}  />
-            }
+        <View style={{flexDirection:'row'}} >
             <CartItemTextView>
                 <CartItemTitleText>{menuName(item[0], selectedLanguage)}</CartItemTitleText>
-                {newStr!="" &&
-                    <CartItemOptionText>{newStr}</CartItemOptionText>
-                }
             </CartItemTextView>
             <CartItemAmtWrapper>
-                <CartItemAmtBorderWrapper>
                     <CartItemAmtText textColor={colorBlack} >X {data.amt}</CartItemAmtText>
-                </CartItemAmtBorderWrapper>
             </CartItemAmtWrapper>
             <CartItemPriceWrapper>
                 <CartItemPriceText>{numberWithCommas(Number(data.amt)*(Number(item[0].sal_tot_amt)+Number(optTotal)))} {strings["원"][`${selectedLanguage}`]}</CartItemPriceText>
             </CartItemPriceWrapper>
-            {!props.isScan &&
-                <CartItemCancelWrapper>
-                    {isCancelUse &&
-                        <TouchableWithoutFeedback onPress={()=>{props.onCancelPress();}}>
-                            <CartItemCancelImage source={require("../resources/imgs/drawable-xxxhdpi/bt_delect.png")} resizeMode={"contain"} />
-                        </TouchableWithoutFeedback>
-                    }
-                </CartItemCancelWrapper>
-            }
-        </CartItemView>
+        </View>
         
         </>
     )
