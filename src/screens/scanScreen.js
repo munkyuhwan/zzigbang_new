@@ -271,20 +271,20 @@ const ScanScreen = () => {
     }
     
     async function startScan(type,index=null) {
-        //Weight.closeSerialConnection();
-        //console.log("scan");
         
-        //clearWeightInterval();
-        /* if(typeof(currentWeight)!="number") {
-            setScanning(false);
-            EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"스캔오류", str:"무게를 확인할 수 없습니다."});
-            return;
-        }
-        if(currentWeight=="NaN") {
-            setScanning(false);
-            EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"스캔오류", str:"무게를 확인할 수 없습니다."});
-            return;
-        }  */
+        const sound = new Sound("shutter.wav", null, (error) => {
+            if (error) {
+                console.log('오디오 로드 실패', error);
+                return;
+            }
+            sound.play((success) => {
+                if (success) {
+                    console.log('재생 성공');
+                } else {
+                    console.log('재생 실패');
+                }
+            });
+        });
   
         //var breadStoreID = "test";
         setImgURL("");
