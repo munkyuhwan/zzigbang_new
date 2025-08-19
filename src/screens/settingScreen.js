@@ -282,6 +282,9 @@ const SettingScreen = (props) =>{
                         <Text style={{flex:1,fontSize:40,color:colorBlack, textAlign:'center'}} >설정</Text>
                         <Text style={{flex:1,fontSize:40,color:colorBlack}} ></Text>
                     </View>
+                    <View style={{flexDirection:'row', paddingLeft:30,paddingRight:30}}>
+                        <Text style={{flex:1,fontSize:20,color:colorBlack,textAlign:'center'}} >v1.0.3</Text>
+                    </View>
                     <SettingWrapper>
                         <SettingSectionWrapper>
                             <SettingSectionTitle>저울 사용 설정</SettingSectionTitle>

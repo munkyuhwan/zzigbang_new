@@ -41,7 +41,10 @@ import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 import java.text.DecimalFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
@@ -339,7 +342,7 @@ public class PrinterModule extends ReactContextBaseJavaModule {
         }else if(value < 100 && value >= 10 ) {
             return (ITEM_PRICE_POSITION+55);
         }else if(value < 1000 && value >= 100 ) {
-            return (ITEM_PRICE_POSITION+40);
+            return (ITEM_PRICE_POSITION+47);
         }else if(value < 10000 && value >= 1000) {
             return (ITEM_PRICE_POSITION+20);
         }else if(value < 100000 && value >= 10000) {
@@ -348,6 +351,28 @@ public class PrinterModule extends ReactContextBaseJavaModule {
             return (ITEM_PRICE_POSITION+10);
         }
     }
+    public static String formatBizNo(String input) {
+        // 숫자만 추출
+        String digits = input.replaceAll("\\D", "");
+        // 10자리면 하이픈 포맷 적용
+        if (digits.length() == 10) {
+            return digits.replaceFirst("^(\\d{3})(\\d{2})(\\d{5})$", "$1-$2-$3");
+        }
+        // 그 외 길이는 그대로 반환(또는 예외 처리)
+        return input;
+    }
+    public static String formatDateTime(String input) {
+        SimpleDateFormat inputFormat = new SimpleDateFormat("yyMMddHHmmss");
+        SimpleDateFormat outputFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        try {
+            Date date = inputFormat.parse(input);
+            return outputFormat.format(date);
+        } catch (ParseException e) {
+            e.printStackTrace();
+            return input; // 변환 실패 시 원본 반환
+        }
+    }
+
 
     @ReactMethod
     public void Sam4sStartPrint(String finalOrderData, String itemData,String payResultData, String businessData, String storeName, String orderNo) {
@@ -420,6 +445,7 @@ public class PrinterModule extends ReactContextBaseJavaModule {
                         //builder.addText(testString);
                         int COLUMN_POSITION = 150;
                         int BUSNISSINFO_POSITION = 180;
+                        builder.addTextLineSpace(70);
                         builder.addText("------------------------------------------\n");
 
                         builder.addTextBold(true);
@@ -449,26 +475,20 @@ public class PrinterModule extends ReactContextBaseJavaModule {
 
                         builder.addText(":");
                         builder.addTextPosition(BUSNISSINFO_POSITION);
-                        builder.addText(bData.getString("BsnNo")+"\n");
+                        builder.addText(formatBizNo(bData.getString("BsnNo"))+"\n");
 
                         builder.addText("날짜");
                         builder.addTextPosition(COLUMN_POSITION);
                         builder.addText(":");
                         builder.addTextPosition(BUSNISSINFO_POSITION);
-                        builder.addText(payData.getString("TrdDate")+"\n");
-
-                        builder.addText("승인번호");
-                        builder.addTextPosition(COLUMN_POSITION);
-                        builder.addText(":");
-                        builder.addTextPosition(BUSNISSINFO_POSITION);
-                        builder.addText(payData.getString("AuNo")+"\n");
-
+                        builder.addText(formatDateTime(payData.getString("TrdDate"))+"\n");
 
 
 
 
                         ///  결제 내역 영역
-
+                        builder.addTextLineSpace(40);
+                        builder.addText("------------------------------------------\n");
                         builder.addTextPosition(ITEM_NAME_POSITION);
                         builder.addText("\n품명");
                         builder.addTextPosition(ITEM_AMT_COLUMN_TITLE_POSITION);
@@ -476,7 +496,7 @@ public class PrinterModule extends ReactContextBaseJavaModule {
                         builder.addTextPosition(ITEM_PRICE_POSITION);
                         builder.addText("금액\n");
                         builder.addText("------------------------------------------\n");
-
+                        builder.addTextLineSpace(80);
                         Log.d("SAM4S", "finalData: "+finalData );
                         Log.d("SAM4S", "ITEM_INFO: "+finalData.getJSONArray("ITEM_INFO") );
                         JSONArray itemInfo = finalData.getJSONArray("ITEM_INFO");
@@ -514,15 +534,18 @@ public class PrinterModule extends ReactContextBaseJavaModule {
 
                             }
                         }
+                        builder.addTextLineSpace(40);
 
                         builder.addText("------------------------------------------\n");
                         builder.addTextSize(1, 2);
                         builder.addTextBold(true);
+                        builder.addTextLineSpace(100);
                         builder.addTextPosition(ITEM_NAME_POSITION);
                         builder.addText("소  계");
                         builder.addTextPosition(getAlign(Integer.parseInt(payData.getString("TrdAmt"))+Integer.parseInt(payData.getString("TaxAmt"))) );
                         builder.addText(df.format(Integer.parseInt(payData.getString("TrdAmt"))+Integer.parseInt(payData.getString("TaxAmt"))) +"\n");
 
+                        builder.addTextLineSpace(70);
                         builder.addTextSize(1, 1);
                         builder.addTextPosition(ITEM_NAME_POSITION);
                         builder.addText("순 매 출");
@@ -537,6 +560,7 @@ public class PrinterModule extends ReactContextBaseJavaModule {
                         builder.addTextPosition(getAlign(Integer.parseInt(payData.getString("TaxAmt"))) );
                         builder.addText(df.format(Integer.parseInt(payData.getString("TaxAmt"))) +"\n");
 
+                        builder.addTextLineSpace(100);
                         builder.addTextSize(1, 2);
                         builder.addTextPosition(ITEM_NAME_POSITION);
                         builder.addText("매출합계");
@@ -555,7 +579,8 @@ public class PrinterModule extends ReactContextBaseJavaModule {
                         int PAY_INFO_POSITION = 180;
                         builder.addText("------------------------------------------\n");
 
-                        // 카드번호
+                        // 카드정보
+                        builder.addTextLineSpace(80);
                         builder.addTextAlign(Sam4sBuilder.ALIGN_LEFT);
 
                         builder.addText("[카 드 번 호]");

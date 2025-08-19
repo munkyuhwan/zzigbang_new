@@ -48,12 +48,24 @@ export const PhonePopup = () => {
         if(phoneNumber.length<8) {
             EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"알림", str:"정확한 휴대폰번호를 입력 해 주세요."});
         }else {
-            adminDataPost(adminPostData.result,adminPostData.orderFinalData,adminPostData.items,`010${phoneNumber}`).catch(err=>{return err});
+            adminDataPost(adminPostData.result, adminPostData.orderFinalData ,adminPostData.items, `010${phoneNumber}`).catch(err=>{return err});
             dispatch(setPhoneNumber(""));
             setPhoneNumberState("");
             onClose(); // 팝업 닫기
-            
-            dispatch(dispatchShowAlert({title:"영수증", msg:"영수증을 출력하시겠습니까?", okFunction:()=>{ printReceipt(orderList, breadOrderList, items, payResultData); dispatch(initOrderList()); /* dispatch(setFullPopup({isShow:true,fullPopupText:strings["주문완료"][`${selectedLanguage}`]})); */dispatch(setCommon({isAddShow:true})); }, cancelFunction:()=>{dispatch(initOrderList());/* dispatch(setFullPopup({isShow:true,fullPopupText:strings["주문완료"][`${selectedLanguage}`]})); */dispatch(setCommon({isAddShow:true})); } } )); 
+
+            dispatch(dispatchShowAlert({title:"영수증", msg:"영수증을 출력하시겠습니까?", 
+            okFunction:()=>{ 
+              printReceipt(orderList, breadOrderList, items, payResultData); 
+              dispatch(initOrderList()); 
+              dispatch(setCommon({isAddShow:true})); 
+              /* dispatch(setFullPopup({isShow:true,fullPopupText:strings["주문완료"][`${selectedLanguage}`]})); */
+            }, 
+            cancelFunction:()=>{
+              dispatch(initOrderList());
+              dispatch(setCommon({isAddShow:true}));
+              /* dispatch(setFullPopup({isShow:true,fullPopupText:strings["주문완료"][`${selectedLanguage}`]})); */
+             } 
+            })); 
         }
     };
     if(isPhonePopup == false) {

@@ -874,7 +874,7 @@ export async function printReceipt(orderList, breadOrderList, items, payResultDa
     const {Printer} = NativeModules; 
     var kocessAppPay = new KocesAppPay();
     //const storeDownload = await kocessAppPay.storeDownload();
-    const businessData = storage.getString("STORE INFO");
+    const businessData = storage.getString("STORE_INFO");
     const adminStoreName = storage.getString("STORE_NAME");
     const finalOrderData = trimReceiptData([...orderList,...breadOrderList], items);
 
