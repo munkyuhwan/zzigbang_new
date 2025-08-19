@@ -447,6 +447,7 @@ export const CartListItem = (props) =>{
     const options = data.option;
     var optTotal = 0;
     const opacity = useRef(new Animated.Value(0)).current;
+    const heightAnim = useRef(new Animated.Value(0)).current; // 초기값: 0
 
     if(options.length>0) {
         for(var j=0;j<options.length;j++) {
@@ -485,8 +486,22 @@ export const CartListItem = (props) =>{
                 useNativeDriver: true,
             }),
             ]).start();
+            Animated.sequence([
+                Animated.timing(heightAnim, {
+                  toValue: 95, // 높이 커짐
+                  duration: 100,
+                  useNativeDriver: true,
+                }),
+                Animated.delay(150), // 1초 유지
+                Animated.timing(heightAnim, {
+                  toValue: 0, // 다시 줄어듦
+                  duration: 350,
+                  useNativeDriver: true,
+                }),
+            ]).start();
         }
     }, [props?.lastAdded]);
+
     
     newStr.substring(-1,newStr.length-1);
     return(
@@ -498,7 +513,7 @@ export const CartListItem = (props) =>{
             <CartItemView>
                 
                 {isImageUse &&
-                <CartItemImage source={{uri:item[0]?.gimg_chg}} resizeMode={FastImage.resizeMode.cover}  />
+                    <CartItemImage source={{uri:item[0]?.gimg_chg}} resizeMode={FastImage.resizeMode.cover}  />
                 }
                 <CartItemTextView>
                     <CartItemTitleText>{menuName(item[0], selectedLanguage)}</CartItemTitleText>
@@ -517,7 +532,7 @@ export const CartListItem = (props) =>{
                 {!props.isScan &&
                     <CartItemCancelWrapper>
                         {isCancelUse &&
-                            <TouchableWithoutFeedback onPress={()=>{props.onCancelPress();}}>
+                            <TouchableWithoutFeedback onPress={()=>{ props.onCancelPress();}}>
                                 <CartItemCancelImage source={require("../resources/imgs/drawable-xxxhdpi/bt_delect.png")} resizeMode={"contain"} />
                             </TouchableWithoutFeedback>
                         }
@@ -526,7 +541,7 @@ export const CartListItem = (props) =>{
                 
             </CartItemView>
             {
-                <Animated.View style={{height:95,position:'absolute', backgroundColor:'rgba(210,27,25,0.5)',borderRadius:10, width:'100%',opacity}} />
+                <Animated.View style={{height:heightAnim,position:'absolute', backgroundColor:'rgba(210,27,25,0.5)',borderRadius:10, width:'100%',opacity}} />
             }  
         </View>
 
