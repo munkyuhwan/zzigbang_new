@@ -209,7 +209,7 @@ const ScanScreen = () => {
         clearInterval(timeoutSet);
         timeoutSet=null;
     }
-
+    
     useEffect(()=>{
         if(tmpBreadList.length>0) {
             setTotalBreadList(trimBreadList(tmpBreadList));
@@ -238,6 +238,11 @@ const ScanScreen = () => {
 
         }
     },[isMainShow])
+    useEffect(()=>{
+        if(currentWeight<=0 && !isMainShow ) {
+            setImgURL(``)
+        }
+    },[currentWeight,isMainShow ])
 
     function addToTmpList(addData,type,index) {
         var toSet = Object.assign([],tmpBreadList);
@@ -512,7 +517,7 @@ const ScanScreen = () => {
                         flashMode='off'
                         focusMode='off'
                         zoomMode='off'
-                        shutterPhotoSound={true}
+                        shutterPhotoSound={false}
                         resizeMode='contain'
                         onError={(err)=>{
                             console.log("err: ",err);
@@ -569,7 +574,19 @@ const ScanScreen = () => {
                     <TouchableWithoutFeedback 
                         onPress={()=>{ 
                             startTime = performance.now();
-
+                            const sound = new Sound("shutter.wav", null, (error) => {
+                                if (error) {
+                                    console.log('오디오 로드 실패', error);
+                                    return;
+                                }
+                                sound.play((success) => {
+                                    if (success) {
+                                        console.log('재생 성공');
+                                    } else {
+                                        console.log('재생 실패');
+                                    }
+                                });
+                            });
                             if(isScanning==false){ 
                                 setScanning(true);
                                 EventRegister.emit("showSpinner",{isSpinnerShow:true, msg:"스캔 중 입니다.", spinnerType:"",closeText:""})
@@ -577,20 +594,7 @@ const ScanScreen = () => {
                                 //setScanType(ADD);
                                 startScan(ADD);
                                 
-                                /* const sound = new Sound('z004.wav', Sound.MAIN_BUNDLE, (error) => {
-                                    if (error) {
-                                        console.log('오디오 로드 실패', error);
-                                        return;
-                                    }
-                                    sound.play((success) => {
-                                        if (success) {
-                                            console.log('재생 성공');
-                                        } else {
-                                            console.log('재생 실패');
-                                        }
-                                    });
-                                    // 재생                            
-                                }); */
+                                
                             }
 
                         }} 

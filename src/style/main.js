@@ -253,7 +253,7 @@ export const CartItemView = styled.View`
     justifyContents:center;
 `
 export const CartItemImage = styled(FastImage)`
-    width:130px;
+    width:120px;
     height:100%;
     backgroundColor:${colorTransparent};
     borderTopLeftRadius:8px;
@@ -264,7 +264,7 @@ export const CartItemImage = styled(FastImage)`
 `
 // 장바구니 아이템 텍스트   
 export const CartItemTextView = styled.View`
-    flex:1;
+    flex:1.2;
     flexDirection:column;
     justifyContent:center;
     paddingLeft:10px;
@@ -302,6 +302,7 @@ export const CartItemPriceWrapper = styled.View`
     flexDirection:row;
     justifyContent:flex-end;
     paddingLeft:10px;
+    paddingRight:5px;
     margin:auto;
 `
 export const CartItemPriceText = styled.Text`
