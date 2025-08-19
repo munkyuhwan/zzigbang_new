@@ -574,7 +574,7 @@ const ScanScreen = () => {
                     <TouchableWithoutFeedback 
                         onPress={()=>{ 
                             startTime = performance.now();
-                            const sound = new Sound("shutter.wav", null, (error) => {
+                            /* const sound = new Sound("shutter.wav", null, (error) => {
                                 if (error) {
                                     console.log('오디오 로드 실패', error);
                                     return;
@@ -586,7 +586,7 @@ const ScanScreen = () => {
                                         console.log('재생 실패');
                                     }
                                 });
-                            });
+                            }); */
                             if(isScanning==false){ 
                                 setScanning(true);
                                 EventRegister.emit("showSpinner",{isSpinnerShow:true, msg:"스캔 중 입니다.", spinnerType:"",closeText:""})
