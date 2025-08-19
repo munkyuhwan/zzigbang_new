@@ -245,11 +245,12 @@ const MainScreen = (props) =>{
         //dispatch(setSelectedItems());
         setTimeout(() => {
             const targetY = itemLayouts.current[`${catId}`];
+            console.log("targetY: ",targetY)
             if (targetY !== undefined && cartListRef.current) {
                 cartListRef.current.scrollTo({ y: targetY, animated: false });
                 setLastAdded(catId);
             }    
-        }, 200);
+        }, 500);
         
     }
     function onListLayout(el){
