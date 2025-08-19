@@ -66,10 +66,12 @@ public class WeightModule extends ReactContextBaseJavaModule {
         }
 
         try {
-            port.open(connection);
-            isReading = true;
-            new Thread(this::readWeightLoop).start();
-            Log.d("WeightModule", "Connection opened and reading started.");
+            if(port != null) {
+                port.open(connection);
+                isReading = true;
+                new Thread(this::readWeightLoop).start();
+                Log.d("WeightModule", "Connection opened and reading started.");
+            }
         } catch (IOException e) {
             Log.e("WeightModule", "Error opening port: " + e.getMessage());
         }

@@ -451,10 +451,22 @@ export const commonSlice = createSlice({
                 ko:"실제무게",    
             },
             "스캔하기버튼안내":{
-                en:"스캔하기버튼안내",
-                jp:"스캔하기버튼안내",
-                cn:"스캔하기버튼안내",
-                ko:"스캔하기버튼안내",    
+                en:"Please touch to scan the bread.",
+                jp:"パンをスキャンする",
+                cn:"パンをスキャンするためにタッチしてください。",
+                ko:"터치해서 빵을\n스캔 해 주세요.",  
+            },
+            "스캔완료안내":{
+                en:"Please touch when finished.",
+                jp:"完了したら画面をタッチしてください。",
+                cn:"完成后请触摸。",
+                ko:"완료시 터치\n해 주세요.",  
+            },
+            "쟁반추가안내":{
+                en:"Please touch for additional scanning.",
+                jp:"追加でスキャンする場合はタッチしてください。",
+                cn:"需要追加扫描时请触摸。",
+                ko:"추가 스캔시 터치\n해 주세요.",  
             },
                 
         }

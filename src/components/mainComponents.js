@@ -417,8 +417,6 @@ export const CartList = (props) =>{
             </View>
         )
     }
-    console.log();
-    console.log("=======================================================================");
     return(
         <View style={isMargin?{marginTop:20}:{}} >
 
@@ -477,13 +475,13 @@ export const CartListItem = (props) =>{
             Animated.sequence([
             Animated.timing(opacity, {
                 toValue: 1,
-                duration: 500, // 0.5초 동안 페이드인
+                duration: 300, // 0.5초 동안 페이드인
                 useNativeDriver: true,
             }),
             Animated.delay(100), // 1초 유지
             Animated.timing(opacity, {
                 toValue: 0,
-                duration: 500, // 0.5초 동안 페이드아웃
+                duration: 300, // 0.5초 동안 페이드아웃
                 useNativeDriver: true,
             }),
             ]).start();

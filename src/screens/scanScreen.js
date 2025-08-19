@@ -50,6 +50,8 @@ const ScanScreen = () => {
     const [isScanning, setScanning] = useState(false);
     const cameraOpacity = useRef(new Animated.Value(1)).current;
     const imageOpacity = useRef(new Animated.Value(0)).current;
+    const scanBtnOpacity = useRef(new Animated.Value(1)).current; // 초기값: 보임
+
     const { getCameraPermissionStatus, requestPermission } = useCameraPermission()
 
     useEffect(()=>{
@@ -140,7 +142,7 @@ const ScanScreen = () => {
                     }),
                     Animated.timing(opacity, {
                     toValue: 1,
-                    duration: 500,
+                    duration: 1000,
                     useNativeDriver: true,
                     }),
                     Animated.timing(colorAnim, {
@@ -157,6 +159,35 @@ const ScanScreen = () => {
             ).start();
         }
     }, [tmpBreadList, rescanIndex]);
+
+    useEffect(() => {
+        // 무한 반복 애니메이션
+        //if(currentWeight>0 && !isMainShow  && tmpBreadList.length<=0 ){
+            Animated.loop(
+                Animated.sequence([
+                    Animated.timing(opacity, {
+                    toValue: 0,   // 투명하게
+                    duration: 1000,
+                    useNativeDriver: true,
+                    delay:1500,
+                    }),
+                    Animated.timing(opacity, {
+                    toValue: 1,   // 다시 보이게
+                    duration: 1000,
+                    useNativeDriver: true,
+                    delay:1000,
+                    }),
+                ])
+            ).start();
+        //}
+      }, [currentWeight,isMainShow, tmpBreadList]);
+
+  
+    useFocusEffect(
+        useCallback(()=>{
+            console.log("use callback")
+        },[])
+    )
 
     useEffect(()=>{
         setStoreID(storage.getString("BREAD_STORE_ID"));
@@ -199,9 +230,9 @@ const ScanScreen = () => {
     },[totalBreadList])
     useEffect(()=>{
         if(isMainShow==false) {
-            if(storage.getBoolean("WEIGHT_SET")) {
+            //if(storage.getBoolean("WEIGHT_SET")) {
                 initScanScreen();
-            }
+            //}
         }else {
             DeviceEventEmitter.removeAllListeners("onWeightChanged"); 
 
@@ -400,7 +431,6 @@ const ScanScreen = () => {
     }
 
     function selectPlate(index) {
-        console.log("index: ",index," recanIndex: ",rescanIndex);
         if(index == rescanIndex) {
             setRescanIndex();
         }else {
@@ -461,7 +491,7 @@ const ScanScreen = () => {
     return(
         <>
         {/* 안내 UI */}
-        {(currentWeight<=0 && !isMainShow && (storage.getBoolean("WEIGHT_SET")) )&&
+        {(currentWeight<=0 && !isMainShow )&&
             <View style={{width:'100%' ,height:'100%',position:'absolute',zIndex:999999999,justifyContent:'center'}}>
                 <View style={{width:'100%',height:'100%', position:'absolute',backgroundColor:'rgba(0,0,0,0.2)'}} ></View>
                 <Text style={{fontSize:240, fontWeight:'900',color:'white', textAlign:'center'}} >{strings["쟁반을 올려주세요."][`${selectedLanguage}`]}</Text>
@@ -521,7 +551,18 @@ const ScanScreen = () => {
                     <TouchableWithoutFeedback onPress={()=>{if(isScanning==false){ setMainShow(true); dispatch(setCommon({isAddShow:false})); dispatch(setMenu({breadOrderList:totalBreadList})); initCamera(); setTmpBreadList([]);setTotalBreadList([]); clearWeightInterval(); DeviceEventEmitter.removeAllListeners("onWeightChanged"); }}} >
                         <SquareButtonView backgroundColor={colorDarkGrey} >
                             <ButtonText>{strings["키오스크\n바로주문"][`${selectedLanguage}`]}</ButtonText>
+                            {(currentWeight>0 && !isMainShow  && tmpBreadList.length>0 )&&
+                                <View style={{position:'absolute',width:'100%',height:'100%', justifyContent:"center"}} >
+                                    <Animated.View style={{ opacity, position:'absolute',justifyContent:"center", backgroundColor:"rgba(255,255,255,0.4)",width:'100%',height:'100%' }}>
+                                        <Text style={{color:colorBlack, textAlign:'center', fontSize:36, fontWeight:800}}>
+                                            {strings["스캔완료안내"][`${selectedLanguage}`]}
+                                        </Text>
+                                    </Animated.View>
+                                    
+                                </View>
+                            }
                         </SquareButtonView>
+                        
                     </TouchableWithoutFeedback>
                 </View>
                 <View style={{position:'absolute', zIndex:9999999, right:250, bottom:35,}}>
@@ -558,15 +599,31 @@ const ScanScreen = () => {
                             {tmpBreadList.length>0 &&rescanIndex==null &&
                                 <ButtonText>{strings["쟁반추가"][`${selectedLanguage}`]}</ButtonText>
                             }
-                            {/*(tmpBreadList.length>0 &&rescanIndex!=null) &&
-                                <>
-                                    <BlinkingView style={{opacity}}/>
-                                    <ButtonText style={{margin:'auto'}} >{strings["다시스캔"][`${selectedLanguage}`]}</ButtonText>
-                                </>
-                            */}
+                           {(currentWeight>0 && !isMainShow  && tmpBreadList.length>0 )&&
+                                <View style={{position:'absolute',width:'100%',height:'100%', justifyContent:"center"}} >
+                                    <Animated.View style={{ opacity, position:'absolute',justifyContent:"center", backgroundColor:"rgba(255,255,255,0.4)",width:'100%',height:'100%' }}>
+                                        <Text style={{color:colorBlack, textAlign:'center', fontSize:32, fontWeight:800}}>
+                                            {strings["쟁반추가안내"][`${selectedLanguage}`]}
+                                        </Text>
+                                    </Animated.View>
+                                </View>
+                            }
+                            <View style={{ width:'100%',height:'100%',position:'absolute', justifyContent:"center"}} >
                             {tmpBreadList.length<=0 &&
                                 <ButtonText>{strings["스캔하기"][`${selectedLanguage}`]}</ButtonText>
                             }
+                            {(currentWeight>0 && !isMainShow  && tmpBreadList.length<=0 )&&
+                                <View style={{position:'absolute',width:'100%',height:'100%', justifyContent:"center"}} >
+                                    <Animated.View style={{ opacity, position:'absolute',justifyContent:"center", backgroundColor:"rgba(255,255,255,0.8)",width:'100%',height:'100%' }}>
+                                        <Text style={{color:colorBlack, textAlign:'center', fontSize:34, fontWeight:800}}>
+                                            {strings["스캔하기버튼안내"][`${selectedLanguage}`]}
+                                        </Text>
+                                    </Animated.View>
+                                    
+                                </View>
+                            }
+                            </View>
+                            
                         </SquareButtonView>
                     </TouchableWithoutFeedback>
                 </View>

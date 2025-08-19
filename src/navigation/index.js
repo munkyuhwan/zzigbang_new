@@ -22,6 +22,7 @@ import { PhonePopup } from '../components/phonePopup';
 import { storage } from '../utils/localStorage';
 import { FullAutoClosePopup } from '../components/fullAutoclosePopup';
 import { KocesAppPay } from '../utils/kocess';
+import { setAlert } from '../store/alert';
 
 const Stack = createStackNavigator()
 var statusInterval;
@@ -69,13 +70,27 @@ export default function Navigation() {
             }
         })
         EventRegister.addEventListener("showAlert",(data)=>{     
-            Alert.alert(
+            /* Alert.alert(
                 data?.title,
                 data?.str,
                 [{
                     text:'확인',
                 }]
-            )
+            ) */
+            dispatch(setAlert(
+                {
+                    title:"테스트",
+                    msg:data?.title,
+                    subMsg:data?.str,
+                    okText:'닫기',
+                    cancelText:'',
+                    isCancle:false,
+                    isOK:true,
+                    icon:"",   
+                    isAlertOpen:true,
+                    clickType:"",
+                }
+            ));
         })
         EventRegister.addEventListener("goBack",(data)=>{   
             if(navigate.current) {
