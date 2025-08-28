@@ -269,6 +269,12 @@ export const CartItemTextView = styled.View`
     justifyContent:center;
     paddingLeft:10px;
 `
+export const BreadItemTextView = styled.View`
+    flex:1.8;
+    flexDirection:column;
+    justifyContent:center;
+    paddingLeft:10px;
+`
 export const CartItemTitleText = styled.Text`
     color:${colorGreen};
     fontSize:20px;

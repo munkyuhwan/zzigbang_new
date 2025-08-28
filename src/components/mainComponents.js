@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from "react";
-import { ArrowImg, ArrowWrapper, CartItemAmtBorderWrapper, CartItemAmtText, CartItemAmtWrapper, CartItemCancelImage, CartItemCancelWrapper, CartItemImage, CartItemOptionText, CartItemPriceText, CartItemPriceWrapper, CartItemTextView, CartItemTitleText, CartItemView, CategoryItem, CategoryListWrapper, CategoryText, CategoryWrapper, ItemGroupWrapper, ItemImage, ItemInnerWrapper, ItemPrice, ItemTextWrapper, ItemTitle, ItemWrapper, LanguageWrapper, MainMenuHeaderDateTime, MainMenuHeaderLanguage, MainMenuHeaderLanguageWrapper, MainMenuHeaderLogo, MainMenuHeaderSectionWrapper, MainMenuHeaderWrapper, MenuCategoryTitle, MenuCategoryTitleWrapper, MenuItemListWrapper, MenuListItemImage, MenuListItemTitle, MenuListItemWrapper, NewCategoryItem } from "../style/main"
+import { useCallback, useEffect, useRef, useState } from "react";
+import { ArrowImg, ArrowWrapper, BreadItemTextView, CartItemAmtBorderWrapper, CartItemAmtText, CartItemAmtWrapper, CartItemCancelImage, CartItemCancelWrapper, CartItemImage, CartItemOptionText, CartItemPriceText, CartItemPriceWrapper, CartItemTextView, CartItemTitleText, CartItemView, CategoryItem, CategoryListWrapper, CategoryText, CategoryWrapper, ItemGroupWrapper, ItemImage, ItemInnerWrapper, ItemPrice, ItemTextWrapper, ItemTitle, ItemWrapper, LanguageWrapper, MainMenuHeaderDateTime, MainMenuHeaderLanguage, MainMenuHeaderLanguageWrapper, MainMenuHeaderLogo, MainMenuHeaderSectionWrapper, MainMenuHeaderWrapper, MenuCategoryTitle, MenuCategoryTitleWrapper, MenuItemListWrapper, MenuListItemImage, MenuListItemTitle, MenuListItemWrapper, NewCategoryItem } from "../style/main"
 import moment, { lang } from "moment";
 import { Animated, Pressable, ScrollView, SectionList, Text, TouchableWithoutFeedback, View } from "react-native";
 import FastImage from "react-native-fast-image";
@@ -7,7 +7,7 @@ import { categoryName, menuCatName, menuName, numberWithCommas, paginateArray } 
 import {isEmpty} from 'lodash';
 import { useDispatch, useSelector } from "react-redux";
 import { colorBlack, colorDarkGrey, colorRed } from "../resources/colors";
-import { useNavigation } from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { setCommon } from "../store/common";
 import { LAN_CN, LAN_EN, LAN_JP, LAN_KO } from "../resources/values";
 import SettingScreen from "../screens/settingScreen";
@@ -425,7 +425,7 @@ export const CartList = (props) =>{
                     orderList.map((el,index)=>{
                         return(
                             <>
-                                <CartListItem lastAdded={props.lastAdded} onLayout={(pr)=>{ props.onLayout({item:el.prodCD,layout:pr})}} isScan={false} isImageUse={isImageUse} data={el} isCancelUse={isCancelUse} onCancelPress={()=>{props.onCancelPress(index)}}  />
+                                <CartListItem lastAdded={props.lastAdded} trigger={props.trigger} onLayout={(pr)=>{ props.onLayout({item:el.prodCD,layout:pr})}} isScan={false} isImageUse={isImageUse} data={el} isCancelUse={isCancelUse} onCancelPress={()=>{props.onCancelPress(index)}}  />
                             </>
                         )
                     })
@@ -500,7 +500,7 @@ export const CartListItem = (props) =>{
                 }),
             ]).start();
         }
-    }, [props?.lastAdded]);
+    }, [props?.lastAdded,props?.trigger]);
 
     
     newStr.substring(-1,newStr.length-1);
@@ -583,9 +583,9 @@ export const ScannListItem = (props) =>{
     return(
         <>
         <View style={{flexDirection:'row'}} >
-            <CartItemTextView>
+            <BreadItemTextView>
                 <CartItemTitleText>{menuName(item[0], selectedLanguage)}</CartItemTitleText>
-            </CartItemTextView>
+            </BreadItemTextView>
             <CartItemAmtWrapper>
                     <CartItemAmtText textColor={colorBlack} >X {data.amt}</CartItemAmtText>
             </CartItemAmtWrapper>

@@ -225,12 +225,12 @@ export const MenuMetaDetailPopup = (props) => {
                                 </ItemViewSelectedOptionBorder>
                             </ItemViewSelectedOption>
                             <ItemViewSelectedCountView>
-                                <TouchableWithoutFeedback onPress={()=>{setAmt(Number(amt)+1)}} >
-                                    <ItemViewSelectedCountBtn source={require('../../resources/imgs/drawable-xxxhdpi/bt_add_off_1.png')} resizeMode="contain" />
-                                </TouchableWithoutFeedback>
-                                    <ItemAmtText>{amt}</ItemAmtText>
                                 <TouchableWithoutFeedback onPress={()=>{ if(amt>1){ setAmt(Number(amt)-1)}} } >
                                     <ItemViewSelectedCountBtn source={require('../../resources/imgs/drawable-xxxhdpi/bt_sub_off_1.png')} resizeMode="contain" />
+                                </TouchableWithoutFeedback>
+                                    <ItemAmtText>{amt}</ItemAmtText>
+                                <TouchableWithoutFeedback onPress={()=>{setAmt(Number(amt)+1)}} >
+                                    <ItemViewSelectedCountBtn source={require('../../resources/imgs/drawable-xxxhdpi/bt_add_off_1.png')} resizeMode="contain" />
                                 </TouchableWithoutFeedback>
                             </ItemViewSelectedCountView>
                         </ItemView>

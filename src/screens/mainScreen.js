@@ -43,6 +43,7 @@ const MainScreen = (props) =>{
     const MENU_SCROLL_INCREMENT = 400; // 스크롤 이동 거리
 
     const [lastAdded, setLastAdded] = useState("");
+    const [trigger, setTrigger] = useState(true);
 
     // 번역
     const {strings,selectedLanguage, isAddShow} = useSelector(state=>state.common);
@@ -245,10 +246,10 @@ const MainScreen = (props) =>{
         //dispatch(setSelectedItems());
         setTimeout(() => {
             const targetY = itemLayouts.current[`${catId}`];
-            console.log("targetY: ",targetY)
             if (targetY !== undefined && cartListRef.current) {
                 cartListRef.current.scrollTo({ y: targetY, animated: false });
                 setLastAdded(catId);
+                setTrigger(!trigger);
             }    
         }, 500);
         
@@ -314,6 +315,7 @@ const MainScreen = (props) =>{
                             <CartList
                                 onLayout={onListLayout}
                                 lastAdded={lastAdded}
+                                trigger={trigger}
                                 data={orderList}
                                 isCancelUse={true}
                                 isImageUse={true}

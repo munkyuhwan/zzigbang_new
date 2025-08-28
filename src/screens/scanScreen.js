@@ -498,7 +498,7 @@ const ScanScreen = () => {
         {/* 안내 UI */}
         {(currentWeight<=0 && !isMainShow )&&
             <View style={{width:'100%' ,height:'100%',position:'absolute',zIndex:999999999,justifyContent:'center'}}>
-                <View style={{width:'100%',height:'100%', position:'absolute',backgroundColor:'rgba(0,0,0,0.2)'}} ></View>
+                <View style={{width:'100%',height:'100%', position:'absolute',backgroundColor:'rgba(0,0,0,0.4)'}} ></View>
                 <Text style={{fontSize:240, fontWeight:'900',color:'white', textAlign:'center'}} >{strings["쟁반을 올려주세요."][`${selectedLanguage}`]}</Text>
             </View>
         }
@@ -550,13 +550,13 @@ const ScanScreen = () => {
             }
                 <View style={{position:'absolute', flexDirection:'column', backgroundColor:colorBlack, right:520, bottom:20,padding:6, zIndex:999999999}}>
                     <Text style={{fontSize:30,color:colorYellow}}>{strings["측정무게"][`${selectedLanguage}`]}: {currentWeight}g</Text>
-                    <Text style={{fontSize:30,color:colorYellow}}>{strings["실제무게"][`${selectedLanguage}`]}: {scannedWeight}g</Text>
+                    {/* <Text style={{fontSize:30,color:colorYellow}}>{strings["실제무게"][`${selectedLanguage}`]}: {scannedWeight}g</Text> */}
                 </View>
                 <View style={{position:'absolute', zIndex:9999999, right:0, bottom:35, right:10}}>
                     <TouchableWithoutFeedback onPress={()=>{if(isScanning==false){ setMainShow(true); dispatch(setCommon({isAddShow:false})); dispatch(setMenu({breadOrderList:totalBreadList})); initCamera(); setTmpBreadList([]);setTotalBreadList([]); clearWeightInterval(); DeviceEventEmitter.removeAllListeners("onWeightChanged"); }}} >
                         <SquareButtonView backgroundColor={colorDarkGrey} >
                             <ButtonText>{strings["키오스크\n바로주문"][`${selectedLanguage}`]}</ButtonText>
-                            {(currentWeight>0 && !isMainShow  && tmpBreadList.length>0 )&&
+                            {/* (currentWeight>0 && !isMainShow  && tmpBreadList.length>0 )&&
                                 <View style={{position:'absolute',width:'100%',height:'100%', justifyContent:"center"}} >
                                     <Animated.View style={{ opacity, position:'absolute',justifyContent:"center", backgroundColor:"rgba(255,255,255,0.4)",width:'100%',height:'100%' }}>
                                         <Text style={{color:colorBlack, textAlign:'center', fontSize:36, fontWeight:800}}>
@@ -565,7 +565,7 @@ const ScanScreen = () => {
                                     </Animated.View>
                                     
                                 </View>
-                            }
+                             */}
                         </SquareButtonView>
                         
                     </TouchableWithoutFeedback>
@@ -603,7 +603,7 @@ const ScanScreen = () => {
                             {tmpBreadList.length>0 &&rescanIndex==null &&
                                 <ButtonText>{strings["쟁반추가"][`${selectedLanguage}`]}</ButtonText>
                             }
-                           {(currentWeight>0 && !isMainShow  && tmpBreadList.length>0 )&&
+                            {/*(currentWeight>0 && !isMainShow  && tmpBreadList.length>0 )&&
                                 <View style={{position:'absolute',width:'100%',height:'100%', justifyContent:"center"}} >
                                     <Animated.View style={{ opacity, position:'absolute',justifyContent:"center", backgroundColor:"rgba(255,255,255,0.4)",width:'100%',height:'100%' }}>
                                         <Text style={{color:colorBlack, textAlign:'center', fontSize:32, fontWeight:800}}>
@@ -611,12 +611,12 @@ const ScanScreen = () => {
                                         </Text>
                                     </Animated.View>
                                 </View>
-                            }
+                            */}
                             <View style={{ width:'100%',height:'100%',position:'absolute', justifyContent:"center"}} >
                             {tmpBreadList.length<=0 &&
                                 <ButtonText>{strings["스캔하기"][`${selectedLanguage}`]}</ButtonText>
                             }
-                            {(currentWeight>0 && !isMainShow  && tmpBreadList.length<=0 )&&
+                            {/*(currentWeight>0 && !isMainShow  && tmpBreadList.length<=0 )&&
                                 <View style={{position:'absolute',width:'100%',height:'100%', justifyContent:"center"}} >
                                     <Animated.View style={{ opacity, position:'absolute',justifyContent:"center", backgroundColor:"rgba(255,255,255,0.8)",width:'100%',height:'100%' }}>
                                         <Text style={{color:colorBlack, textAlign:'center', fontSize:34, fontWeight:800}}>
@@ -625,7 +625,7 @@ const ScanScreen = () => {
                                     </Animated.View>
                                     
                                 </View>
-                            }
+                            */}
                             </View>
                             
                         </SquareButtonView>
