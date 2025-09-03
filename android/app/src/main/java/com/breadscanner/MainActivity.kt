@@ -34,6 +34,7 @@ class MainActivity : ReactActivity() {
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
+
         if(hasFocus) {
             window.decorView.systemUiVisibility= (
                     View.SYSTEM_UI_FLAG_LAYOUT_STABLE

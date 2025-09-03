@@ -73,6 +73,7 @@ public class PrinterModule extends ReactContextBaseJavaModule {
     int ITEM_AMT_POSITION = 320;
     int ITEM_AMT_COLUMN_TITLE_POSITION = 300;
     int ITEM_PRICE_POSITION = 420;
+    int ITEM_PRICE_TITLE_POSITION = 450;
 
     PrinterModule(ReactApplicationContext context) {
         super(context);
@@ -373,6 +374,11 @@ public class PrinterModule extends ReactContextBaseJavaModule {
         }
     }
 
+    public static String cutByLength(String text, int length) {
+        if (text == null) return null;
+        if (text.length() <= length) return text;
+        return text.substring(0, length);
+    }
 
     @ReactMethod
     public void Sam4sStartPrint(String finalOrderData, String itemData,String payResultData, String businessData, String storeName, String orderNo) {
@@ -467,8 +473,18 @@ public class PrinterModule extends ReactContextBaseJavaModule {
                         builder.addText("주 소");
                         builder.addTextPosition(COLUMN_POSITION);
                         builder.addText(":");
+                        builder.addTextRotate(90);
                         builder.addTextPosition(BUSNISSINFO_POSITION);
-                        builder.addText(bData.getString("ShpAdr")+"\n");
+                        String addressStr = bData.getString("ShpAdr");
+                        builder.addTextPosition(BUSNISSINFO_POSITION);
+                        builder.addText(addressStr+"\n");
+
+                        for (int i = 0; i < addressStr.length(); i += 18) {
+                            int end = Math.min(addressStr.length(), i + 18);
+                            builder.addTextPosition(BUSNISSINFO_POSITION);
+                            builder.addText(addressStr.substring(i, end)+"\n");
+                        }
+
 
                         builder.addText("사업자번호");
                         builder.addTextPosition(COLUMN_POSITION);
@@ -493,7 +509,7 @@ public class PrinterModule extends ReactContextBaseJavaModule {
                         builder.addText("\n품명");
                         builder.addTextPosition(ITEM_AMT_COLUMN_TITLE_POSITION);
                         builder.addText("수량");
-                        builder.addTextPosition(ITEM_PRICE_POSITION);
+                        builder.addTextPosition(ITEM_PRICE_TITLE_POSITION);
                         builder.addText("금액\n");
                         builder.addText("------------------------------------------\n");
                         builder.addTextLineSpace(80);

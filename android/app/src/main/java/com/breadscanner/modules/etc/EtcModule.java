@@ -1,0 +1,53 @@
+package com.breadscanner.modules.etc;
+
+import android.content.ActivityNotFoundException;
+import android.content.Context;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+
+import com.facebook.react.bridge.ReactApplicationContext;
+import com.facebook.react.bridge.ReactContextBaseJavaModule;
+import com.facebook.react.bridge.ReactMethod;
+
+public class EtcModule extends ReactContextBaseJavaModule {
+    private Context mContext = null;
+
+    EtcModule(ReactApplicationContext context) {
+        super(context);
+        mContext = context;
+    }
+
+    @NonNull
+    @Override
+    public String getName() {
+        return "Etc";
+    }
+
+    @ReactMethod
+    public void openManageIntent(String storeID, String storeName) {
+        //Intent intent = new Intent();
+        String packageName = "co.kr.wooripos.zzigbbang_manager";
+        PackageManager pm = mContext.getPackageManager();
+        Intent intent = pm.getLaunchIntentForPackage(packageName);
+
+        intent.putExtra("store_name", storeName);
+        intent.putExtra("store_id", storeID);
+        intent.setType("text/plain");
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        //intent.setPackage("co.kr.wooripos.zzigbbangmanager");
+        //intent.setPackage("co.kr.wooripos.zzigbbang_manager");
+
+        try {
+            getReactApplicationContext().startActivity(intent);
+        } catch (ActivityNotFoundException e) {
+            System.out.print("exception===============================================================");
+            e.printStackTrace();
+            Toast.makeText(getReactApplicationContext(), "앱이 설치되어 있지 않습니다.", Toast.LENGTH_SHORT).show();
+        }
+
+    }
+
+}

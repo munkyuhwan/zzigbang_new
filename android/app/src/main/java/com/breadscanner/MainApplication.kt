@@ -3,7 +3,10 @@ package com.breadscanner
 import android.app.Application
 import com.breadscanner.modules.bell.BellPackage
 import com.breadscanner.modules.camera.CameraPackage
+import com.breadscanner.modules.etc.EtcPackage
 import com.breadscanner.modules.koces.KocesPayPackage
+import com.breadscanner.modules.led.LedModule
+import com.breadscanner.modules.led.LedPackage
 import com.breadscanner.modules.printer.PrinterPackage
 import com.breadscanner.modules.smartro.SmartroPayPackage
 import com.breadscanner.modules.serial.SerialPackage
@@ -36,6 +39,8 @@ class MainApplication : Application(), ReactApplication {
                 add(ScalePackage())
                 add(BellPackage())
                 add(SerialPackage())
+                add(LedPackage())
+                add(EtcPackage())
             }
 
 

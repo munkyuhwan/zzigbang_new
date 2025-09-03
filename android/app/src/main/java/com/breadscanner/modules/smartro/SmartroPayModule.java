@@ -53,8 +53,10 @@ public class SmartroPayModule extends ReactContextBaseJavaModule {
     public String getName() {
         return "SmartroPay";
     }
+
     SmartroVCatInterface mSmartroVCatInterface = null; //This’s Interface-Constructor.
     ServiceConnection mServiceConnection = null;
+
 
     @ReactMethod
     public void smartroCancelService() {
@@ -64,6 +66,7 @@ public class SmartroPayModule extends ReactContextBaseJavaModule {
             throw new RuntimeException(e);
         }
     }
+
     @ReactMethod
     public void prepareSmartroPay (String jsonString, Callback errorCallback, Callback successCallback) {
         System.out.println("prepareSmartroPay module!!!: ");
@@ -91,7 +94,7 @@ public class SmartroPayModule extends ReactContextBaseJavaModule {
                             System.out.println("onServiceResult: "+strResultJSON);
                             sendEvent(getReactApplicationContext(), "onComplete", strResultJSON);
                             successCallback.invoke(strResultJSON);
-                            getCurrentActivity().unbindService(mServiceConnection);
+                            getReactApplicationContext().unbindService(mServiceConnection);
                             mSmartroVCatInterface=null;
                         }
                     });
@@ -111,10 +114,12 @@ public class SmartroPayModule extends ReactContextBaseJavaModule {
         //intentTemp.setPackage(SERVER_PACKAGE);
         Intent intentTemp = new Intent("smartro.vcat.action");
         intentTemp.setPackage("service.vcat.smartro.com.vcat"); //Putting user-application package name.
-        intentTemp.putExtra("package", getCurrentActivity().getPackageName());
-        System.out.println("getPackageName: "+getCurrentActivity().getPackageName());
 
-        if(getCurrentActivity().bindService(intentTemp, mServiceConnection, Context.BIND_AUTO_CREATE) == false)
+
+        intentTemp.putExtra("package", getReactApplicationContext().getPackageName());
+        System.out.println("getPackageName: "+getReactApplicationContext().getPackageName());
+
+        if(getReactApplicationContext().bindService(intentTemp, mServiceConnection, Context.BIND_AUTO_CREATE) == false)
         {
             Log.e("Smartro", "bindService Fail!!!");
         }else {
@@ -123,12 +128,14 @@ public class SmartroPayModule extends ReactContextBaseJavaModule {
 
 
     }
-
+    /*
     @ReactMethod
     public String returnResult () {
         System.out.println("prepareSmartroPay module returnResult!!!");
         return "what the...";
     }
+
+     */
 
     @Nullable
     @Override

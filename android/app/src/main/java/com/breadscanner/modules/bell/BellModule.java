@@ -76,13 +76,13 @@ public class BellModule extends ReactContextBaseJavaModule {
 
     @SuppressLint("UnspecifiedRegisterReceiverFlag")
     @ReactMethod
-    public void bellTest(String vendorId, String productId, String numberStr) {
+    public void bellTest(String bellLan,String bellCorner,String bellNumber,String vendorId, String productId, String numberStr) {
         System.out.println("BELL TEST=============================");
 
         usbManager = (UsbManager) mContext.getSystemService(Context.USB_SERVICE);
         mContext.registerReceiver(usbReceiver, new IntentFilter(ACTION_USB_PERMISSION));
 
-        findAndConnectUsbDevice(vendorId,productId,numberStr);
+        findAndConnectUsbDevice(bellLan,bellCorner,bellNumber, vendorId,productId);
 
 
 // LED1을 빨강으로 설정
@@ -92,13 +92,13 @@ public class BellModule extends ReactContextBaseJavaModule {
     }
     @SuppressLint("UnspecifiedRegisterReceiverFlag")
     @ReactMethod
-    public void bellCancel(String vendorId, String productId, String numberStr) {
+    public void bellCancel(String bellLan,String bellCorner,String bellNumber,String vendorId, String productId, String numberStr) {
         System.out.println("BELL TEST=============================");
 
         usbManager = (UsbManager) mContext.getSystemService(Context.USB_SERVICE);
         mContext.registerReceiver(usbReceiver, new IntentFilter(ACTION_USB_PERMISSION));
 
-        findAndConnectUsbDevice(vendorId,productId,numberStr);
+        findAndConnectUsbDevice(bellLan,bellCorner,bellNumber,vendorId,productId);
 
 
 // LED1을 빨강으로 설정
@@ -108,9 +108,7 @@ public class BellModule extends ReactContextBaseJavaModule {
     }
 
 
-    private void findAndConnectUsbDevice(String vendorId, String productId, String numberStr) {
-
-
+    private void findAndConnectUsbDevice(String bellLan,String bellCorner,String bellNumber,String vendorId, String productId) {
         if(serialPort != null) {
             try {
                 serialPort.close();
@@ -151,18 +149,19 @@ public class BellModule extends ReactContextBaseJavaModule {
             //usbManager.requestPermission(driver.getDevice(), permissionIntent);
         //} else {
             // 이미 권한 있음. 통신 시작 가능
-        connectToDevice(driver.getDevice(), numberStr);
+        connectToDevice(driver.getDevice(),bellLan,bellCorner,bellNumber);
 
         //}
     }
 
-    private void connectToDevice(UsbDevice device, String numberStr) {
+    private void connectToDevice(UsbDevice device, String bellLan,String bellCorner,String bellNumber) {
         System.out.println("connect to device ===================================================");
         List<UsbSerialDriver> drivers = UsbSerialProber.getDefaultProber().findAllDrivers(usbManager);
         for (UsbSerialDriver driver : drivers) {
             if (driver.getDevice().equals(device)) {
                 try {
                     serialPort = driver.getPorts().get(0);
+                    System.out.println("serialPort: "+driver.getPorts());
 
                     serialPort.open(usbManager.openDevice(driver.getDevice()));
                     serialPort.setParameters(9600, 8, UsbSerialPort.STOPBITS_1, UsbSerialPort.PARITY_NONE);
@@ -182,19 +181,7 @@ public class BellModule extends ReactContextBaseJavaModule {
                     });
                     new Thread(ioManager).start();
 
-
-                    byte[] command = new byte[] {
-                            0x01,                    // STX
-                            0x53, 0x35, 0x36, 0x37, 0x38, 0x03,  // 고객번호 1234
-                            0x41, 0x43,              // 코너 A, C
-                            0x61,                    // 언어 a (한국어)
-                            0x03                     // ETX
-                    };
-                    // 예: 상태 확인 명령 전송 (0x02, 0x00, 0x03)
-                    //sendCommand(command);
-                    //sendCommand(new byte[]{0x02, 0x00, 0x03});
-                    //sendCommand(new byte[]{0x53, 0x35, 0x36, 0x37, 0x38, 0x03});
-                    sendCustomerNumber(numberStr);
+                    sendCustomerNumber(bellLan,bellCorner, bellNumber);
 
                 } catch (IOException e) {
 
@@ -208,20 +195,44 @@ public class BellModule extends ReactContextBaseJavaModule {
 
     }
 
-    public void sendCustomerNumber(String customerNumber) {
+    public static byte toByteArray(String input) {
+        if (input == null || input.length() == 0) {
+            throw new IllegalArgumentException("입력값이 비어있습니다.");
+        }
+
+        // 한 글자인 경우 (예: "A")
+        if (input.length() == 1) {
+            return (byte) input.charAt(0);  // 'A' -> 0x41
+        }
+
+        // "0x41" 또는 "41" 같이 16진수 문자열인 경우
+        if (input.startsWith("0x") || input.startsWith("0X")) {
+            return (byte) Integer.parseInt(input.substring(2), 16);
+        } else {
+            return (byte) Integer.parseInt(input, 16);
+        }
+    }
+
+    public void sendCustomerNumber(String bellLan,String bellCorner,String bellNumber) {
         // 시작 바이트 (ASCII 'S' → 0x53)
-        byte stx = 0x53;
+        //byte stx = 0x53;
+        byte stx = 0x01;
+        byte lan = toByteArray(bellLan);
+        byte corner = toByteArray(bellCorner);
         // 종료 바이트 (ETX → 0x03)
         byte etx = 0x03;
 
         // 숫자 문자열을 바이트 배열로 변환 (예: "1234" → 0x31, 0x32, 0x33, 0x34)
 
-        byte[] numberBytes = customerNumber.getBytes(StandardCharsets.US_ASCII);
-
+        byte[] numberBytes = bellNumber.getBytes(StandardCharsets.US_ASCII);
+        System.out.println("numberBytes: "+numberBytes);
         // 전체 명령 배열 구성: S + 숫자들 + ETX
-        byte[] command = new byte[1 + numberBytes.length + 1];
+        byte[] command = new byte[1 + 1 + 1 + numberBytes.length + 1];
 
         command[0] = stx;
+        command[1] = lan;
+        command[2] = corner;
+
         System.arraycopy(numberBytes, 0, command, 1, numberBytes.length);
         command[command.length - 1] = etx;
 
@@ -233,7 +244,17 @@ public class BellModule extends ReactContextBaseJavaModule {
     private void sendCommand(byte[] command) {
         try {
             serialPort.write(command, 1000);
-            Log.d("USB", "보냄: " + bytesToHex(command));
+
+            boolean isCheck = true;
+            //while (isCheck) {
+                byte[] buffer = new byte[64];
+                int len = serialPort.read(buffer, 10000);
+                String response = new String(buffer, 0, len, StandardCharsets.UTF_8);
+                Log.d("USB", "보냄: " + bytesToHex(command));
+                System.out.println("response: "+response);
+            //    Thread.sleep(1000);
+            //}
+
         } catch (IOException e) {
             Log.e("USB", "쓰기 실패", e);
         }

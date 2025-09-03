@@ -14,7 +14,7 @@ import { ADMIN_API_BASE_URL, ADMIN_API_MENU_CHECK, ADMIN_API_MENU_UPDATE, ADMIN_
 import { EventRegister } from 'react-native-event-listeners';
 import axios from 'axios';
 import { setCommon } from '../store/common';
-import { apiRequest, callApiWithExceptionHandling, posApiRequest } from './apiRequest';
+import { VAN_KOCES, VAN_SMARTRO, apiRequest, callApiWithExceptionHandling, posApiRequest } from './apiRequest';
 import { LAN_CN, LAN_EN, LAN_JP } from '../resources/values';
 import Tts from 'react-native-tts';
 import { setAlert } from '../store/alert';
@@ -410,70 +410,133 @@ export async function adminDataPost(payData, orderData, allItems,phoneNumber) {
 
 }
 // 포스로 보내기
-export async function postOrderToPos(postData,orderData, PRINT_ORDER_NO) {
-    return new Promise(async(resolve, reject)=>{
-        var postOrderData = Object.assign({},orderData);
-        var cardNo = postData?.CardNo;
-        cardNo = cardNo.replace(/\*/gi,"");
-        cardNo = cardNo.replace(/-/gi,"");
-        var addOrderData = {
-            TOTAL_AMT:Number(postData?.TrdAmt)+Number(postData?.TaxAmt),
-            TOTAL_VAT:Number(postData?.TaxAmt),
-            TOTAL_DC:Number(postData?.SvcAmt),
-            ORDER_STATUS:"3",
-            CANCEL_YN:"N",
-            PREPAYMENT_YN:"N",
-            CUST_CARD_NO:`${postData?.CardNo}`,
-            CUST_NM:``,
-            PAYMENT_CNT:1,
-            PAYMENT_INFO:[{
-                PAY_SEQ:1,
-                PAY_KIND:"2",
-                PAY_AMT:Number(postData?.TrdAmt)+Number(postData?.TaxAmt),
-                PAY_VAT:Number(postData?.TaxAmt),
-                PAY_APV_NO:`${postData?.AuNo}`,
-                PAY_APV_DATE:`20${postData?.TrdDate?.substr(0,6)}`,
-                PAY_CARD_NO:`${cardNo}********`,
-                PAY_UPD_DT:`20${postData?.TrdDate}`,
-                PAY_CANCEL_YN:"N",
-                PAY_CARD_TYPE:`${postData?.InpNm}`,
-                PAY_CARD_MONTH:`${postData?.Month}`
-            }]
-        };
-        postOrderData = {...postOrderData,...addOrderData};
+export async function postOrderToPos(vanType, postData,orderData, PRINT_ORDER_NO) {
 
-        const POS_IP = getIP() ;
-        try {
-            console.log("postOrderData: ",postOrderData);
-            //const data = await callApiWithExceptionHandling(`${POS_BASE_URL(POS_IP)}`,postOrderData, {}); 
-            const data = await posApiRequest(`${POS_BASE_URL(POS_IP)}`,postOrderData);   
-            EventRegister.emit("showSpinner",{isSpinnerShow:false, msg:"", spinnerType:"",closeText:""});
-            if(data) {
-                if(data.ERROR_CD == "E0000") {
-                    //EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"주문", str:data?.ERROR_MSG});
-                    EventRegister.emit("showSpinner",{isSpinnerShow:false, msg:"", spinnerType:"",closeText:""});
-                    resolve(data);
-                    //return true;
+    if(vanType == VAN_KOCES) {
+        return new Promise(async(resolve, reject)=>{
+            var postOrderData = Object.assign({},orderData);
+            var cardNo = postData?.CardNo;
+            cardNo = cardNo.replace(/\*/gi,"");
+            cardNo = cardNo.replace(/-/gi,"");
+            var addOrderData = {
+                TOTAL_AMT:Number(postData?.TrdAmt)+Number(postData?.TaxAmt),
+                TOTAL_VAT:Number(postData?.TaxAmt),
+                TOTAL_DC:Number(postData?.SvcAmt),
+                ORDER_STATUS:"3",
+                CANCEL_YN:"N",
+                PREPAYMENT_YN:"N",
+                CUST_CARD_NO:`${postData?.CardNo}`,
+                CUST_NM:``,
+                PAYMENT_CNT:1,
+                PAYMENT_INFO:[{
+                    PAY_SEQ:1,
+                    PAY_KIND:"2",
+                    PAY_AMT:Number(postData?.TrdAmt)+Number(postData?.TaxAmt),
+                    PAY_VAT:Number(postData?.TaxAmt),
+                    PAY_APV_NO:`${postData?.AuNo}`,
+                    PAY_APV_DATE:`20${postData?.TrdDate?.substr(0,6)}`,
+                    PAY_CARD_NO:`${cardNo}********`,
+                    PAY_UPD_DT:`20${postData?.TrdDate}`,
+                    PAY_CANCEL_YN:"N",
+                    PAY_CARD_TYPE:`${postData?.InpNm}`,
+                    PAY_CARD_MONTH:`${postData?.Month}`
+                }]
+            };
+            postOrderData = {...postOrderData,...addOrderData};
+
+            const POS_IP = getIP() ;
+            try {
+                console.log("postOrderData: ",postOrderData);
+                //const data = await callApiWithExceptionHandling(`${POS_BASE_URL(POS_IP)}`,postOrderData, {}); 
+                const data = await posApiRequest(`${POS_BASE_URL(POS_IP)}`,postOrderData);   
+                EventRegister.emit("showSpinner",{isSpinnerShow:false, msg:"", spinnerType:"",closeText:""});
+                if(data) {
+                    if(data.ERROR_CD == "E0000") {
+                        //EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"주문", str:data?.ERROR_MSG});
+                        EventRegister.emit("showSpinner",{isSpinnerShow:false, msg:"", spinnerType:"",closeText:""});
+                        resolve(data);
+                        //return true;
+                    }else {
+                        EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"주문오류", str:data?.ERROR_MSG});
+                        EventRegister.emit("showSpinner",{isSpinnerShow:false, msg:"", spinnerType:"",closeText:""});
+                        reject(new Error(data?.ERROR_MSG));
+                        //return new Error(data?.ERROR_MSG)
+                    }
                 }else {
-                    EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"주문오류", str:data?.ERROR_MSG});
+                    EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"주문오류", str:"포스주문 실패."});
                     EventRegister.emit("showSpinner",{isSpinnerShow:false, msg:"", spinnerType:"",closeText:""});
-                    reject(new Error(data?.ERROR_MSG));
-                    //return new Error(data?.ERROR_MSG)
+                    reject(new Error("POS ERROR"));
                 }
-            }else {
-                EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"주문오류", str:"포스주문 실패."});
+            } catch (error) {
+                // 예외 처리
+                EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"주문오류", str:"포스 네트워크 오류."});
                 EventRegister.emit("showSpinner",{isSpinnerShow:false, msg:"", spinnerType:"",closeText:""});
                 reject(new Error("POS ERROR"));
+                //return new Error(error.message)
             }
-        } catch (error) {
-            // 예외 처리
-            EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"주문오류", str:"포스 네트워크 오류."});
-            EventRegister.emit("showSpinner",{isSpinnerShow:false, msg:"", spinnerType:"",closeText:""});
-            reject(new Error("POS ERROR"));
-            //return new Error(error.message)
-        }
-    })
+        })
+    }else if(vanType == VAN_SMARTRO) {
+        console.log("postData: ",postData);
+        return new Promise(async(resolve, reject)=>{
+            var postOrderData = Object.assign({},orderData);
+            
+            var addOrderData = {
+                TOTAL_AMT:Number(postData['total-amount']),
+                TOTAL_VAT:Number(postData['surtax']),
+                TOTAL_DC:"0",
+                ORDER_STATUS:"3",
+                CANCEL_YN:"N",
+                PREPAYMENT_YN:"N",
+                CUST_CARD_NO:`${postData['surtax']}`,
+                CUST_NM:``,
+                PAYMENT_CNT:1,
+                PAYMENT_INFO:[{
+                    PAY_SEQ:1,
+                    PAY_KIND:"2",
+                    PAY_AMT:Number(postData['total-amount']),
+                    PAY_VAT:Number(postData['surtax']),
+                    PAY_APV_NO:`${postData['approval-no']}`,
+                    PAY_APV_DATE:`20${postData['approval-date']}`,
+                    PAY_CARD_NO:`${postData['card-no']}`,
+                    PAY_UPD_DT:`20${postData['approval-date']}`,
+                    PAY_CANCEL_YN:"N",
+                    PAY_CARD_TYPE:`${postData['acquire-info']}`,
+                    PAY_CARD_MONTH:`${postData['installment']}`
+                }]
+            };
+            postOrderData = {...postOrderData,...addOrderData};
 
+            const POS_IP = getIP() ;
+            try {
+                //const data = await callApiWithExceptionHandling(`${POS_BASE_URL(POS_IP)}`,postOrderData, {}); 
+                const data = await posApiRequest(`${POS_BASE_URL(POS_IP)}`,postOrderData);   
+                EventRegister.emit("showSpinner",{isSpinnerShow:false, msg:"", spinnerType:"",closeText:""});
+                if(data) {
+                    if(data.ERROR_CD == "E0000") {
+                        //EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"주문", str:data?.ERROR_MSG});
+                        EventRegister.emit("showSpinner",{isSpinnerShow:false, msg:"", spinnerType:"",closeText:""});
+                        resolve(data);
+                        //return true;
+                    }else {
+                        EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"주문오류", str:data?.ERROR_MSG});
+                        EventRegister.emit("showSpinner",{isSpinnerShow:false, msg:"", spinnerType:"",closeText:""});
+                        reject(new Error(data?.ERROR_MSG));
+                        //return new Error(data?.ERROR_MSG)
+                    }
+                }else {
+                    EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"주문오류", str:"포스주문 실패."});
+                    EventRegister.emit("showSpinner",{isSpinnerShow:false, msg:"", spinnerType:"",closeText:""});
+                    reject(new Error("POS ERROR"));
+                }
+            } catch (error) {
+                // 예외 처리
+                EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"주문오류", str:"포스 네트워크 오류."});
+                EventRegister.emit("showSpinner",{isSpinnerShow:false, msg:"", spinnerType:"",closeText:""});
+                reject(new Error("POS ERROR"));
+                //return new Error(error.message)
+            }
+        })
+    }
 }
 export function getStoreID() {
     return storage.getString("STORE_IDX");

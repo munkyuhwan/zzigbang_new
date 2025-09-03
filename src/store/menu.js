@@ -1,6 +1,6 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { ADMIN_API_BASE_URL, ADMIN_API_CATEGORY, ADMIN_API_GOODS } from "../resources/apiResources";
-import { apiRequest } from "../utils/apiRequest";
+import { VAN_KOCES, VAN_SMARTRO, apiRequest } from "../utils/apiRequest";
 import {isEmpty} from "lodash";
 import { errorSlice, setError } from "./error";
 import FastImage from "react-native-fast-image";
@@ -14,6 +14,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { increment, reset } from "./counter";
 import { storage } from "../utils/localStorage";
 import { setFullPopup } from "./fullPopup";
+import { NativeModules } from "react-native";
 
 export const initMenu = createAsyncThunk("menu/initMenu", async(_,{dispatch,getState, rejectWithValue}) =>{
     return;
@@ -173,13 +174,11 @@ export const startPayment = createAsyncThunk("menu/startPayment", async(data,{di
             dispatch(setCommon({installmentData:{isOpen:true,isCancel:false,isOk:false,returnData:{}}}));
             return rejectWithValue();
         }
-        console.log("installment: ",installment)
     }
 
     // 주문 가능 상태 확인
-    console.log("check order av");
     const POS_NO = storage.getString("POS_NO");
-    
+       
     try {
         const isPostable = await isNetworkAvailable();
         if(!isPostable) {
@@ -187,7 +186,6 @@ export const startPayment = createAsyncThunk("menu/startPayment", async(data,{di
             return rejectWithValue();
         }
         const storeInfo = await getPosStoreInfo();
-        console.log(storeInfo);
         // 개점정보 확인
         if(!storeInfo?.SAL_YMD) {
             EventRegister.emit("showSpinner",{isSpinnerShow:false, msg:"", spinnerType:"",closeText:""});
@@ -227,6 +225,7 @@ export const startPayment = createAsyncThunk("menu/startPayment", async(data,{di
         EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"주문 오류", str:"수량을 초과해 주문을 할 수 없습니다."});
         return rejectWithValue();
     } 
+
     
     
 
@@ -234,22 +233,6 @@ export const startPayment = createAsyncThunk("menu/startPayment", async(data,{di
     const tidNo = storage.getString("TID_NO");
     const amtData = {amt:totalAmt, taxAmt:surtax, months:installment, bsnNo:bsnNo,termID:tidNo }
     
-
-    var kocessAppPay = new KocesAppPay();
-    
-    //console.log("Test: ",test);
-    //return;
-    try{
-        var result = await kocessAppPay.requestKocesPayment(amtData)
-        //var result = {"AnsCode": "0000", "AnswerTrdNo": "null", "AuNo": "28872915", "AuthType": "null", "BillNo": "", "CardKind": "1", "CardNo": "9411-9400-****-****", "ChargeAmt": "null", "DDCYn": "1", "DisAmt": "null", "EDCYn": "0", "GiftAmt": "", "InpCd": "1107", "InpNm": "신한카드", "Keydate": "", "MchData": "wooriorder", "MchNo": "22101257", "Message": "마이신한P잔여 : 109                     ", "Month": "00", "OrdCd": "1107", "OrdNm": "개인신용", "PcCard": "null", "PcCoupon": "null", "PcKind": "null", "PcPoint": "null", "QrKind": "null", "RefundAmt": "null", "SvcAmt": "0", "TaxAmt": `${surtax}`, "TaxFreeAmt": "0", "TermID": "0710000900", "TradeNo": "000004689679", "TrdAmt": `${totalAmt}`, "TrdDate": "240902182728", "TrdType": "A15"}
-        console.log("result: ",result);
-    }catch(err) {
-        console.log("err============",err);
-
-        EventRegister.emit("showSpinner",{isSpinnerShow:false, msg:"", spinnerType:"",closeText:""});
-        EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"결제 오류", str:err.Message});    
-        return rejectWithValue();
-    }
     const storedCount = storage.getString("counterValue");
     if(storedCount == null) {
         var newCount = 1
@@ -258,9 +241,54 @@ export const startPayment = createAsyncThunk("menu/startPayment", async(data,{di
     }
     storage.set("counterValue",`${newCount}`);
     var PRINT_ORDER_NO = `${POS_NO}-${newCount}`
-    console.log("PRINT_ORDER_NO: ",PRINT_ORDER_NO);
     storage.set("orderNo",`${PRINT_ORDER_NO}`); 
 
+    var result;
+
+    if(storage.getString("VAN")==VAN_KOCES) {
+
+        var kocessAppPay = new KocesAppPay();
+        try{
+            result = await kocessAppPay.requestKocesPayment(amtData)
+            //var result = {"AnsCode": "0000", "AnswerTrdNo": "null", "AuNo": "28872915", "AuthType": "null", "BillNo": "", "CardKind": "1", "CardNo": "9411-9400-****-****", "ChargeAmt": "null", "DDCYn": "1", "DisAmt": "null", "EDCYn": "0", "GiftAmt": "", "InpCd": "1107", "InpNm": "신한카드", "Keydate": "", "MchData": "wooriorder", "MchNo": "22101257", "Message": "마이신한P잔여 : 109                     ", "Month": "00", "OrdCd": "1107", "OrdNm": "개인신용", "PcCard": "null", "PcCoupon": "null", "PcKind": "null", "PcPoint": "null", "QrKind": "null", "RefundAmt": "null", "SvcAmt": "0", "TaxAmt": `${surtax}`, "TaxFreeAmt": "0", "TermID": "0710000900", "TradeNo": "000004689679", "TrdAmt": `${totalAmt}`, "TrdDate": "240902182728", "TrdType": "A15"}
+            console.log("result: ",result);
+        }catch(err) {
+            console.log("err============",err);
+
+            EventRegister.emit("showSpinner",{isSpinnerShow:false, msg:"", spinnerType:"",closeText:""});
+            EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"결제 오류", str:err.Message});    
+            return rejectWithValue();
+        }
+    }
+    else if(storage.getString("VAN")==VAN_SMARTRO) {
+        console.log("smartro============");
+        const paymentData = {"deal":"approval","total-amount":totalAmt+surtax,"surtax":surtax,"installment":installment, "attribute":["attr-continuous-trx","attr-include-sign-bmp-buffer","attr-enable-switching-payment","attr-display-ui-of-choice-pay"]}
+    //"approval-no":"031383008","approval-date":"240722"
+        // 현금영수증 취소 요청
+        //const smartroData = {...{"service":"payment", "type":"credit", "deal":"approval", "personal-id":""}, ...paymentData, ...SMARTRO_COMMON_DATA};
+        //console.log("smartroData: ",smartroData);
+        result = await servicePayment(dispatch,false, paymentData);
+       
+        result = JSON.parse(result);
+        console.log("smartro result: ",result);
+
+        if(result["response-code"] != "00") {
+            console.log("cardPayResult: ",result);
+            EventRegister.emit("showSpinner",{isSpinnerShow:false, msg:"", spinnerType:"",closeText:""})
+            if(result["service-result"] == "0000") {
+                EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"결제 실패", str:`${result["service-result"]}: ${result["display-msg"]}`})
+            }else {
+                EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"결제 실패", str:`${result["service-result"]}: ${result["service-description"]}`})
+            }
+            //dispatch(setCalculator({isProcess:false}));
+            return rejectWithValue();
+        }
+        //result = {"service": "payment","type": "credit","persional-id": "01040618432","deal": "approval","total-amount": totalAmt+surtax,"cat-id": "7109912041","business-no": "2118806806","device-name": "SMT-Q453","device-auth-info": "####SMT-Q453","device-auth-ver": "1201","device-serial": "S423050950","card-no": "94119400********","van-tran-seq": "240605215745","business-name": "주식회사 우리포스","business-owner-name": "김정엽","business-phone-no": "02  15664551","business-address": "인천 부평구 부평대로 337  (청천동) 제이타워3차지신산업센터 806,807호","display-msg": "정상승인거래r간편결제수단: 삼성페이승인","response-code": "00","approval-date": "240605","approval-time": "215744","issuer-info": "0300마이홈플러스신한","acquire-info": "0300신한카드사","merchant-no": "0105512446","approval-no": "37151483","receipt-msg": "정상승인거래r간편결제수단: 삼성페이승인","service-result": "0000"}
+        result = {...result,...{surtax:surtax,installment:installment} };
+    }else {
+        EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"주문 오류", str:"밴사를 선택 해 주세요"});    
+        return rejectWithValue();
+    }
 
     // 포스로 전달하기 위한 포멧으로 데이터 변경
     const orderFinalData = await metaPostPayFormat([...orderList,...breadOrderList],result, items, PRINT_ORDER_NO);
@@ -269,16 +297,16 @@ export const startPayment = createAsyncThunk("menu/startPayment", async(data,{di
         EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"주문 오류", str:orderFinalData.errorMsg});    
         return rejectWithValue();
     }
+
+    console.log("orderfinal data: ",orderFinalData);
     // 포스에 요청
-    const posOrderResult = await postOrderToPos(result,orderFinalData, PRINT_ORDER_NO).catch(err=>err);  
+    var posOrderResult = await postOrderToPos(storage.getString("VAN"), result,orderFinalData, PRINT_ORDER_NO).catch(err=>err);  
     //console.log("posOrderResult: ",posOrderResult)
     if(posOrderResult instanceof Error) {
         EventRegister.emit("showSpinner",{isSpinnerShow:false, msg:"", spinnerType:"",closeText:""});
         EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"주문 오류", str:posOrderResult.errorMsg});    
         return rejectWithValue();
     }
- 
-
 
     // 서버에 올림
     //const postAdminResult = adminDataPost(result,orderFinalData,items).catch(err=>{return err}); 

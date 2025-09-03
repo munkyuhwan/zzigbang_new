@@ -4,6 +4,9 @@ import { EventRegister } from 'react-native-event-listeners';
 import { ADMIN_API_GOODS } from '../../resources/apiResources';
 import { setError } from '../store/error';
 
+export const VAN_KOCES = "koces";
+export const VAN_SMARTRO = "smartro";
+
 export async function formRequest(dispatch, url, postData) {
   
   const MAX_RETRIES = 5;

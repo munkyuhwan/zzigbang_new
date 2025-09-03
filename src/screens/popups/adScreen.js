@@ -205,7 +205,7 @@ const AdScreen = (props) => {
                             <AdButtonText>{ strings["빵 + 음료\n주문"][`${selectedLanguage}`] }</AdButtonText>
                         </AdButtonSquare>
                     </TouchableWithoutFeedback>
-                    <TouchableWithoutFeedback onPress={()=>{dispatch(setCommon({isAddShow:false}));props.setMainShow(true); /* navigate.navigate("main"); */}} >
+                    <TouchableWithoutFeedback onPress={()=>{ /* const {Etc}=NativeModules; Etc.openManageIntent(storage.getString("STORE_IDX"),storage.getString("STORE_NAME")); */ dispatch(setCommon({isAddShow:false}));props.setMainShow(true); /* navigate.navigate("main"); */}} >
                         <AdButtonSquare bgColor={colorRed} >
                             <AdButtonIconWrapper>
                                 <AdButtonIcon  resizeMode={FastImage.resizeMode.contain} source={require("../../resources/imgs/drawable-xxxhdpi/drink_order.png")} />

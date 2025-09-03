@@ -1,7 +1,7 @@
 import { Alert, DeviceEventEmitter, KeyboardAvoidingView, ScrollView, Text, TouchableWithoutFeedback, View } from "react-native";
 import { BottomButton } from "../components/commonComponents";
 import { SettingButtonView, SettingSectionDetailWrapper, SettingSectionInput, SettingSectionLabel, SettingSectionTitle, SettingSectionWrapper, SettingSenctionInputView, SettingSenctionInputViewColumn, SettingWrapper } from "../style/setting";
-import { serviceCancelPayment } from "../utils/smartro";
+import { serviceCancelPayment, servicePayment } from "../utils/smartro";
 import { useCallback, useEffect, useRef, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { EventRegister } from "react-native-event-listeners";
@@ -20,18 +20,22 @@ import { printReceipt } from "../utils/common";
 import { NativeModules } from "react-native"
 import { storage } from "../utils/localStorage";
 import { MMKV, Mode } from 'react-native-mmkv'
+import { VAN_KOCES, VAN_KOCESS, VAN_SMARTRO } from "../utils/apiRequest";
 
 
 const SettingScreen = (props) =>{
     const {Printer,
          Weight, 
-         Serial
+         Serial,
+         LED,
+         Etc
         } = NativeModules;
     
 
     const navigate = useNavigation();
     const dispatch = useDispatch();
     const pickerRef = useRef();
+    const vanRef = useRef();
     const printerPickerRef = useRef();
 
     const [approvalAmt, setApprovalAmt] = useState("4091");
@@ -58,7 +62,17 @@ const SettingScreen = (props) =>{
     const [catId, setCatId] = useState("");
     const [serialNo, setSerialNo] = useState("");
 
+    // van 선택
+    const [van,setVan] = useState("");
+
+    // 저울
     const [tmpWeight, setTmpWeight] = useState("");
+
+    // 진동벨
+    const [bellLan, setBellLan] = useState("");
+    const [bellNumber, setBellNumber] = useState("");
+    const [bellCorner, setBellCorner] = useState("");
+
 
     const isFocused = useIsFocused();
 
@@ -75,6 +89,17 @@ const SettingScreen = (props) =>{
 
         },[])
     )
+
+    useEffect(async ()=>{
+
+    },[])
+
+    async function smartroCancel() {
+
+        const data = { "total-amount":1004, "approval-no":"00825901","approval-date":"250903",  "attribute":["attr-continuous-trx","attr-include-sign-bmp-buffer","attr-enable-switching-payment","attr-display-ui-of-choice-pay"]};
+
+        const result = await servicePayment(dispatch,true, data);
+    }
 
     function cancelPayment(){
         EventRegister.emit("showSpinner",{isSpinnerShow:true, msg:"카드 취소 중 입니다.", spinnerType:"pay",closeText:"취소"})
@@ -112,6 +137,7 @@ const SettingScreen = (props) =>{
         setBreadStoreId(storage.getString("BREAD_STORE_ID")); 
         setStoreID(storage.getString("STORE_IDX")); 
         setWeight(storage.getBoolean("WEIGHT_SET"));
+        setVan(storage.getString("VAN"));
 
         dispatch(getStoreInfo());
 
@@ -271,6 +297,11 @@ const SettingScreen = (props) =>{
         
     }
 
+    function testLed() {
+        LED.connectDevice();
+        LED.sendLedCommand(false, true, false);
+    }
+
     return(
         <>
             <ScrollView style={{backgroundColor:colorWhite}}>   
@@ -283,9 +314,50 @@ const SettingScreen = (props) =>{
                         <Text style={{flex:1,fontSize:40,color:colorBlack}} ></Text>
                     </View>
                     <View style={{flexDirection:'row', paddingLeft:30,paddingRight:30}}>
-                        <Text style={{flex:1,fontSize:20,color:colorBlack,textAlign:'center'}} >v1.0.3</Text>
+                        <Text style={{flex:1,fontSize:20,color:colorBlack,textAlign:'center'}} >v1.0.4</Text>
                     </View>
                     <SettingWrapper>
+
+                        <SettingSectionWrapper>
+                            <SettingSectionTitle></SettingSectionTitle>
+                            <SettingSectionDetailWrapper>
+                                <SettingSenctionInputView>
+                                    <TouchableWithoutFeedback onPress={()=>{smartroCancel() }} >
+                                        <SettingButtonView>
+                                            <SettingSectionTitle>스마트로 취소</SettingSectionTitle>
+                                        </SettingButtonView>
+                                    </TouchableWithoutFeedback>
+                                </SettingSenctionInputView>
+                            </SettingSectionDetailWrapper>
+                        </SettingSectionWrapper>
+
+                        <SettingSectionWrapper>
+                            <SettingSectionTitle></SettingSectionTitle>
+                            <SettingSectionDetailWrapper>
+                                <SettingSenctionInputView>
+                                    <TouchableWithoutFeedback onPress={()=>{ Etc.openManageIntent(storage.getString("STORE_IDX"),storage.getString("STORE_NAME")); }} >
+                                        <SettingButtonView>
+                                            <SettingSectionTitle>매니지 열기</SettingSectionTitle>
+                                        </SettingButtonView>
+                                    </TouchableWithoutFeedback>
+                                </SettingSenctionInputView>
+                            </SettingSectionDetailWrapper>
+                        </SettingSectionWrapper>
+
+                        <SettingSectionWrapper>
+                            <SettingSectionTitle>LED 테스트</SettingSectionTitle>
+                            <SettingSectionDetailWrapper>
+                                <SettingSenctionInputView>
+                                    <TouchableWithoutFeedback onPress={()=>{testLed(); }}>
+                                        <SettingButtonView>
+                                            <SettingSectionTitle>{"테스트"}</SettingSectionTitle>
+                                        </SettingButtonView>
+                                    </TouchableWithoutFeedback>
+                                </SettingSenctionInputView>
+                             </SettingSectionDetailWrapper>
+
+                        </SettingSectionWrapper>
+                        
                         <SettingSectionWrapper>
                             <SettingSectionTitle>저울 사용 설정</SettingSectionTitle>
                             <SettingSectionDetailWrapper>
@@ -369,11 +441,24 @@ const SettingScreen = (props) =>{
                                     <SettingSectionLabel>{bellProductName}</SettingSectionLabel>
                                 </SettingSenctionInputView>
                                 <SettingSenctionInputView>
+                                    <SettingSectionLabel>언어</SettingSectionLabel>
+                                    <SettingSectionInput onChangeText={(val)=>{setBellLan(val)}} value={bellLan} ></SettingSectionInput>
+                                </SettingSenctionInputView>
+                                <SettingSenctionInputView>
+                                    <SettingSectionLabel>코너</SettingSectionLabel>
+                                    <SettingSectionInput onChangeText={(val)=>{setBellCorner(val)}} value={bellCorner} ></SettingSectionInput>
+                                </SettingSenctionInputView>
+                                <SettingSenctionInputView>
+                                    <SettingSectionLabel>고객번호</SettingSectionLabel>
+                                    <SettingSectionInput onChangeText={(val)=>{setBellNumber(val)}} value={bellNumber} ></SettingSectionInput>
+                                </SettingSenctionInputView>
+
+                                <SettingSenctionInputView>
                                     <TouchableWithoutFeedback onPress={async()=>{  
                                             const {Bell} = NativeModules; 
                                             const bellVID = storage.getString("bellVendorID")
                                             const bellPID = storage.getString("bellProductID")
-                                            Bell.bellTest(bellVID,bellPID,"134");
+                                            Bell.bellTest(bellLan,bellCorner,bellNumber,bellVID,bellPID,"13");
                                             //Bell.bellCancel(bellVID,bellPID);
                                             //Printer.OpenPrinter()
                                             //Printer.usbDeviceList();
@@ -588,6 +673,34 @@ const SettingScreen = (props) =>{
                                     </TouchableWithoutFeedback>
                                 </SettingSenctionInputView>
                             </SettingSectionDetailWrapper>
+
+                            <SettingSectionTitle>VAN 선택</SettingSectionTitle>
+                            <SettingSectionDetailWrapper>
+                                <SettingSenctionInputView>
+                                    <SettingSectionLabel>VAN</SettingSectionLabel>
+                                    <Picker
+                                        ref={vanRef}
+                                        key={"tablePicker"}
+                                        mode='dialog'
+                                        onValueChange = {(itemValue, itemIndex) => {
+                                            if(itemValue) {
+                                                storage.set("VAN",itemValue);
+                                                setVan(itemValue);
+                                            }
+                                        }}
+                                        selectedValue={van}
+                                        style = {{
+                                            width: 300,
+                                            height: 50,
+                                        }}>
+                                            <Picker.Item key={"none"} label = {"미선택"} value ={{}} />
+                                            <Picker.Item key={"_kocess"}  label = {"코세스"} value ={VAN_KOCES} />
+                                            <Picker.Item key={"_smartro"}  label = {"스마트로"} value ={VAN_SMARTRO} />
+                                        
+                                    </Picker>
+                                </SettingSenctionInputView>
+                            </SettingSectionDetailWrapper>
+
                             <SettingSectionTitle>테이블 선택</SettingSectionTitle>
                             <SettingSectionDetailWrapper>
                                 <SettingSenctionInputView>
