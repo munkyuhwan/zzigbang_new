@@ -55,8 +55,6 @@ export const alertSlice = createSlice({
         //셋
         builder.addCase(setAlert.fulfilled,(state, action)=>{
             const stateToChange = Object.assign({},state,action.payload);
-            console.log("state: ",state)
-            console.log("stateToChange: ",stateToChange)
             return { ...state, ...action.payload };;
         })
         builder.addCase(setAlert.pending,(state, action)=>{

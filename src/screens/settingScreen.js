@@ -54,6 +54,7 @@ const SettingScreen = (props) =>{
     const [printerList, setPrinterList] = useState([]);
     const [cdcList, setCdcLIst] = useState([]);
     const [isWeight, setWeight] = useState(true);
+    const [trayWeight, setTrayWeight] = useState(true);
 
     const {storeInfo, tableList} = useSelector(state=>state.meta);
     const {weight} = useSelector(state=>state.common);
@@ -89,10 +90,6 @@ const SettingScreen = (props) =>{
 
         },[])
     )
-
-    useEffect(async ()=>{
-
-    },[])
 
     async function smartroCancel() {
 
@@ -138,6 +135,7 @@ const SettingScreen = (props) =>{
         setStoreID(storage.getString("STORE_IDX")); 
         setWeight(storage.getBoolean("WEIGHT_SET"));
         setVan(storage.getString("VAN"));
+        setTrayWeight(storage.getString("TRAY_WEIGHT"));
 
         dispatch(getStoreInfo());
 
@@ -220,29 +218,7 @@ const SettingScreen = (props) =>{
         setSerialNo(itemValue.serial_no)
         setTable(itemValue);
         EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"세팅", str:'저장되었습니다.'}); 
-        /* 
-        const prevStoreID = await AsyncStorage.getItem("STORE_IDX").catch(()=>{return null;});
-        console.log("previous table topic: ",`${prevStoreID}_${prevTableCode}`)
-        if(prevTableCode){      
-            try{
-               await messaging().unsubscribeFromTopic(`${prevStoreID}_${prevTableCode}`);
-            }catch(err){
-                console.log("err:",err);
-                EventRegister.emit("showSpinner",{isSpinnerShow:false, msg:"", spinnerType:"",closeText:""});                displayOnAlert(`${err}`,{});        
-                return;    
-            }
-        }
-        try {
-            await messaging().subscribeToTopic(`${prevStoreID}_${itemValue}`)
-            EventRegister.emit("showSpinner",{isSpinnerShow:false, msg:"", spinnerType:"",closeText:""});
-            displayOnAlert("테이블이 설정되었습니다.",{});            
-            dispatch(regularUpdate());
-        }catch(err){
-            EventRegister.emit("showSpinner",{isSpinnerShow:false, msg:"", spinnerType:"",closeText:""});
-            displayOnAlert(`${err}`,{});            
-            return;
-        } */
-
+       
     }
 
     async function completeStoreInfo() {
@@ -325,6 +301,23 @@ const SettingScreen = (props) =>{
                                     <TouchableWithoutFeedback onPress={()=>{smartroCancel() }} >
                                         <SettingButtonView>
                                             <SettingSectionTitle>스마트로 취소</SettingSectionTitle>
+                                        </SettingButtonView>
+                                    </TouchableWithoutFeedback>
+                                </SettingSenctionInputView>
+                            </SettingSectionDetailWrapper>
+                        </SettingSectionWrapper>
+
+                        <SettingSectionWrapper>
+                            <SettingSectionTitle>쟁반무게</SettingSectionTitle>
+                            <SettingSectionDetailWrapper>
+                                <SettingSenctionInputView>
+                                    <SettingSectionLabel>무게</SettingSectionLabel>
+                                    <SettingSectionInput onChangeText={(val)=>{setTrayWeight(val)}} value={trayWeight} inputMode="numeric" ></SettingSectionInput>
+                                </SettingSenctionInputView>
+                                <SettingSenctionInputView>
+                                    <TouchableWithoutFeedback onPress={()=>{storage.set("TRAY_WEIGHT",trayWeight); EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"알림", str:"저장되었습니다."});}} >
+                                        <SettingButtonView>
+                                            <SettingSectionTitle>저장</SettingSectionTitle>
                                         </SettingButtonView>
                                     </TouchableWithoutFeedback>
                                 </SettingSenctionInputView>

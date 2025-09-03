@@ -42,10 +42,16 @@ let weightCountDown = 30;
 var startTime = 0;
 var endTime = 0;
 var duration = 0;
+var mostFrequentWeight = 0;
+const MAX_SIZE = 10;
 
 const ScanScreen = () => {
     const { Weight } = NativeModules;
     const camera = useRef();
+    const sumRef = useRef(0);
+    const countRef = useRef(0);
+    const averageRef = useRef(0);
+    const weightArr = useRef(Array(MAX_SIZE).fill(null));
      
     const [isScanning, setScanning] = useState(false);
     const cameraOpacity = useRef(new Animated.Value(1)).current;
@@ -81,6 +87,9 @@ const ScanScreen = () => {
     const [currentWeight, setCurrentWeight] = useState(0);
     const [scannedWeight, setScannedWeight] = useState("0");
 
+    //const [weightArr, setWeightArr] = useState(Array(MAX_SIZE).fill(null));
+    const indexRef = useRef(0);
+
     const { items, orderList } = useSelector(state=>state.menu);
     const {strings,selectedLanguage, isAddShow, weight} = useSelector(state=>state.common);
     // 깜빡깜빡이는
@@ -101,6 +110,27 @@ const ScanScreen = () => {
         outputRange: [colorPink, '#0000ff'], // 빨강 ↔ 파랑
     });
 
+    function getMostFrequent(arr) {
+        const freqMap = {};
+        let maxCount = 0;
+        let mode = null;
+      
+        arr.forEach((val) => {
+          if (val !== null) {
+            freqMap[val] = (freqMap[val] || 0) + 1;
+            if (freqMap[val] > maxCount) {
+              maxCount = freqMap[val];
+              mode = val;
+            }
+          }
+        });
+        return mode;
+    }
+
+  /*   useEffect(()=>{
+        mostFrequentWeight = getMostFrequent(weightArr);
+    },[weightArr])
+       */
     async function initScanScreen() {
         Weight.connectDevice(); 
         
@@ -108,8 +138,26 @@ const ScanScreen = () => {
         DeviceEventEmitter.addListener("onWeightChanged",(data)=>{    
             //const result = data?.weight.replace(/[^0-9.]/g, ""); // 숫자와 소숫점 제외 모든 문자 제거
             const weight = parseFloat(data?.weight);
-            if(Number(weight)>=0) {
-                setCurrentWeight(weight*1000);
+            if(!isNaN(weight) && Number(weight)>=0) {
+                const kiloWeight = weight*1000;
+                setCurrentWeight(kiloWeight);
+                if(kiloWeight>0) {
+                    const newArr = weightArr.current;
+                    newArr[indexRef.current] = kiloWeight; // 현재 인덱스에 덮어쓰기
+                    indexRef.current = (indexRef.current + 1) % MAX_SIZE; // 다음 위치 (100 넘으면 0부터)
+                    weightArr.current = newArr;
+                    mostFrequentWeight = getMostFrequent(weightArr.current);
+                    /* setWeightArr((prev) => {
+                        const newArr = [...prev];
+                        newArr[indexRef.current] = kiloWeight; // 현재 인덱스에 덮어쓰기
+                        indexRef.current = (indexRef.current + 1) % MAX_SIZE; // 다음 위치 (100 넘으면 0부터)
+                        return newArr;
+                    }); */
+                }else {
+                    mostFrequentWeight=0;
+                    weightArr.current = (Array(MAX_SIZE).fill(null))
+                }
+            
             }
         });  
     }
@@ -160,7 +208,7 @@ const ScanScreen = () => {
         }
     }, [tmpBreadList, rescanIndex]);
 
-    useEffect(() => {
+    /* useEffect(() => {
         // 무한 반복 애니메이션
         //if(currentWeight>0 && !isMainShow  && tmpBreadList.length<=0 ){
             Animated.loop(
@@ -180,7 +228,7 @@ const ScanScreen = () => {
                 ])
             ).start();
         //}
-      }, [currentWeight,isMainShow, tmpBreadList]);
+      }, [currentWeight,isMainShow, tmpBreadList]); */
 
   
     useFocusEffect(
@@ -242,6 +290,7 @@ const ScanScreen = () => {
         if(currentWeight<=0 && !isMainShow ) {
             setImgURL(``)
         }
+
     },[currentWeight,isMainShow ])
 
     function addToTmpList(addData,type,index) {
@@ -313,8 +362,13 @@ const ScanScreen = () => {
                 formData.append("image", {uri: `file://${RNFS.DownloadDirectoryPath}/${fileName}`,name:`${fileName}`, filename:`${fileName}`, type: "image/*"} );
                 formData.append("store_name", storage.getString("BREAD_STORE_ID"));
                 formData.append("store_id", storage.getString("STORE_IDX"));
+                /* if(storage.getBoolean("WEIGHT_SET")) {
+                    formData.append("input_weight", Number(currentWeight)-Number(storage.getString("TRAY_WEIGHT")));
+                }else {
+                    formData.append("input_weight", 0.0);
+                } */
                 if(storage.getBoolean("WEIGHT_SET")) {
-                    formData.append("input_weight", currentWeight);
+                    formData.append("input_weight", Number(mostFrequentWeight)-Number(storage.getString("TRAY_WEIGHT")));
                 }else {
                     formData.append("input_weight", 0.0);
                 }
@@ -466,8 +520,10 @@ const ScanScreen = () => {
                                                 )
                                             })
                                         }        
-                                        <TouchableWithoutFeedback
+                                        <TouchableOpacity
+                                            style={{ padding:10}}
                                             onPress={()=>{
+                                                console.log('다시찍기-------');
                                                 EventRegister.emit("showSpinner",{isSpinnerShow:true, msg:"스캔 중 입니다.", spinnerType:"",closeText:""})
                                                 //setScanType(RESCAN);
                                                 //setRescanIndex(index);
@@ -477,7 +533,7 @@ const ScanScreen = () => {
                                             <RescanView>
                                                 <RescanText>{strings["다시스캔"][`${selectedLanguage}`]}</RescanText>
                                             </RescanView>
-                                        </TouchableWithoutFeedback>      
+                                        </TouchableOpacity>      
                                     </View>
                                 </>
                             )
@@ -492,7 +548,7 @@ const ScanScreen = () => {
     function initCamera() {
         setImgURL("");
     }
-
+    
     return(
         <>
         {/* 안내 UI */}
@@ -529,7 +585,7 @@ const ScanScreen = () => {
             </View>
             <View style={{flex:0.343}} >
             {tmpBreadList.length > 0 &&
-                <View style={{flex:1, backgroundColor:'yellow', backgroundColor:imgURL==""?"transparent":colorLightGrey }} >
+                <View style={{flex:1, backgroundColor:imgURL==""?"transparent":colorLightGrey }} >
                     <ScrollView style={{marginTop:10, marginLeft:10,marginRight:10, paddingBottom:140, width:530, height:'68%', position:'absolute', zIndex:99, backgroundColor:colorLightGrey }} keyboardShouldPersistTaps={"handled"} flexGrow={1} contentContainerStyle={{ flexGrow: 1 }} >
                         {tmpBreadList.length > 0 &&
                             <BreadTmpCartList/>
