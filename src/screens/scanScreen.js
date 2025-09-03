@@ -43,7 +43,7 @@ var startTime = 0;
 var endTime = 0;
 var duration = 0;
 var mostFrequentWeight = 0;
-const MAX_SIZE = 10;
+const MAX_SIZE = 20;
 
 const ScanScreen = () => {
     const { Weight } = NativeModules;
@@ -141,7 +141,7 @@ const ScanScreen = () => {
             if(!isNaN(weight) && Number(weight)>=0) {
                 const kiloWeight = weight*1000;
                 setCurrentWeight(kiloWeight);
-                if(kiloWeight>0) {
+                if(kiloWeight>Number(storage.getString("TRAY_WEIGHT"))) {
                     const newArr = weightArr.current;
                     newArr[indexRef.current] = kiloWeight; // 현재 인덱스에 덮어쓰기
                     indexRef.current = (indexRef.current + 1) % MAX_SIZE; // 다음 위치 (100 넘으면 0부터)
