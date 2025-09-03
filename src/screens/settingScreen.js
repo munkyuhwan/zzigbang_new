@@ -294,7 +294,7 @@ const SettingScreen = (props) =>{
                     </View>
                     <SettingWrapper>
 
-                        <SettingSectionWrapper>
+                        {/* <SettingSectionWrapper>
                             <SettingSectionTitle></SettingSectionTitle>
                             <SettingSectionDetailWrapper>
                                 <SettingSenctionInputView>
@@ -306,7 +306,7 @@ const SettingScreen = (props) =>{
                                 </SettingSenctionInputView>
                             </SettingSectionDetailWrapper>
                         </SettingSectionWrapper>
-
+ */}
                         <SettingSectionWrapper>
                             <SettingSectionTitle>쟁반무게</SettingSectionTitle>
                             <SettingSectionDetailWrapper>

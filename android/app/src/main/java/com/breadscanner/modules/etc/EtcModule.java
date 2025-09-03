@@ -4,6 +4,7 @@ import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -28,11 +29,20 @@ public class EtcModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void openManageIntent(String storeID, String storeName) {
-        //Intent intent = new Intent();
-        String packageName = "co.kr.wooripos.zzigbbang_manager";
-        PackageManager pm = mContext.getPackageManager();
-        Intent intent = pm.getLaunchIntentForPackage(packageName);
+        //co.kr.wooripos.zzigbbangmanager
 
+        try {
+            Intent intent = new Intent("co.kr.wooripos.zzigbbang_manager");
+            intent.addCategory(Intent.CATEGORY_DEFAULT); // 보통 기본 카테고리 필요
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK); // 다른 앱 실행 시 권장
+            intent.putExtra("store_name", storeName);
+            intent.putExtra("store_id", storeID);
+            getReactApplicationContext().startActivity(intent);
+        } catch (ActivityNotFoundException e) {
+            e.printStackTrace();
+            Toast.makeText(getReactApplicationContext(), "앱을 실행할 수 없습니다", Toast.LENGTH_SHORT).show();
+        }
+        /*
         intent.putExtra("store_name", storeName);
         intent.putExtra("store_id", storeID);
         intent.setType("text/plain");
@@ -47,6 +57,8 @@ public class EtcModule extends ReactContextBaseJavaModule {
             e.printStackTrace();
             Toast.makeText(getReactApplicationContext(), "앱이 설치되어 있지 않습니다.", Toast.LENGTH_SHORT).show();
         }
+
+         */
 
     }
 
