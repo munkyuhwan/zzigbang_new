@@ -177,13 +177,14 @@ export const MenuMetaDetailPopup = (props) => {
                             </TouchableWithoutFeedback>
                             {Number(item.limit_count) != 1 &&
                                 <OptionItemAmountViewOnly>
-                                    <TouchableWithoutFeedback onPress={() => { onOptionSelect(item.limit_count, item.idx, opts, "plus"); }} >
-                                        <OptionItemAmountBtn source={require("../../resources/imgs/drawable-xxxhdpi/bt_add_on_1.png")} />
-                                    </TouchableWithoutFeedback>
-                                    <OptionItemAmountOnlyText>{optSelectFilter.filter(det=>(det.groupIdx == item.idx&&det.prodCD==optItem[0].prod_cd))[0]?.amt||0}</OptionItemAmountOnlyText>
                                     <TouchableWithoutFeedback onPress={() => { onOptionSelect(item.limit_count, item.idx, opts, "minus"); }} >
                                         <OptionItemAmountBtn source={require("../../resources/imgs/drawable-xxxhdpi/bt_sub_on_1.png")} />
                                     </TouchableWithoutFeedback>
+                                    <OptionItemAmountOnlyText>{optSelectFilter.filter(det=>(det.groupIdx == item.idx&&det.prodCD==optItem[0].prod_cd))[0]?.amt||0}</OptionItemAmountOnlyText>
+                                    <TouchableWithoutFeedback onPress={() => { onOptionSelect(item.limit_count, item.idx, opts, "plus"); }} >
+                                        <OptionItemAmountBtn source={require("../../resources/imgs/drawable-xxxhdpi/bt_add_on_1.png")} />
+                                    </TouchableWithoutFeedback>
+                                
                                 </OptionItemAmountViewOnly>
                             }
                             <OptionItemOnlyPriceText>
@@ -253,64 +254,7 @@ export const MenuMetaDetailPopup = (props) => {
                                                         <OptList item={item} prodIcd={item?.prod_i_cd} />
                                                     </OptionTitleView>
                                                 )
-                                                return (
-                                                    <>
-                                                        <OptionTitleView>
-                                                            <OptionTitleText>{optionName(item,selectedLanguage)}{Number(item?.limit_count) > 2 ? ` (${strings["필수"][selectedLanguage]} ${numberWithCommas(item?.limit_count)}개)` : ""}</OptionTitleText>
-                                                            
-                                                            <FlatList
-                                                                data={item?.prod_i_cd}
-                                                                nestedScrollEnabled={true}
-                                                                showsHorizontalScrollIndicator={false}
-                                                                horizontal={true}
-                                                                renderItem={(opts) => {
-                                                                    const optItem = items.filter(el => el.prod_cd == opts.item);
-                                                                    if (isEmpty(optItem)) {
-                                                                        return (<></>);
-                                                                    }
-                                                                    if(optionSelect.length>0) {
-                                                                        var optSelectFilter = optionSelect.filter(optEl => (optEl.prodCD == optItem[0].prod_cd && item.idx==optEl.groupIdx ));
-                                                                    }else {
-                                                                        var optSelectFilter = [];
-                                                                    }
-                                                                    //console.log("optItem[0]; ",optItem[0])
-                                                                    const isSelected = optSelectFilter.length > 0;
-                                                                    return (
-                                                                        <>
-                                                                            <OptionItemView>
-                                                                                <OptionItemImg source={{ uri: (optItem[0].gimg_chg) }} />
-                                                                                <TouchableWithoutFeedback onPress={() => { onOptionSelect(item.limit_count, item.idx, opts.item, "plus"); }}>
-                                                                                    <OptionItmeTextWrapper>
-                                                                                        <OptionItemSelected isSelected={isSelected} />
-                                                                                        <BlackDimWRapper />
-                                                                                        <OptionItemTitleText isSelected={true} >
-                                                                                            { menuName(optItem[0],selectedLanguage)}
-                                                                                        </OptionItemTitleText>
-                                                                                        <OptionItemPriceText>
-                                                                                            {numberWithCommas(optItem[0].sal_tot_amt)}{strings["원"][`${selectedLanguage}`]}
-                                                                                        </OptionItemPriceText>
-                                                                                    </OptionItmeTextWrapper>
-                                                                                </TouchableWithoutFeedback>
-                                                                                {Number(item.limit_count) != 1 &&
-                                                                                    <OptionItemAmountView>
-                                                                                        <TouchableWithoutFeedback onPress={() => { onOptionSelect(item.limit_count, item.idx, opts.item, "plus"); }} >
-                                                                                            <OptionItemAmountBtn source={require("../../resources/imgs/drawable-xxxhdpi/bt_add_on_1.png")} />
-                                                                                        </TouchableWithoutFeedback>
-                                                                                        <OptionItemAmountText>{optSelectFilter.filter(det=>(det.groupIdx == item.idx&&det.prodCD==optItem[0].prod_cd))[0]?.amt||0}</OptionItemAmountText>
-                                                                                        <TouchableWithoutFeedback onPress={() => { onOptionSelect(item.limit_count, item.idx, opts.item, "minus"); }} >
-                                                                                            <OptionItemAmountBtn source={require("../../resources/imgs/drawable-xxxhdpi/bt_sub_on_1.png")} />
-                                                                                        </TouchableWithoutFeedback>
-                                                                                    </OptionItemAmountView>
-                                                                                }
-                                                                            </OptionItemView>
-
-                                                                        </>
-                                                                    );
-                                                                }}
-                                                            />
-                                                        </OptionTitleView>
-                                                    </>
-                                                );
+                                                
                                             })
                                         }
                                     </OptionListView>
