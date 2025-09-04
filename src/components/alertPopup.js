@@ -21,7 +21,7 @@ export const AlertPopup = () => {
     
     function close(type) {
         console.log("close");
-        dispatch(setAlert({"isAlertOpen":false, clickType:type}))
+        dispatch(setAlert({"isAlertOpen":false, clickType:type, subMsg:""}))
     }
 
     if(isAlertOpen==false ){

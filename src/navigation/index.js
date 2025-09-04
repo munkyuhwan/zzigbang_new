@@ -23,6 +23,7 @@ import { storage } from '../utils/localStorage';
 import { FullAutoClosePopup } from '../components/fullAutoclosePopup';
 import { KocesAppPay } from '../utils/kocess';
 import { setAlert } from '../store/alert';
+import { VAN_SMARTRO } from '../utils/apiRequest';
 
 const Stack = createStackNavigator()
 var statusInterval;
@@ -105,7 +106,9 @@ export default function Navigation() {
     }
     function onCloseSpinner() {
         if(spinnerType == "pay" || spinnerType == "payCancel") {
-            smartroCancelService();
+            if(storage.getString("VAN")==VAN_SMARTRO) {
+                smartroCancelService();
+            }
         }
         else if(setSpinnerType=="searchReceipt") {
 

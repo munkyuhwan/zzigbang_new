@@ -75,6 +75,9 @@ public class PrinterModule extends ReactContextBaseJavaModule {
     int ITEM_PRICE_POSITION = 420;
     int ITEM_PRICE_TITLE_POSITION = 450;
 
+    String KOCES = "koces";
+    String SMARTRO = "smartro";
+
     PrinterModule(ReactApplicationContext context) {
         super(context);
         mContext=context;
@@ -381,13 +384,12 @@ public class PrinterModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void Sam4sStartPrint(String finalOrderData, String itemData,String payResultData, String businessData, String storeName, String orderNo) {
-        /*Log.d("SAM4S", "item data: "+itemData );
+    public void Sam4sStartPrint(String van, String finalOrderData, String itemData,String payResultData, String businessData, String storeName, String orderNo) {
+        //Log.d("SAM4S", "item data: "+itemData );
         Log.d("SAM4S", "business Data: "+businessData );
-        Log.d("SAM4S", "payResultData: "+payResultData );
-        Log.d("SAM4S", "orderNo: "+orderNo );
+        //Log.d("SAM4S", "payResultData: "+payResultData );
+        //Log.d("SAM4S", "orderNo: "+orderNo );
 
-         */
 
 
         if(!itemData.equals("")) {
@@ -460,13 +462,22 @@ public class PrinterModule extends ReactContextBaseJavaModule {
                         builder.addTextPosition(COLUMN_POSITION);
                         builder.addText(":");
                         builder.addTextPosition(BUSNISSINFO_POSITION);
-                        builder.addText(storeName+"\n");
+                        if(van.equals(KOCES)) {
+                            builder.addText(storeName+"\n");
+                        }else if(van.equals(SMARTRO) ) {
+                            builder.addText(payData.getString("business-name")+"\n");
+                        }
+
                         // 연락처
                         builder.addText("연락처");
                         builder.addTextPosition(COLUMN_POSITION);
                         builder.addText(":");
                         builder.addTextPosition(BUSNISSINFO_POSITION);
-                        builder.addText(bData.getString("ShpTel")+"\n");
+                        if(van.equals(KOCES)) {
+                            builder.addText(bData.getString("ShpTel")+"\n");
+                        }else if(van.equals(SMARTRO) ) {
+                            builder.addText(payData.getString("business-phone-no")+"\n");
+                        }
                         builder.addTextBold(false);
 
                         // 주 소
@@ -475,12 +486,18 @@ public class PrinterModule extends ReactContextBaseJavaModule {
                         builder.addText(":");
                         builder.addTextRotate(90);
                         builder.addTextPosition(BUSNISSINFO_POSITION);
-                        String addressStr = bData.getString("ShpAdr");
-                        builder.addTextPosition(BUSNISSINFO_POSITION);
-                        builder.addText(addressStr+"\n");
+                        String addressStr = "";
+                        if(van.equals(KOCES)) {
+                            addressStr = bData.getString("ShpAdr");
+                        }else if(van.equals(SMARTRO) ) {
+                            addressStr = payData.getString("business-address");
+                        }
 
-                        for (int i = 0; i < addressStr.length(); i += 18) {
-                            int end = Math.min(addressStr.length(), i + 18);
+                        builder.addTextPosition(BUSNISSINFO_POSITION);
+                        //builder.addText(addressStr+"\n");
+
+                        for (int i = 0; i < addressStr.length(); i += 16) {
+                            int end = Math.min(addressStr.length(), i + 16);
                             builder.addTextPosition(BUSNISSINFO_POSITION);
                             builder.addText(addressStr.substring(i, end)+"\n");
                         }
@@ -491,13 +508,22 @@ public class PrinterModule extends ReactContextBaseJavaModule {
 
                         builder.addText(":");
                         builder.addTextPosition(BUSNISSINFO_POSITION);
-                        builder.addText(formatBizNo(bData.getString("BsnNo"))+"\n");
+                        if(van.equals(KOCES)) {
+                            builder.addText(formatBizNo(bData.getString("BsnNo"))+"\n");
+                        }else if(van.equals(SMARTRO) ) {
+                            builder.addText(formatBizNo(payData.getString("business-no"))+"\n");
+                        }
 
                         builder.addText("날짜");
                         builder.addTextPosition(COLUMN_POSITION);
                         builder.addText(":");
                         builder.addTextPosition(BUSNISSINFO_POSITION);
-                        builder.addText(formatDateTime(payData.getString("TrdDate"))+"\n");
+                        if(van.equals(KOCES)) {
+                            builder.addText(formatDateTime(payData.getString("TrdDate"))+"\n");
+                        }else if(van.equals(SMARTRO) ) {
+                            builder.addText(formatDateTime(payData.getString("approval-date")+payData.getString("approval-time"))+"\n");
+
+                        }
 
 
 
@@ -558,31 +584,56 @@ public class PrinterModule extends ReactContextBaseJavaModule {
                         builder.addTextLineSpace(100);
                         builder.addTextPosition(ITEM_NAME_POSITION);
                         builder.addText("소  계");
-                        builder.addTextPosition(getAlign(Integer.parseInt(payData.getString("TrdAmt"))+Integer.parseInt(payData.getString("TaxAmt"))) );
-                        builder.addText(df.format(Integer.parseInt(payData.getString("TrdAmt"))+Integer.parseInt(payData.getString("TaxAmt"))) +"\n");
+
+                        if(van.equals(KOCES)) {
+                            builder.addTextPosition(getAlign(Integer.parseInt(payData.getString("TrdAmt"))+Integer.parseInt(payData.getString("TaxAmt"))) );
+                            builder.addText(df.format(Integer.parseInt(payData.getString("TrdAmt"))+Integer.parseInt(payData.getString("TaxAmt"))) +"\n");
+                        }else if(van.equals(SMARTRO) ) {
+                            builder.addTextPosition(getAlign(Integer.parseInt(payData.getString("total-amount"))) );
+                            builder.addText(df.format(Integer.parseInt(payData.getString("total-amount"))) +"\n");
+                        }
 
                         builder.addTextLineSpace(70);
                         builder.addTextSize(1, 1);
                         builder.addTextPosition(ITEM_NAME_POSITION);
                         builder.addText("순 매 출");
                         builder.addTextPosition(ITEM_PRICE_POSITION);
-                        builder.addTextPosition(getAlign(Integer.parseInt(payData.getString("TrdAmt"))) );
-                        builder.addText(df.format(Integer.parseInt(payData.getString("TrdAmt"))) +"\n");
+
+
+                        if(van.equals(KOCES)) {
+                            builder.addTextPosition(getAlign(Integer.parseInt(payData.getString("TrdAmt"))) );
+                            builder.addText(df.format(Integer.parseInt(payData.getString("TrdAmt"))) +"\n");
+                        }else if(van.equals(SMARTRO) ) {
+                            builder.addTextPosition(getAlign(Integer.parseInt(payData.getString("total-amount"))-Integer.parseInt(payData.getString("surtax"))) );
+                            builder.addText(df.format(Integer.parseInt(payData.getString("total-amount"))-Integer.parseInt(payData.getString("surtax"))) +"\n");
+                        }
 
                         builder.addTextSize(1, 1);
                         builder.addTextPosition(ITEM_NAME_POSITION);
                         builder.addText("부 가 세");
                         builder.addTextPosition(ITEM_PRICE_POSITION);
-                        builder.addTextPosition(getAlign(Integer.parseInt(payData.getString("TaxAmt"))) );
-                        builder.addText(df.format(Integer.parseInt(payData.getString("TaxAmt"))) +"\n");
+
+                        if(van.equals(KOCES)) {
+                            builder.addTextPosition(getAlign(Integer.parseInt(payData.getString("TaxAmt"))) );
+                            builder.addText(df.format(Integer.parseInt(payData.getString("TaxAmt"))) +"\n");
+                        }else if(van.equals(SMARTRO) ) {
+                            builder.addTextPosition(getAlign(Integer.parseInt(payData.getString("surtax"))) );
+                            builder.addText(df.format(Integer.parseInt(payData.getString("surtax"))) +"\n");
+                        }
 
                         builder.addTextLineSpace(100);
                         builder.addTextSize(1, 2);
                         builder.addTextPosition(ITEM_NAME_POSITION);
                         builder.addText("매출합계");
                         builder.addTextPosition(ITEM_PRICE_POSITION);
-                        builder.addTextPosition(getAlign(Integer.parseInt(payData.getString("TrdAmt"))+Integer.parseInt(payData.getString("TaxAmt"))) );
-                        builder.addText(df.format(Integer.parseInt(payData.getString("TrdAmt"))+Integer.parseInt(payData.getString("TaxAmt"))) +"\n");
+                        if(van.equals(KOCES)) {
+                            builder.addTextPosition(getAlign(Integer.parseInt(payData.getString("TrdAmt"))+Integer.parseInt(payData.getString("TaxAmt"))) );
+                            builder.addText(df.format(Integer.parseInt(payData.getString("TrdAmt"))+Integer.parseInt(payData.getString("TaxAmt"))) +"\n");
+                        }else if(van.equals(SMARTRO) ) {
+                            builder.addTextPosition(getAlign(Integer.parseInt(payData.getString("total-amount"))) );
+                            builder.addText(df.format(Integer.parseInt(payData.getString("total-amount"))) +"\n");
+
+                        }
 
 
                         builder.addTextSize(1, 1);
@@ -603,35 +654,61 @@ public class PrinterModule extends ReactContextBaseJavaModule {
                         builder.addTextPosition(PAY_COLUMN_POSITION);
                         builder.addText(":");
                         builder.addTextPosition(PAY_INFO_POSITION);
-                        builder.addText(payData.getString("CardNo")+"\n");
+
+
+                        if(van.equals(KOCES)) {
+                            builder.addText(payData.getString("CardNo")+"\n");
+                        }else if(van.equals(SMARTRO) ) {
+                            builder.addText(payData.getString("card-no")+"\n");
+                        }
 
                         // 할부개월
                         builder.addText("[할 부 개 월]");
                         builder.addTextPosition(PAY_COLUMN_POSITION);
                         builder.addText(":");
                         builder.addTextPosition(PAY_INFO_POSITION);
-                        builder.addText(payData.getString("Month")+"\n");
+
+
+                        if(van.equals(KOCES)) {
+                            builder.addText(payData.getString("Month")+"\n");
+                        }else if(van.equals(SMARTRO) ) {
+                            builder.addText(payData.getString("installment")+"\n");
+                        }
 
                         // 카드사명
                         builder.addText("[카 드 사 명]");
                         builder.addTextPosition(PAY_COLUMN_POSITION);
                         builder.addText(":");
                         builder.addTextPosition(PAY_INFO_POSITION);
-                        builder.addText(payData.getString("InpNm")+"\n");
+                        if(van.equals(KOCES)) {
+                            builder.addText(payData.getString("InpNm")+"\n");
+                        }else if(van.equals(SMARTRO) ) {
+                            builder.addText(payData.getString("acquire-info")+"\n");
+                        }
 
                         // 승인번호
                         builder.addText("[승 인 번 호]");
                         builder.addTextPosition(PAY_COLUMN_POSITION);
                         builder.addText(":");
                         builder.addTextPosition(PAY_INFO_POSITION);
-                        builder.addText(payData.getString("AuNo")+"\n");
+
+                        if(van.equals(KOCES)) {
+                            builder.addText(payData.getString("AuNo")+"\n");
+                        }else if(van.equals(SMARTRO) ) {
+                            builder.addText(payData.getString("approval-no")+"\n");
+                        }
+
 
                         // 결제금액
                         builder.addText("[결 제 금 액]");
                         builder.addTextPosition(PAY_COLUMN_POSITION);
                         builder.addText(":");
                         builder.addTextPosition(PAY_INFO_POSITION);
-                        builder.addText(df.format(Integer.parseInt(payData.getString("TrdAmt"))+Integer.parseInt(payData.getString("TaxAmt")))+"\n");
+                        if(van.equals(KOCES)) {
+                            builder.addText(df.format(Integer.parseInt(payData.getString("TrdAmt"))+Integer.parseInt(payData.getString("TaxAmt")))+"\n");
+                        }else if(van.equals(SMARTRO) ) {
+                            builder.addText(df.format(Integer.parseInt(payData.getString("total-amount")))+"\n");
+                        }
 
 
 

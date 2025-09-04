@@ -1,6 +1,6 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { getIP, getStoreID } from "../utils/common";
-import { apiRequest, callApiWithExceptionHandling, posApiRequest } from "../utils/apiRequest";
+import { VAN_KOCES, VAN_SMARTRO, apiRequest, callApiWithExceptionHandling, posApiRequest } from "../utils/apiRequest";
 import { ADMIN_API_BANNER, ADMIN_API_BASE_URL, ADMIN_API_STORE_INFO, POS_BASE_URL } from "../resources/apiResources";
 import { storage } from "../utils/localStorage";
 import { KocesAppPay } from "../utils/kocess";
@@ -37,6 +37,14 @@ export const getTableData = createAsyncThunk("meta/getTableData", async(data,{di
 export const getStoreInfo = createAsyncThunk("meta/getStoreInfo", async(data, {dispatch,rejectWithValue})=>{
     //const STORE_IDX = await AsyncStorage.getItem("STORE_IDX");
     const STORE_IDX = storage.getString("STORE_IDX");
+
+    const VAN_TITLE = storage.getString("VAN");
+
+    if(isEmpty(VAN_TITLE)) {
+
+        return rejectWithValue();
+    }
+
     if(!STORE_IDX) {
         return rejectWithValue();
     }
@@ -70,15 +78,19 @@ export const getStoreInfo = createAsyncThunk("meta/getStoreInfo", async(data, {d
 
 
                 if(isEmpty(storage.getString("STORE_INFO"))) {
-                    var kocessAppPay = new KocesAppPay();
-                    kocessAppPay.storeDownload()
-                    .then(storeDownload=>{
-                        console.log("storeDownload: ",storeDownload);
-                        storage.set("STORE_INFO",JSON.stringify(storeDownload));
-                    })
-                    .catch(err=>{
+                    if(storage.getString("VAN")==VAN_KOCES){
+                        var kocessAppPay = new KocesAppPay();
+                        kocessAppPay.storeDownload()
+                        .then(storeDownload=>{
+                            console.log("storeDownload: ",storeDownload);
+                            storage.set("STORE_INFO",JSON.stringify(storeDownload));
+                        })
+                        .catch(err=>{
 
-                    });
+                        });
+                    }else if(storage.getString("VAN")==VAN_SMARTRO) {
+                        
+                    }
                 }
                 //AsyncStorage.setItem("BSN_NO",bsnNo);
                 //AsyncStorage.setItem("TID_NO",catId); 

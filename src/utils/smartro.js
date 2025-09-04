@@ -192,22 +192,16 @@ export const serviceCashReceiptCancel = async(data) =>{
 
 // 결제 승인/취소 요청 
 export const servicePayment = async(dispatch, isCancel, data)=>{
-    console.log("adsfasfasfdawefa");
-    console.log("NativeModules: ",NativeModules)
     const {SmartroPay} = NativeModules;
-    console.log("adsfasfasfdawefa111111111");
     
     const BUSINESS_NO = storage.getString("BSN_NO");
     const DEVICE_NO = storage.getString("TID_NO");
     
-    console.log("BUSINESS_NO: ",BUSINESS_NO);
-    console.log("DEVICE_NO: ",DEVICE_NO);
     var smartroData = {};
     if(isCancel==true) { 
         // service payment 결제 취소 요청
         //{"service":"payment","type":"credit","persional-id":"01040618432","deal":"approval","total-amount":"1004","cat-id":"7109912041","business-no":"2118806806","device-name":"SMT-Q453","device-auth-info":"####SMT-Q453","device-auth-ver":"1201","device-serial":"S423050950","card-no":"94119400********","business-name":"주식회사 우리포스","business-address":"인천 부평구 부평대로 337  (청천동) 제이타워3차지신산업센터 806,807호","business-owner-name":"김정엽","business-phone-no":"02  15664551","van-tran-seq":"240613000757","response-code":"00","approval-date":"240613","approval-time":"000755","issuer-info":"0300마이홈플러스신한","acquire-info":"0300신한카드사","merchant-no":"0105512446","approval-no":"33396115","display-msg":"정상승인거래\r간편결제수단: 삼성페이승인","receipt-msg":"정상승인거래\r간편결제수단: 삼성페이승인","service-result":"0000"}
         const SMARTRO_CANCEL_DATA = {"cat-id":DEVICE_NO, "business-no":BUSINESS_NO};
-        console.log("SMARTRO_CANCEL_DATA:",SMARTRO_CANCEL_DATA);
         smartroData = {"service":"payment", "type":"credit", "deal":"cancellation", "personal-id":"",...data, ...SMARTRO_CANCEL_DATA};
     }else {
         // 결제 요청 데이터

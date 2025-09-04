@@ -959,7 +959,7 @@ export async function printReceipt(orderList, breadOrderList, items, payResultDa
     console.log(adminStoreName);
     console.log(orderNo);
     console.log("====================================================================");
-    Printer.Sam4sStartPrint(JSON.stringify(orderFinalData), JSON.stringify(finalOrderData), JSON.stringify(payResultData), businessData, adminStoreName, orderNo);
+    Printer.Sam4sStartPrint(storage.getString("VAN"),JSON.stringify(orderFinalData), JSON.stringify(finalOrderData), JSON.stringify(payResultData), businessData, adminStoreName, orderNo);
 }
 
 export function trimReceiptData(data, items) {

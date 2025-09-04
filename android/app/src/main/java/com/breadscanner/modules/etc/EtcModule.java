@@ -37,6 +37,7 @@ public class EtcModule extends ReactContextBaseJavaModule {
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK); // 다른 앱 실행 시 권장
             intent.putExtra("store_name", storeName);
             intent.putExtra("store_id", storeID);
+            System.out.println(intent.getExtras());
             getReactApplicationContext().startActivity(intent);
         } catch (ActivityNotFoundException e) {
             e.printStackTrace();
