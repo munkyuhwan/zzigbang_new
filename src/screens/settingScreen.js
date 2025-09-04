@@ -1,6 +1,6 @@
 import { Alert, DeviceEventEmitter, KeyboardAvoidingView, ScrollView, Text, TouchableWithoutFeedback, View } from "react-native";
 import { BottomButton } from "../components/commonComponents";
-import { SettingButtonView, SettingSectionDetailWrapper, SettingSectionInput, SettingSectionLabel, SettingSectionTitle, SettingSectionWrapper, SettingSenctionInputView, SettingSenctionInputViewColumn, SettingWrapper } from "../style/setting";
+import { SettingButtonView, SettingSectionDetailInnerWrapper, SettingSectionDetailRowWrapper, SettingSectionDetailWrapper, SettingSectionInput, SettingSectionLabel, SettingSectionTitle, SettingSectionWrapper, SettingSenctionInputView, SettingSenctionInputViewColumn, SettingWrapper } from "../style/setting";
 import { serviceCancelPayment, servicePayment } from "../utils/smartro";
 import { useCallback, useEffect, useRef, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -290,7 +290,7 @@ const SettingScreen = (props) =>{
                         <Text style={{flex:1,fontSize:40,color:colorBlack}} ></Text>
                     </View>
                     <View style={{flexDirection:'row', paddingLeft:30,paddingRight:30}}>
-                        <Text style={{flex:1,fontSize:20,color:colorBlack,textAlign:'center'}} >v1.0.4</Text>
+                        <Text style={{flex:1,fontSize:20,color:colorBlack,textAlign:'center'}} >v1.0.5</Text>
                     </View>
                     <SettingWrapper>
 
@@ -307,33 +307,125 @@ const SettingScreen = (props) =>{
                             </SettingSectionDetailWrapper>
                         </SettingSectionWrapper>
  */}
-                        <SettingSectionWrapper>
-                            <SettingSectionTitle>쟁반무게</SettingSectionTitle>
+                         <SettingSectionWrapper>
+                            <SettingSectionTitle>관리자 설정</SettingSectionTitle>
                             <SettingSectionDetailWrapper>
                                 <SettingSenctionInputView>
-                                    <SettingSectionLabel>무게</SettingSectionLabel>
-                                    <SettingSectionInput onChangeText={(val)=>{setTrayWeight(val)}} value={trayWeight} inputMode="numeric" ></SettingSectionInput>
-                                </SettingSenctionInputView>
-                                <SettingSenctionInputView>
-                                    <TouchableWithoutFeedback onPress={()=>{storage.set("TRAY_WEIGHT",trayWeight); EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"알림", str:"저장되었습니다."});}} >
+                                    <TouchableWithoutFeedback onPress={async()=>{ dispatch(setMenu({orderList:[],breadOrderList:[]}));EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"세팅", str:'초기화 되었습니다.'}); }} >
                                         <SettingButtonView>
-                                            <SettingSectionTitle>저장</SettingSectionTitle>
+                                            <SettingSectionTitle>장바구니 초기화</SettingSectionTitle>
                                         </SettingButtonView>
                                     </TouchableWithoutFeedback>
                                 </SettingSenctionInputView>
+                                <SettingSenctionInputView>
+                                        <TouchableWithoutFeedback onPress={()=>{ Etc.openManageIntent(storage.getString("STORE_IDX"),storage.getString("STORE_NAME")); }} >
+                                            <SettingButtonView>
+                                                <SettingSectionTitle>매니지 앱 열기</SettingSectionTitle>
+                                            </SettingButtonView>
+                                        </TouchableWithoutFeedback>
+                                    </SettingSenctionInputView>
                             </SettingSectionDetailWrapper>
                         </SettingSectionWrapper>
 
                         <SettingSectionWrapper>
-                            <SettingSectionTitle></SettingSectionTitle>
+                            <SettingSectionTitle>매장정보</SettingSectionTitle>
+                            
                             <SettingSectionDetailWrapper>
+
+                                <SettingSectionDetailRowWrapper>
+                                    <SettingSectionDetailInnerWrapper>
+                                        <SettingSenctionInputView>
+                                            <SettingSectionLabel>스토어 아이디</SettingSectionLabel>
+                                            <SettingSectionInput onChangeText={(val)=>{setStoreID(val)}} value={storeID} ></SettingSectionInput>
+                                        </SettingSenctionInputView>
+                                        <SettingSenctionInputView>
+                                            <SettingSectionLabel>제품등록 아이디</SettingSectionLabel>
+                                            <SettingSectionInput onChangeText={(val)=>{setBreadStoreId(val)}} value={breadStoreID} ></SettingSectionInput>
+                                        </SettingSenctionInputView> 
+                                        <SettingSenctionInputView>
+                                            <SettingSectionLabel>포스번호</SettingSectionLabel>
+                                            <SettingSectionInput inputMode="numeric" onChangeText={(val)=>{setPosNo(val)}} value={posNo} ></SettingSectionInput>
+                                        </SettingSenctionInputView>
+                                        <SettingSenctionInputView>
+                                            <TouchableWithoutFeedback onPress={()=>{ storage.set("POS_NO",posNo); completeStoreInfo();/*  AsyncStorage.setItem("POS_NO",posNo); */ EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"세팅", str:'저장되었습니다.'}); }} >
+                                                <SettingButtonView>
+                                                    <SettingSectionTitle>저장</SettingSectionTitle>
+                                                </SettingButtonView>
+                                            </TouchableWithoutFeedback>
+                                        </SettingSenctionInputView>
+                                    </SettingSectionDetailInnerWrapper>
+                                </SettingSectionDetailRowWrapper>
+
+
+
                                 <SettingSenctionInputView>
-                                    <TouchableWithoutFeedback onPress={()=>{ Etc.openManageIntent(storage.getString("STORE_IDX"),storage.getString("STORE_NAME")); }} >
-                                        <SettingButtonView>
-                                            <SettingSectionTitle>매니지 열기</SettingSectionTitle>
-                                        </SettingButtonView>
-                                    </TouchableWithoutFeedback>
+                                    <SettingSectionLabel>테이블 선택</SettingSectionLabel>
+                                    {storeInfo &&
+                                        <Picker
+                                            ref={pickerRef}
+                                            key={"tablePicker"}
+                                            mode='dialog'
+                                            onValueChange = {(itemValue, itemIndex) => {
+                                                if(!isEmpty(storeInfo?.table_list)){
+                                                    if(storeInfo?.table_list?.length>0) {
+                                                        if(!isEmpty(itemValue)){
+                                                            setTableInfo(itemValue)     
+                                                        }                
+                                                    }
+                                                }              
+                                            }}
+                                            selectedValue={table}
+                                            style = {{
+                                                width: 300,
+                                                height: 50,
+                                            }}>
+                                                <Picker.Item key={"none"} label = {"미선택"} value ={{}} />
+                                            {storeInfo?.table_list?.map(el=>{
+                                                return(
+                                                    <Picker.Item key={"_"+el.t_num}  label = {el.floor+"층 "+el.t_name} value ={el} />
+                                                )
+                                            })
+                                            }
+                                        </Picker>
+                                    }
                                 </SettingSenctionInputView>
+                                <SettingSenctionInputView>
+                                    <SettingSectionLabel>VAN 선택</SettingSectionLabel>
+                                    <Picker
+                                        ref={vanRef}
+                                        key={"tablePicker"}
+                                        mode='dialog'
+                                        onValueChange = {(itemValue, itemIndex) => {
+                                            if(itemValue) {
+                                                storage.set("VAN",itemValue);
+                                                setVan(itemValue);
+                                            }
+                                        }}
+                                        selectedValue={van}
+                                        style = {{
+                                            width: 300,
+                                            height: 50,
+                                        }}>
+                                            <Picker.Item key={"none"} label = {"미선택"} value ={{}} />
+                                            <Picker.Item key={"_kocess"}  label = {"코세스"} value ={VAN_KOCES} />
+                                            <Picker.Item key={"_smartro"}  label = {"스마트로"} value ={VAN_SMARTRO} />
+                                        
+                                    </Picker>
+                                </SettingSenctionInputView>
+
+                                <SettingSectionDetailInnerWrapper>
+                                    <SettingSenctionInputView>
+                                        <SettingSectionLabel>쟁반무게</SettingSectionLabel>
+                                        <SettingSectionInput onChangeText={(val)=>{setTrayWeight(val)}} value={trayWeight} inputMode="numeric" ></SettingSectionInput>
+                                    </SettingSenctionInputView>
+                                    <SettingSenctionInputView>
+                                        <TouchableWithoutFeedback onPress={()=>{storage.set("TRAY_WEIGHT",trayWeight); EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"알림", str:"저장되었습니다."});}} >
+                                            <SettingButtonView>
+                                                <SettingSectionTitle>저장</SettingSectionTitle>
+                                            </SettingButtonView>
+                                        </TouchableWithoutFeedback>
+                                    </SettingSenctionInputView>
+                                </SettingSectionDetailInnerWrapper>
                             </SettingSectionDetailWrapper>
                         </SettingSectionWrapper>
 
@@ -348,11 +440,10 @@ const SettingScreen = (props) =>{
                                     </TouchableWithoutFeedback>
                                 </SettingSenctionInputView>
                              </SettingSectionDetailWrapper>
-
                         </SettingSectionWrapper>
-                        
+                         
                         <SettingSectionWrapper>
-                            <SettingSectionTitle>저울 사용 설정</SettingSectionTitle>
+                            <SettingSectionTitle>저울세팅</SettingSectionTitle>
                             <SettingSectionDetailWrapper>
                                 <SettingSenctionInputView>
                                     <TouchableWithoutFeedback onPress={async()=>{  
@@ -366,38 +457,20 @@ const SettingScreen = (props) =>{
                                         </SettingButtonView>
                                     </TouchableWithoutFeedback>
                                 </SettingSenctionInputView>
-                            </SettingSectionDetailWrapper>
-                            {/* <SettingSectionDetailWrapper>
                                 <SettingSenctionInputView>
-                                    <TouchableWithoutFeedback onPress={()=>{ Serial.getSerialPorts() }} >
-                                        <SettingButtonView>
-                                            <SettingSectionTitle>시리얼</SettingSectionTitle>
-                                        </SettingButtonView>
-                                    </TouchableWithoutFeedback>
+                                    <SettingSectionLabel>{weightProductName}</SettingSectionLabel>
                                 </SettingSenctionInputView>
-                            </SettingSectionDetailWrapper> */}
-                        </SettingSectionWrapper>
-                        <SettingSectionWrapper>
-                            <SettingSectionTitle>카트 초기화</SettingSectionTitle>
-                            <SettingSectionDetailWrapper>
                                 <SettingSenctionInputView>
-                                    <TouchableWithoutFeedback onPress={async()=>{ dispatch(setMenu({orderList:[],breadOrderList:[]}));EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"세팅", str:'초기화 되었습니다.'}); }} >
+                                    <SettingSectionLabel>{tmpWeight} g</SettingSectionLabel>
+                                    <TouchableWithoutFeedback onPress={async()=>{ weighingTest(); }} >
                                         <SettingButtonView>
-                                            <SettingSectionTitle>초기화</SettingSectionTitle>
+                                            <SettingSectionTitle>연결 테스트</SettingSectionTitle>
                                         </SettingButtonView>
                                     </TouchableWithoutFeedback>
                                 </SettingSenctionInputView>
                             </SettingSectionDetailWrapper>
-                            {/* <SettingSectionDetailWrapper>
-                                <SettingSenctionInputView>
-                                    <TouchableWithoutFeedback onPress={()=>{ Serial.getSerialPorts() }} >
-                                        <SettingButtonView>
-                                            <SettingSectionTitle>시리얼</SettingSectionTitle>
-                                        </SettingButtonView>
-                                    </TouchableWithoutFeedback>
-                                </SettingSenctionInputView>
-                            </SettingSectionDetailWrapper> */}
                         </SettingSectionWrapper>
+                        
                         <SettingSectionWrapper>
                             <SettingSectionTitle>진동벨</SettingSectionTitle>
                             <SettingSectionDetailWrapper>
@@ -488,250 +561,15 @@ const SettingScreen = (props) =>{
                                         </SettingButtonView>
                                     </TouchableWithoutFeedback>
                                 </SettingSenctionInputView>
-                                {/* <SettingSenctionInputView>
-                                    <TouchableWithoutFeedback onPress={async()=>{  
-                                            const {Printer} = NativeModules; 
-                                            Printer.getDeviceList();
-                                            //Printer.OpenPrinter()
-                                            //Printer.usbDeviceList();
-
-                                     }} >
-                                        <SettingButtonView>
-                                            <SettingSectionTitle>프린트 리스트</SettingSectionTitle>
-                                        </SettingButtonView>
-                                    </TouchableWithoutFeedback>
-                                </SettingSenctionInputView> */}
                             </SettingSectionDetailWrapper>
                         </SettingSectionWrapper>
+
+                         
+                       
+
+                        
+                        
                         {/* <SettingSectionWrapper>
-                            <SettingSectionTitle>프린터 선택</SettingSectionTitle>
-                            <SettingSectionDetailWrapper>
-                                <SettingSenctionInputView>
-                                    <SettingSectionLabel>USB 연결 기기</SettingSectionLabel>
-                                    {printerList &&
-                                        <Picker
-                                            ref={printerPickerRef}
-                                            key={"tablePicker"}
-                                            mode='dialog'
-                                            onValueChange = {(itemValue, itemIndex) => {
-                                                console.log(itemValue.productName);
-                                                //if(itemValue) {
-                                                    AsyncStorage.setItem("productID",`${itemValue.productID}`);
-                                                    AsyncStorage.setItem("vendorID",`${itemValue.vendorID}`);
-                                                    AsyncStorage.setItem("productName",`${itemValue.productName}`);
-                                                    setProductName(itemValue.productName);
-                                                //}
-                                            }}
-                                            style = {{
-                                                width: 300,
-                                                height: 50,
-                                            }}>
-                                                <Picker.Item key={"none"} label = {"미선택"} value ={{}} />
-                                            {printerList?.map(el=>{
-                                                return(
-                                                    <Picker.Item key={"_"+el.productId}  label = {el.productName} value ={{productID:el.productId, vendorID:el.vendorId, productName:el.productName}} />
-                                                )
-                                            })
-                                            }
-                                        </Picker>
-                                    }
-                                </SettingSenctionInputView>
-                                <View style={{width:'100%',textAlign:'center',alignItems:'center'}} >
-                                    <SettingSectionLabel>{productName}</SettingSectionLabel>
-                                </View>
-                                <TouchableWithoutFeedback onPress={async()=>{ testPrint() }} >
-                                    <SettingButtonView style={{ margin:'auto', width:240, textAlign:'center', alignItem:'center'}} >
-                                        <SettingSectionTitle style={{textAlign:'center'}} >테스트 프린트</SettingSectionTitle>
-                                    </SettingButtonView>
-                                </TouchableWithoutFeedback>
-                            </SettingSectionDetailWrapper>
-                        </SettingSectionWrapper> */}
-                        <SettingSectionWrapper>
-                            <SettingSectionTitle>저울세팅</SettingSectionTitle>
-                            <SettingSectionDetailWrapper>
-                                <SettingSenctionInputView>
-                                    {/* <SettingSectionLabel>USB 연결 기기</SettingSectionLabel> */}
-                                    {/*cdcList &&
-                                        <Picker
-                                            ref={printerPickerRef}
-                                            key={"tablePicker"}
-                                            mode='dialog'
-                                            onValueChange = {(itemValue, itemIndex) => {
-                                                //if(itemValue) {
-                                                    //AsyncStorage.setItem("weightProductID",`${itemValue.productID}`);
-                                                    //AsyncStorage.setItem("weightVendorID",`${itemValue.vendorID}`);
-                                                    //AsyncStorage.setItem("weightPortNumber",`${itemValue.portNumber}`);
-
-                                                    storage.set("weightProductID",`${itemValue.productID}`);
-                                                    storage.set("weightVendorID",`${itemValue.vendorID}`);
-                                                    storage.set("weightPortNumber",`${itemValue.portNumber}`);
-                                                    setWeightProductName(itemValue.portNumber);
-                                                //}
-                                            }}
-                                            style = {{
-                                                width: 300,
-                                                height: 50,
-                                            }}>
-                                                <Picker.Item key={"none"} label = {"미선택"} value ={{}} />
-                                            {cdcList?.map(el=>{
-                                                return(
-                                                    <Picker.Item key={"_"+el.product_id+"_"+el.port_number}  label = {el.device_name+"_"+el.port_number} value ={{productID:el.product_id, vendorID:el.device_id, portNumber:el.port_number}} />
-                                                )
-                                            })
-                                            }
-                                        </Picker>
-                                        */}
-                                    {/* printerList &&
-                                        <Picker
-                                            ref={printerPickerRef}
-                                            key={"tablePicker"}
-                                            mode='dialog'
-                                            onValueChange = {(itemValue, itemIndex) => {
-                                                console.log(itemValue.productName);
-                                                //if(itemValue) {
-                                                    AsyncStorage.setItem("weightProductID",`${itemValue.productID}`);
-                                                    AsyncStorage.setItem("weightVendorID",`${itemValue.vendorID}`);
-                                                    AsyncStorage.setItem("weightProductName",`${itemValue.productName}`);
-                                                    setWeightProductName(itemValue.productName);
-                                                //}
-                                            }}
-                                            style = {{
-                                                width: 300,
-                                                height: 50,
-                                            }}>
-                                                <Picker.Item key={"none"} label = {"미선택"} value ={{}} />
-                                            {printerList?.map(el=>{
-                                                return(
-                                                    <Picker.Item key={"_"+el.productId}  label = {el.productName} value ={{productID:el.productId, vendorID:el.vendorId, productName:el.productName}} />
-                                                )
-                                            })
-                                            }
-                                        </Picker>
-                                     */}
-                                </SettingSenctionInputView>
-                                <SettingSenctionInputView>
-                                    <SettingSectionLabel>{weightProductName}</SettingSectionLabel>
-                                </SettingSenctionInputView>
-                                <SettingSenctionInputView>
-                                    <SettingSectionLabel>{tmpWeight} g</SettingSectionLabel>
-                                    <TouchableWithoutFeedback onPress={async()=>{ weighingTest(); }} >
-                                        <SettingButtonView>
-                                            <SettingSectionTitle>연결</SettingSectionTitle>
-                                        </SettingButtonView>
-                                    </TouchableWithoutFeedback>
-                                </SettingSenctionInputView>
-                                {/* <SettingSenctionInputView>
-                                    <SettingSectionLabel>{weight} kg</SettingSectionLabel>
-                                    <TouchableWithoutFeedback onPress={async()=>{ weightInitiate(); }} >
-                                        <SettingButtonView>
-                                            <SettingSectionTitle>영점맞추기</SettingSectionTitle>
-                                        </SettingButtonView>
-                                    </TouchableWithoutFeedback>
-                                </SettingSenctionInputView> */}
-                            </SettingSectionDetailWrapper>
-                        </SettingSectionWrapper>
-                        <SettingSectionWrapper>
-                            <SettingSectionTitle>매장정보</SettingSectionTitle>
-                            <SettingSectionDetailWrapper>
-                                <SettingSenctionInputView>
-                                    <SettingSectionLabel>스토어 아이디</SettingSectionLabel>
-                                    <SettingSectionInput onChangeText={(val)=>{setStoreID(val)}} value={storeID} ></SettingSectionInput>
-                                </SettingSenctionInputView>
-                                <SettingSenctionInputView>
-                                    <SettingSectionLabel>제품등록 아이디</SettingSectionLabel>
-                                    <SettingSectionInput onChangeText={(val)=>{setBreadStoreId(val)}} value={breadStoreID} ></SettingSectionInput>
-                                </SettingSenctionInputView>
-                                <SettingSenctionInputView>
-                                    <TouchableWithoutFeedback onPress={async()=>{ completeStoreInfo(); }} >
-                                        <SettingButtonView>
-                                            <SettingSectionTitle>저장</SettingSectionTitle>
-                                        </SettingButtonView>
-                                    </TouchableWithoutFeedback>
-                                </SettingSenctionInputView>
-                            </SettingSectionDetailWrapper>
-                            
-
-
-                            <SettingSectionTitle>포스정보</SettingSectionTitle>
-                            <SettingSectionDetailWrapper>
-                                <SettingSenctionInputView>
-                                    <SettingSectionLabel>포스번호</SettingSectionLabel>
-                                    <SettingSectionInput inputMode="numeric" onChangeText={(val)=>{setPosNo(val)}} value={posNo} ></SettingSectionInput>
-                                </SettingSenctionInputView>
-                                <SettingSenctionInputView>
-                                    <TouchableWithoutFeedback onPress={()=>{ storage.set("POS_NO",posNo);/*  AsyncStorage.setItem("POS_NO",posNo); */ EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"세팅", str:'저장되었습니다.'}); }} >
-                                        <SettingButtonView>
-                                            <SettingSectionTitle>저장</SettingSectionTitle>
-                                        </SettingButtonView>
-                                    </TouchableWithoutFeedback>
-                                </SettingSenctionInputView>
-                            </SettingSectionDetailWrapper>
-
-                            <SettingSectionTitle>VAN 선택</SettingSectionTitle>
-                            <SettingSectionDetailWrapper>
-                                <SettingSenctionInputView>
-                                    <SettingSectionLabel>VAN</SettingSectionLabel>
-                                    <Picker
-                                        ref={vanRef}
-                                        key={"tablePicker"}
-                                        mode='dialog'
-                                        onValueChange = {(itemValue, itemIndex) => {
-                                            if(itemValue) {
-                                                storage.set("VAN",itemValue);
-                                                setVan(itemValue);
-                                            }
-                                        }}
-                                        selectedValue={van}
-                                        style = {{
-                                            width: 300,
-                                            height: 50,
-                                        }}>
-                                            <Picker.Item key={"none"} label = {"미선택"} value ={{}} />
-                                            <Picker.Item key={"_kocess"}  label = {"코세스"} value ={VAN_KOCES} />
-                                            <Picker.Item key={"_smartro"}  label = {"스마트로"} value ={VAN_SMARTRO} />
-                                        
-                                    </Picker>
-                                </SettingSenctionInputView>
-                            </SettingSectionDetailWrapper>
-
-                            <SettingSectionTitle>테이블 선택</SettingSectionTitle>
-                            <SettingSectionDetailWrapper>
-                                <SettingSenctionInputView>
-                                    <SettingSectionLabel>테이블</SettingSectionLabel>
-                                    {storeInfo &&
-                                        <Picker
-                                            ref={pickerRef}
-                                            key={"tablePicker"}
-                                            mode='dialog'
-                                            onValueChange = {(itemValue, itemIndex) => {
-                                                if(!isEmpty(storeInfo?.table_list)){
-                                                    if(storeInfo?.table_list?.length>0) {
-                                                        if(!isEmpty(itemValue)){
-                                                            setTableInfo(itemValue)     
-                                                        }                
-                                                    }
-                                                }              
-                                            }}
-                                            selectedValue={table}
-                                            style = {{
-                                                width: 300,
-                                                height: 50,
-                                            }}>
-                                                <Picker.Item key={"none"} label = {"미선택"} value ={{}} />
-                                            {storeInfo?.table_list?.map(el=>{
-                                                return(
-                                                    <Picker.Item key={"_"+el.t_num}  label = {el.floor+"층 "+el.t_name} value ={el} />
-                                                )
-                                            })
-                                            }
-                                        </Picker>
-                                    }
-                                </SettingSenctionInputView>
-                            </SettingSectionDetailWrapper>
-                            
-                        </SettingSectionWrapper>
-                        {
-                        <SettingSectionWrapper>
                             <SettingSectionTitle>결제</SettingSectionTitle>
                             <SettingSectionDetailWrapper>
                                 <SettingSenctionInputView>
@@ -762,8 +600,8 @@ const SettingScreen = (props) =>{
                                     </TouchableWithoutFeedback>
                                 </SettingSenctionInputView>
                             </SettingSectionDetailWrapper>
-                        </SettingSectionWrapper>
-                        }
+                        </SettingSectionWrapper> */}
+                        
                         <SettingSectionWrapper>
                             <SettingSectionTitle>사업자 정보</SettingSectionTitle>
                             <SettingSectionDetailWrapper>
@@ -803,7 +641,8 @@ const SettingScreen = (props) =>{
                             <SettingSectionTitle>업데이트 정보</SettingSectionTitle>
                             <SettingSectionDetailWrapper>
                                 <SettingSenctionInputViewColumn>
-                                    <SettingSectionLabel>- 결제버튼 안나오는 버그 수정</SettingSectionLabel>
+                                    <SettingSectionLabel>- 쟁반무게 입력 추가</SettingSectionLabel>
+                                    <SettingSectionLabel>- 저울무게 수정 추가</SettingSectionLabel>
                                 </SettingSenctionInputViewColumn>
                             </SettingSectionDetailWrapper>
                         </SettingSectionWrapper>

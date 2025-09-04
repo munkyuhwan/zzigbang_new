@@ -23,6 +23,20 @@ export const SettingSectionDetailWrapper = styled.View`
     borderRadius:10px;
     padding:14px;
 `
+export const SettingSectionDetailRowWrapper = styled.View`
+    width:100%;
+    gap:10px;
+    padding:14px;
+    flexDirection:row;
+    flex:1;
+    justifyContents:center;
+    alignItems:center;
+`
+export const SettingSectionDetailInnerWrapper = styled.View`
+    flexDirection:row;
+    margin:auto; 
+    gap:10;
+`
 export const SettingSenctionInputView = styled.View`
     flexDirection:row;
     justifyContent:center;

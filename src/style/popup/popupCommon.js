@@ -181,7 +181,7 @@ export const OptionItemOnlyView = styled.View`
 `
 export const OptionItmeTextOnlyWrapper = styled.View`
     height:100%;
-    flex:2;
+    flex:1.3;
     justifyContent:center;
 `
 export const OptionItemTitleOnlyText = styled.Text`

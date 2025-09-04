@@ -368,7 +368,11 @@ const ScanScreen = () => {
                     formData.append("input_weight", 0.0);
                 } */
                 if(storage.getBoolean("WEIGHT_SET")) {
-                    formData.append("input_weight", Number(mostFrequentWeight)-Number(storage.getString("TRAY_WEIGHT")));
+                    if(storage.getString("TRAY_WEIGHT")) {
+                        formData.append("input_weight", Number(mostFrequentWeight)-Number(storage.getString("TRAY_WEIGHT")));
+                    }else {
+                        formData.append("input_weight", Number(mostFrequentWeight));
+                    }
                 }else {
                     formData.append("input_weight", 0.0);
                 }
