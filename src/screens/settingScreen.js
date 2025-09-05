@@ -290,11 +290,11 @@ const SettingScreen = (props) =>{
                         <Text style={{flex:1,fontSize:40,color:colorBlack}} ></Text>
                     </View>
                     <View style={{flexDirection:'row', paddingLeft:30,paddingRight:30}}>
-                        <Text style={{flex:1,fontSize:20,color:colorBlack,textAlign:'center'}} >v1.0.5</Text>
+                        <Text style={{flex:1,fontSize:20,color:colorBlack,textAlign:'center'}} >v1.0.8</Text>
                     </View>
                     <SettingWrapper>
 
-                        {<SettingSectionWrapper>
+                        {/* <SettingSectionWrapper>
                             <SettingSectionTitle></SettingSectionTitle>
                             <SettingSectionDetailWrapper>
                                 <SettingSenctionInputView>
@@ -306,7 +306,7 @@ const SettingScreen = (props) =>{
                                 </SettingSenctionInputView>
                             </SettingSectionDetailWrapper>
                         </SettingSectionWrapper>
-                        }
+                         */}
                          <SettingSectionWrapper>
                             <SettingSectionTitle>관리자 설정</SettingSectionTitle>
                             <SettingSectionDetailWrapper>
@@ -318,7 +318,7 @@ const SettingScreen = (props) =>{
                                     </TouchableWithoutFeedback>
                                 </SettingSenctionInputView>
                                 <SettingSenctionInputView>
-                                        <TouchableWithoutFeedback onPress={()=>{ Etc.openManageIntent(storage.getString("STORE_IDX"),storage.getString("STORE_NAME")); }} >
+                                        <TouchableWithoutFeedback onPress={()=>{ Etc.openManageIntent(storage.getString("STORE_IDX"),storage.getString("BREAD_STORE_ID")); }} >
                                             <SettingButtonView>
                                                 <SettingSectionTitle>매니지 앱 열기</SettingSectionTitle>
                                             </SettingButtonView>
@@ -647,10 +647,20 @@ const SettingScreen = (props) =>{
                             <SettingSectionTitle>업데이트 정보</SettingSectionTitle>
                             <SettingSectionDetailWrapper>
                                 <SettingSenctionInputViewColumn>
+                                    <SettingSectionLabel>- 메뉴 추가시 깜빡임 수정</SettingSectionLabel>
+                                </SettingSenctionInputViewColumn>
+                                {/*1.0.7 <SettingSenctionInputViewColumn>
+                                    <SettingSectionLabel>- 매니지앱 호출 수정</SettingSectionLabel>
+                                </SettingSenctionInputViewColumn> */}
+                                {/* 106<SettingSenctionInputViewColumn>
+                                    <SettingSectionLabel>- 스마트로 결제 영수증 수정</SettingSectionLabel>
+                                    <SettingSectionLabel>- 스캔화면 측정무게 문구 수정</SettingSectionLabel>
+                                </SettingSenctionInputViewColumn> */}
+                               {/*  <SettingSenctionInputViewColumn>
                                     <SettingSectionLabel>- 쟁반무게 입력 추가</SettingSectionLabel>
                                     <SettingSectionLabel>- 저울무게 수정 추가</SettingSectionLabel>
                                     <SettingSectionLabel>- 코세스 / 스마트로 결제 단말기 선택 추가</SettingSectionLabel>
-                                </SettingSenctionInputViewColumn>
+                                </SettingSenctionInputViewColumn> */}
                             </SettingSectionDetailWrapper>
                         </SettingSectionWrapper>
                     </SettingWrapper>

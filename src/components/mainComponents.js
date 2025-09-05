@@ -469,11 +469,8 @@ export const CartListItem = (props) =>{
             newStr += menuName(itemData[0],selectedLanguage)+item.amt+"+";
         }
     })
-
-    useEffect(() => {
-        // 1) 페이드인 → 2) 유지 → 3) 페이드아웃
-        if(props?.lastAdded ==item[0]?.prod_cd){
-            Animated.sequence([
+    function startAnimate() {
+        Animated.sequence([
             Animated.timing(opacity, {
                 toValue: 1,
                 duration: 300, // 0.5초 동안 페이드인
@@ -485,20 +482,40 @@ export const CartListItem = (props) =>{
                 duration: 300, // 0.5초 동안 페이드아웃
                 useNativeDriver: true,
             }),
-            ]).start();
-            Animated.sequence([
-                Animated.timing(heightAnim, {
-                  toValue: 95, // 높이 커짐
-                  duration: 100,
-                  useNativeDriver: true,
-                }),
-                Animated.delay(150), // 1초 유지
-                Animated.timing(heightAnim, {
-                  toValue: 0, // 다시 줄어듦
-                  duration: 350,
-                  useNativeDriver: true,
-                }),
-            ]).start();
+        ]).start();
+        Animated.sequence([
+            Animated.timing(heightAnim, {
+            toValue: 95, // 높이 커짐
+            duration: 100,
+            useNativeDriver: true,
+            }),
+            Animated.delay(150), // 1초 유지
+            Animated.timing(heightAnim, {
+            toValue: 0, // 다시 줄어듦
+            duration: 350,
+            useNativeDriver: true,
+            }),
+        ]).start();
+
+    }
+    useEffect(() => {
+        // 1) 페이드인 → 2) 유지 → 3) 페이드아웃
+        if(props?.lastAdded ==item[0]?.prod_cd){
+
+            startAnimate();
+            setTimeout(() => {
+                startAnimate();
+                setTimeout(() => {
+                    startAnimate();
+                }, 1000);                
+            }, 1000);
+          /*   animateInterval=setInterval(() => {
+                startAnimate();
+            }, 2000);   */  
+              
+        }else {
+            //clearInterval(animateInterval);
+            //animateInterval=null;
         }
     }, [props?.lastAdded,props?.trigger]);
 
