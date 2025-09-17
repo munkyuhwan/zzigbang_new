@@ -57,7 +57,6 @@ const SettingScreen = (props) =>{
     const [trayWeight, setTrayWeight] = useState(true);
 
     const {storeInfo, tableList} = useSelector(state=>state.meta);
-    const {weight} = useSelector(state=>state.common);
     // 단말기 관련
     const [bsnNo, setBsnNo] = useState("");
     const [catId, setCatId] = useState("");
@@ -70,9 +69,9 @@ const SettingScreen = (props) =>{
     const [tmpWeight, setTmpWeight] = useState("");
 
     // 진동벨
-    const [bellLan, setBellLan] = useState("");
-    const [bellNumber, setBellNumber] = useState("");
-    const [bellCorner, setBellCorner] = useState("");
+    const [bellLan, setBellLan] = useState("a");
+    const [bellNumber, setBellNumber] = useState("1234");
+    const [bellCorner, setBellCorner] = useState("A");
 
 
     const isFocused = useIsFocused();
@@ -283,14 +282,14 @@ const SettingScreen = (props) =>{
             <ScrollView style={{backgroundColor:colorWhite}}>   
                 <KeyboardAvoidingView enabled style={{width:'100%', height:'100%'}}>
                     <View style={{flexDirection:'row', paddingLeft:30,paddingRight:30}}>
-                        <TouchableWithoutFeedback onPress={()=>{props.setSetting(false);}}>
+                        <TouchableWithoutFeedback onPress={()=>{dispatch(setCommon({isAddShow:true})); props.setSetting(false); }}>
                             <Text style={{flex:1,fontSize:40,color:colorBlack, textAlign:'left'}} >{"<"}</Text>
                         </TouchableWithoutFeedback>
                         <Text style={{flex:1,fontSize:40,color:colorBlack, textAlign:'center'}} >설정</Text>
                         <Text style={{flex:1,fontSize:40,color:colorBlack}} ></Text>
                     </View>
                     <View style={{flexDirection:'row', paddingLeft:30,paddingRight:30}}>
-                        <Text style={{flex:1,fontSize:20,color:colorBlack,textAlign:'center'}} >v1.0.8</Text>
+                        <Text style={{flex:1,fontSize:20,color:colorBlack,textAlign:'center'}} >v1.0.11</Text>
                     </View>
                     <SettingWrapper>
 
@@ -506,17 +505,18 @@ const SettingScreen = (props) =>{
                                 <SettingSenctionInputView>
                                     <SettingSectionLabel>{bellProductName}</SettingSectionLabel>
                                 </SettingSenctionInputView>
-                                <SettingSenctionInputView>
+                                {/* <SettingSenctionInputView>
                                     <SettingSectionLabel>언어</SettingSectionLabel>
                                     <SettingSectionInput onChangeText={(val)=>{setBellLan(val)}} value={bellLan} ></SettingSectionInput>
                                 </SettingSenctionInputView>
+                                */}
                                 <SettingSenctionInputView>
                                     <SettingSectionLabel>코너</SettingSectionLabel>
                                     <SettingSectionInput onChangeText={(val)=>{setBellCorner(val)}} value={bellCorner} ></SettingSectionInput>
                                 </SettingSenctionInputView>
                                 <SettingSenctionInputView>
                                     <SettingSectionLabel>고객번호</SettingSectionLabel>
-                                    <SettingSectionInput onChangeText={(val)=>{setBellNumber(val)}} value={bellNumber} ></SettingSectionInput>
+                                    <SettingSectionInput type={"numeric"} onChangeText={(val)=>{setBellNumber(val)}} value={bellNumber} ></SettingSectionInput>
                                 </SettingSenctionInputView>
 
                                 <SettingSenctionInputView>
@@ -524,7 +524,36 @@ const SettingScreen = (props) =>{
                                             const {Bell} = NativeModules; 
                                             const bellVID = storage.getString("bellVendorID")
                                             const bellPID = storage.getString("bellProductID")
-                                            Bell.bellTest(bellLan,bellCorner,bellNumber,bellVID,bellPID,"13");
+                                            console.log("selectedLanguage: ",storage.getString("LAN"))
+                                            var lan = "a";
+                                            if(storage.getString("LAN")=="ko") {
+                                                lan = "a";
+                                            }else if(storage.getString("LAN")=="jp") {
+                                                lan = "c";
+                                            }else if(storage.getString("LAN")=="cn") {
+                                                lan = "d";
+                                            }else if(storage.getString("LAN")=="en") {
+                                                lan = "b";
+                                            }
+                                            console.log(lan,bellCorner,bellNumber,bellVID,bellPID);
+                                            Bell.bellRing(lan,bellCorner,bellNumber,bellVID,bellPID);
+                                            EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"주문완료", str:"진동벨을 챙겨주세요."});
+                                            DeviceEventEmitter.removeAllListeners("onBellChange"); 
+                                            DeviceEventEmitter.addListener("onBellChange",(data)=>{    
+                                                if(data) {
+                                                    console.log("responseData: ",(data.response));
+                                                    const responseData = (data.response);
+                                                    if(responseData?.code == "0000") {
+                                                        if(responseData?.response == "1") {
+                                                            EventRegister.emit("showAlert",{showAlert:false, msg:"", title:"", str:""});
+                                                        }else{
+                                                            EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"주문완료", str:responseData?.msg});
+                                                        }
+                                                    }else {
+                                                        EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"주문오류", str:"진동벨에 오류가 있습"});
+                                                    }
+                                                }
+                                            });
                                             //Bell.bellCancel(bellVID,bellPID);
                                             //Printer.OpenPrinter()
                                             //Printer.usbDeviceList();
@@ -647,8 +676,14 @@ const SettingScreen = (props) =>{
                             <SettingSectionTitle>업데이트 정보</SettingSectionTitle>
                             <SettingSectionDetailWrapper>
                                 <SettingSenctionInputViewColumn>
-                                    <SettingSectionLabel>- 메뉴 추가시 깜빡임 수정</SettingSectionLabel>
+                                    <SettingSectionLabel>- 세팅화면 뒤로가기시 선택화면으로 넘어가도록 수정.</SettingSectionLabel>
                                 </SettingSenctionInputViewColumn>
+                                {/* <SettingSenctionInputViewColumn>
+                                    <SettingSectionLabel>- 진동벨 수정</SettingSectionLabel>
+                                </SettingSenctionInputViewColumn> */}
+                               {/*  <SettingSenctionInputViewColumn>
+                                    <SettingSectionLabel>- 메뉴 추가시 깜빡임 수정</SettingSectionLabel>
+                                </SettingSenctionInputViewColumn> */}
                                 {/*1.0.7 <SettingSenctionInputViewColumn>
                                     <SettingSectionLabel>- 매니지앱 호출 수정</SettingSectionLabel>
                                 </SettingSenctionInputViewColumn> */}

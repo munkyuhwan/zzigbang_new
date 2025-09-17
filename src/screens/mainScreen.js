@@ -239,7 +239,7 @@ const MainScreen = (props) =>{
 
     if(isSetting == true) {
         return(
-            <SettingScreen setSetting={setSetting} />
+            <SettingScreen setSetting={setSetting} setMainShow={props.setMainShow} />
         )
     }
     const findYOffsetCodeByCate = (catId) => {

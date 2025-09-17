@@ -18,6 +18,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.loader.content.AsyncTaskLoader;
 
 import com.facebook.react.bridge.ReactApplicationContext;
@@ -47,6 +48,7 @@ public class BellModule extends ReactContextBaseJavaModule {
     private DeviceEventManagerModule.RCTDeviceEventEmitter mJSModule = null;
     private static final byte LED_STX = 0x02;
     private static final byte ETX = 0x03;
+    static boolean isRun = true;
 
     private final BroadcastReceiver usbReceiver = new BroadcastReceiver() {
         public void onReceive(Context context, Intent intent) {
@@ -74,15 +76,17 @@ public class BellModule extends ReactContextBaseJavaModule {
         return "Bell";
     }
 
-    @SuppressLint("UnspecifiedRegisterReceiverFlag")
     @ReactMethod
-    public void bellTest(String bellLan,String bellCorner,String bellNumber,String vendorId, String productId, String numberStr) {
+    public void bellRing(String bellLan,String bellCorner,String bellNumber,String vendorId, String productId) {
         System.out.println("BELL TEST=============================");
 
+        isRun = true;
         usbManager = (UsbManager) mContext.getSystemService(Context.USB_SERVICE);
-        mContext.registerReceiver(usbReceiver, new IntentFilter(ACTION_USB_PERMISSION));
+        ContextCompat.registerReceiver(mContext, usbReceiver, new IntentFilter(ACTION_USB_PERMISSION), ContextCompat.RECEIVER_EXPORTED);
 
         findAndConnectUsbDevice(bellLan,bellCorner,bellNumber, vendorId,productId);
+
+
 
 
 // LED1을 빨강으로 설정
@@ -214,6 +218,47 @@ public class BellModule extends ReactContextBaseJavaModule {
     }
 
     public void sendCustomerNumber(String bellLan,String bellCorner,String bellNumber) {
+
+        // 시작 바이트 (STX: 0x01)
+        byte stx = 0x01;
+        // 종료 바이트 (ETX: 0x03)
+        byte etx = 0x03;
+
+        // 언어 → ASCII 바이트 (예: "a" → 0x61)
+        byte[] lanBytes = (bellLan != null && !bellLan.isEmpty())
+                ? bellLan.getBytes(StandardCharsets.US_ASCII)
+                : new byte[0];
+
+        // 코너 → ASCII 바이트 (예: "AC" → 0x41 0x43)
+        byte[] cornerBytes = (bellCorner != null && !bellCorner.isEmpty())
+                ? bellCorner.getBytes(StandardCharsets.US_ASCII)
+                : new byte[0];
+
+        // 고객번호 → ASCII 바이트 (예: "1234" → 0x31 0x32 0x33 0x34)
+        byte[] numberBytes = bellNumber.getBytes(StandardCharsets.US_ASCII);
+
+        // 전체 명령 배열 = STX + 언어 + 코너들 + 고객번호 + ETX
+        int length = 1 + lanBytes.length + cornerBytes.length + numberBytes.length + 1;
+        byte[] command = new byte[length];
+
+        int index = 0;
+        command[index++] = stx;
+
+        System.arraycopy(lanBytes, 0, command, index, lanBytes.length);
+        index += lanBytes.length;
+
+        System.arraycopy(cornerBytes, 0, command, index, cornerBytes.length);
+        index += cornerBytes.length;
+
+        System.arraycopy(numberBytes, 0, command, index, numberBytes.length);
+        index += numberBytes.length;
+
+        command[index] = etx;
+
+        // 전송
+        sendCommand(command);
+
+        /*
         // 시작 바이트 (ASCII 'S' → 0x53)
         //byte stx = 0x53;
         byte stx = 0x01;
@@ -227,37 +272,152 @@ public class BellModule extends ReactContextBaseJavaModule {
         byte[] numberBytes = bellNumber.getBytes(StandardCharsets.US_ASCII);
         System.out.println("numberBytes: "+numberBytes);
         // 전체 명령 배열 구성: S + 숫자들 + ETX
-        byte[] command = new byte[1 + 1 + 1 + numberBytes.length + 1];
+        byte[] command = new byte[1 + numberBytes.length + 1];
 
         command[0] = stx;
-        command[1] = lan;
-        command[2] = corner;
 
         System.arraycopy(numberBytes, 0, command, 1, numberBytes.length);
         command[command.length - 1] = etx;
 
         // 전송
         sendCommand(command);
+
+         */
     }
 
 
     private void sendCommand(byte[] command) {
+        System.out.println("command=================================================");
+        System.out.println(command);
+
+        // 명령 전송
         try {
             serialPort.write(command, 1000);
-
-            boolean isCheck = true;
-            //while (isCheck) {
-                byte[] buffer = new byte[64];
-                int len = serialPort.read(buffer, 10000);
-                String response = new String(buffer, 0, len, StandardCharsets.UTF_8);
-                Log.d("USB", "보냄: " + bytesToHex(command));
-                System.out.println("response: "+response);
-            //    Thread.sleep(1000);
-            //}
-
         } catch (IOException e) {
-            Log.e("USB", "쓰기 실패", e);
+            throw new RuntimeException(e);
         }
+        Log.d("USB", "보냄 HEX: " + bytesToHex(command));
+
+
+
+            isRun = true;
+            while (isRun) {
+                byte[] buffer = new byte[64];
+                int len = 0; // 1초 대기
+
+                try {
+                    len = serialPort.read(buffer, 2000);
+                } catch(IOException e){
+                    throw new RuntimeException(e);
+                }
+
+                if (len > 0) {
+                    // 실제 받은 데이터만 추출
+                    byte[] received = Arrays.copyOf(buffer, len);
+
+                    // HEX 로그
+                    Log.d("RECEIVED=====", bytesToHex(received));
+
+                    // STX~ETX 사이 페이로드 추출
+                    //if (received.length >= 3 && received[0] == 0x02 && received[received.length - 1] == 0x03) {
+                    if (received.length >= 3) {
+                        byte[] payload = Arrays.copyOfRange(received, 1, received.length - 1);
+                        String payloadStr = new String(payload, StandardCharsets.US_ASCII);
+                        Log.d("RECEIVED", "payload = " + payloadStr);
+
+                        // 👉 여기서 payloadStr이 바로 "2"
+                        // 원하면 int 값으로 변환
+                        int value = Integer.parseInt(payloadStr);
+                        Log.d("RECEIVED", "value = " + value);
+                        if(value==1) {
+                            sendResponse("{\"response\":\""+value+"\",\"msg\":\"정상 처리\",\"code\":\"0000\"}");
+                            //isRun = false;
+                        }else  if(value==2) {
+                            sendResponse("{\"response\":\""+value+"\",\"msg\":\"진동밸 픽업 대기중\",\"code\":\"0000\"}");
+                            //isRun = false;
+                        }else  if(value==3) {
+                            sendResponse("{\"response\":\""+value+"\",\"msg\":\"픽업\",\"code\":\"0000\"}");
+                            //isRun = false;
+                        }else {
+                            sendResponse("{\"response\":\""+value+"\",\"msg\":\"진동벨 할당 에러\",\"code\":\"0001\"}");
+                            //isRun = false;
+                        }
+                        init();
+
+                    }
+                }
+            }
+
+
+        // 응답 읽기 (별도 스레드에서)
+        /*
+        new Thread(() -> {
+
+            try {
+                while (isRun) {
+                    byte[] buffer = new byte[64];
+                    int len = serialPort.read(buffer, 3000); // 최대 5초 대기
+                    if (len > 0) {
+                        // 실제 받은 바이트 배열 (len 길이만큼 자르기)
+                        byte[] response = Arrays.copyOf(buffer, len);
+
+                        // HEX 문자열로 보기
+                        String responseHex = bytesToHex(response);
+                        Log.d("USB", "응답 HEX: " + responseHex);
+
+                        // ASCII로 변환 (0x31 -> "1")
+                        String responseAscii = new String(response, StandardCharsets.US_ASCII);
+                        Log.d("USB", "응답 ASCII: " + responseAscii);
+
+                        // 프로토콜 파싱 예시
+                        if (response.length >= 3 && response[0] == 0x02 && response[response.length - 1] == 0x03) {
+                            byte payload = response[1]; // 중간 값
+                            String responseData = String.valueOf((char) payload);
+
+                            if(responseData.equals("1")) {
+                                sendResponse("{\"response\":\""+responseData+"\",\"msg\":\"정상 처리\",\"code\":\"0000\"}");
+                                isRun = false;
+                            }else  if(responseData.equals("2")) {
+                                sendResponse("{\"response\":\""+responseData+"\",\"msg\":\"진동밸 픽업 대기중\",\"code\":\"0000\"}");
+                            }else  if(responseData.equals("3")) {
+                                sendResponse("{\"response\":\""+responseData+"\",\"msg\":\"픽업\",\"code\":\"0000\"}");
+                            }
+                            isRun = false;
+
+                        }
+                    } else {
+                        Log.w("USB", "응답 없음 (timeout)");
+                        sendResponse("{\"response\":\"error\",\"msg\":\"응답 없음\",\"code\":\"xxxx\"}");
+                        isRun = false;
+                    }
+                }
+            } catch (IOException e) {
+                Log.e("USB", "응답 읽기 실패", e);
+                isRun = false;
+
+
+            }
+
+
+        }).start();
+        */
+
+
+    }
+
+    private void init() {
+        //serialPort=null;
+    }
+
+    private void sendResponse(String responseData) {
+        if (mJSModule == null) {
+            mJSModule = mContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class);
+        }
+
+        WritableMap params = new WritableNativeMap();
+        params.putString("response", responseData+"");
+        mJSModule.emit("onBellChange", params);
+
     }
 
     private String bytesToHex(byte[] bytes) {
@@ -268,6 +428,37 @@ public class BellModule extends ReactContextBaseJavaModule {
         return sb.toString();
     }
 
+    private void startReadLoop() {
+        new Thread(() -> {
+            try {
+                byte[] buffer = new byte[64];
+                while (true) {
+                    int len = serialPort.read(buffer, 0); // 블로킹 모드 (0은 무제한 대기)
+                    if (len > 0) {
+                        byte[] response = Arrays.copyOf(buffer, len);
+                        handleResponse(response);
+                    }
+                }
+            } catch (IOException e) {
+                Log.e("USB", "Read loop error", e);
+            }
+        }).start();
+    }
+
+    private void handleResponse(byte[] response) {
+        // HEX 로그
+        Log.d("USB", "수신 HEX: " + bytesToHex(response));
+
+        // 프로토콜 확인
+        if (response.length >= 3 && response[0] == 0x02 && response[response.length - 1] == 0x03) {
+            // payload 추출
+            byte[] payload = Arrays.copyOfRange(response, 1, response.length - 1);
+            String payloadStr = new String(payload, StandardCharsets.US_ASCII);
+
+            Log.d("USB", "수신 데이터: " + payloadStr);
+            // 여기서 "벨이 반납됨" 같은 이벤트 처리
+        }
+    }
 
 
     /**

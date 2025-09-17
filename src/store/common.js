@@ -8,6 +8,7 @@ import { apiRequest } from "../utils/apiRequest";
 import { openAlert } from "../utils/common";
 import { storage } from "../utils/localStorage";
 import { KocesAppPay } from "../utils/kocess";
+import { LAN_KO } from "../resources/values";
 
 
 export const initCommon = createAsyncThunk("common/initCommon", async(data,{dispatch,getState, rejectWithValue}) =>{
@@ -86,7 +87,7 @@ export const initializeApp  = createAsyncThunk("common/initializeApp", async(dat
     dispatch(getMenu());
     dispatch(getStoreInfo());
     dispatch(getBanner());
-
+    storage.set("LAN",LAN_KO);
     //AsyncStorage.removeItem("POS_NO");
     //dispatch(getTableData({}));
 
@@ -180,7 +181,7 @@ export const postHelp = createAsyncThunk("common/postHelp", async(_, {dispatch,r
 export const commonSlice = createSlice({
     name: 'common',
     initialState: {
-        languages: ["en","cn","jp","kr"],
+        languages: ["en","cn","jp","ko"],
         selectedLanguage:"ko",
         installmentData:{
             isOpen:false,
