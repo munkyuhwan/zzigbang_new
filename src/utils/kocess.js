@@ -19,6 +19,9 @@ KocesAppPay.prototype.storeDownload = async function () {
     const bsnNo = storage.getString("BSN_NO");
     const tidNo = storage.getString("TID_NO");
     const serialNo = storage.getString("SERIAL_NO");
+    if(!bsnNo || !tidNo || !serialNo) {
+        reject();
+    }
     console.log("serial no type:",typeof serialNo);
     const storeData = {TrdType:"D10",TermID:`${tidNo}`, BsnNo:`${bsnNo}`, Serial:`${removeUnicodeControls(serialNo)}`, MchData:""};
     console.log("storeData: ",storeData);

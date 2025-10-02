@@ -14,8 +14,9 @@ import { colorBlack, colorGreen, colorWhite } from '../resources/colors';
 import Immersive from "react-native-immersive-mode";
 import { EventRegister } from 'react-native-event-listeners';
 import { initOrderList } from '../store/menu';
-import { adminDataPost, printReceipt } from '../utils/common';
+import { adminDataPost, printReceipt, setBell } from '../utils/common';
 import { setFullPopup } from '../store/fullPopup';
+import { storage } from '../utils/localStorage';
 
 
 export const PhonePopup = () => {
@@ -58,14 +59,20 @@ export const PhonePopup = () => {
               printReceipt(orderList, breadOrderList, items, payResultData); 
               dispatch(initOrderList()); 
               dispatch(setCommon({isAddShow:true})); 
+              if(storage.getString("isBellUse")=="Y"){
+                setBell(dispatch,orderList,items);
+              }
               /* dispatch(setFullPopup({isShow:true,fullPopupText:strings["주문완료"][`${selectedLanguage}`]})); */
             }, 
             cancelFunction:()=>{
               dispatch(initOrderList());
               dispatch(setCommon({isAddShow:true}));
+              if(storage.getString("isBellUse")=="Y"){
+                setBell(dispatch,orderList,items);
+              }
               /* dispatch(setFullPopup({isShow:true,fullPopupText:strings["주문완료"][`${selectedLanguage}`]})); */
-             } 
-            })); 
+            } 
+          })); 
         }
     };
     if(isPhonePopup == false) {

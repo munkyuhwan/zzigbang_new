@@ -44,36 +44,40 @@ public class WeightModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void connectDevice() {
-        Log.d("WeightModule", "Starting connection...");
-        usbManager = (UsbManager) mContext.getSystemService(Context.USB_SERVICE);
+    public void connectDevice(String portNumber) {
 
-        List<UsbSerialDriver> availableDrivers = UsbSerialProber.getDefaultProber().findAllDrivers(usbManager);
-        Common common = new Common();
-        List<UsbSerialPort> ports = common.getCDCPorts(availableDrivers);
+        if(portNumber != null) {
+            Log.d("WeightModule", "Starting connection...");
+            Log.d("WeightModule", "portNumber: " + portNumber);
+            usbManager = (UsbManager) mContext.getSystemService(Context.USB_SERVICE);
 
-        if (ports.isEmpty()) {
-            Log.e("WeightModule", "No USB CDC ports found.");
-            return;
-        }
+            List<UsbSerialDriver> availableDrivers = UsbSerialProber.getDefaultProber().findAllDrivers(usbManager);
+            Common common = new Common();
+            List<UsbSerialPort> ports = common.getCDCPorts(availableDrivers);
 
-        port = ports.get(3); // 특정 포트 선택 (필요시 인덱스 변경)
-
-        UsbDeviceConnection connection = usbManager.openDevice(port.getDriver().getDevice());
-        if (connection == null) {
-            Log.e("WeightModule", "Failed to open USB device. Permission may be required.");
-            return;
-        }
-
-        try {
-            if(port != null) {
-                port.open(connection);
-                isReading = true;
-                new Thread(this::readWeightLoop).start();
-                Log.d("WeightModule", "Connection opened and reading started.");
+            if (ports.isEmpty()) {
+                Log.e("WeightModule", "No USB CDC ports found.");
+                return;
             }
-        } catch (IOException e) {
-            Log.e("WeightModule", "Error opening port: " + e.getMessage());
+
+            port = ports.get(Integer.parseInt(portNumber)); // 특정 포트 선택 (필요시 인덱스 변경)
+
+            UsbDeviceConnection connection = usbManager.openDevice(port.getDriver().getDevice());
+            if (connection == null) {
+                Log.e("WeightModule", "Failed to open USB device. Permission may be required.");
+                return;
+            }
+
+            try {
+                if (port != null) {
+                    port.open(connection);
+                    isReading = true;
+                    new Thread(this::readWeightLoop).start();
+                    Log.d("WeightModule", "Connection opened and reading started.");
+                }
+            } catch (IOException e) {
+                Log.e("WeightModule", "Error opening port: " + e.getMessage());
+            }
         }
     }
 
@@ -108,7 +112,10 @@ public class WeightModule extends ReactContextBaseJavaModule {
         } catch (Exception e) {
             Log.e("WeightModule", "Error reading weight: " + e.getMessage());
         } finally {
+            Log.e("WeightModule", "===================================finally Error reading weight===================================");
+
             try {
+
                 if (port != null) {
                     port.close();
                     port = null;
@@ -117,6 +124,7 @@ public class WeightModule extends ReactContextBaseJavaModule {
                 Log.e("WeightModule", "Error closing port: " + e.getMessage());
             }
             Log.d("WeightModule", "Reading loop stopped.");
+
         }
     }
 

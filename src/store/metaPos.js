@@ -38,13 +38,12 @@ export const getStoreInfo = createAsyncThunk("meta/getStoreInfo", async(data, {d
     //const STORE_IDX = await AsyncStorage.getItem("STORE_IDX");
     const STORE_IDX = storage.getString("STORE_IDX");
 
-    const VAN_TITLE = storage.getString("VAN");
-
+    /* const VAN_TITLE = storage.getString("VAN");
     if(isEmpty(VAN_TITLE)) {
 
         return rejectWithValue();
     }
-
+ */
     if(!STORE_IDX) {
         return rejectWithValue();
     }

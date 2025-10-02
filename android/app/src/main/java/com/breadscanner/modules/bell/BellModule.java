@@ -33,9 +33,13 @@ import com.hoho.android.usbserial.driver.UsbSerialPort;
 import com.hoho.android.usbserial.driver.UsbSerialProber;
 import com.hoho.android.usbserial.util.SerialInputOutputManager;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -79,6 +83,7 @@ public class BellModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void bellRing(String bellLan,String bellCorner,String bellNumber,String vendorId, String productId) {
         System.out.println("BELL TEST=============================");
+        System.out.println(bellLan+","+bellCorner+","+bellNumber+","+vendorId+","+productId);
 
         isRun = true;
         usbManager = (UsbManager) mContext.getSystemService(Context.USB_SERVICE);
@@ -113,14 +118,6 @@ public class BellModule extends ReactContextBaseJavaModule {
 
 
     private void findAndConnectUsbDevice(String bellLan,String bellCorner,String bellNumber,String vendorId, String productId) {
-        if(serialPort != null) {
-            try {
-                serialPort.close();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
 
         List<UsbSerialDriver> availableDrivers = UsbSerialProber.getDefaultProber().findAllDrivers(usbManager);
 
@@ -169,21 +166,6 @@ public class BellModule extends ReactContextBaseJavaModule {
 
                     serialPort.open(usbManager.openDevice(driver.getDevice()));
                     serialPort.setParameters(9600, 8, UsbSerialPort.STOPBITS_1, UsbSerialPort.PARITY_NONE);
-                    //controlLED1(true,true,true);
-                    //controlLED1AndLED2(true, true, false, false, false, true);
-                    // 데이터 수신 콜백
-                    SerialInputOutputManager ioManager = new SerialInputOutputManager(serialPort, new SerialInputOutputManager.Listener() {
-                        @Override
-                        public void onNewData(byte[] data) {
-                            Log.d("RECEIVED", bytesToHex(data));
-                        }
-
-                        @Override
-                        public void onRunError(Exception e) {
-                            Log.e("USB", "에러", e);
-                        }
-                    });
-                    new Thread(ioManager).start();
 
                     sendCustomerNumber(bellLan,bellCorner, bellNumber);
 
@@ -219,6 +201,18 @@ public class BellModule extends ReactContextBaseJavaModule {
 
     public void sendCustomerNumber(String bellLan,String bellCorner,String bellNumber) {
 
+        List<String> corners = new ArrayList<>();
+
+        try {
+            JSONArray jsonArray = new JSONArray(bellCorner);
+            for (int i = 0; i < jsonArray.length(); i++) {
+                corners.add(jsonArray.getString(i)); // int면 Integer, 문자열이면 String으로 자동 변환
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        /*
         // 시작 바이트 (STX: 0x01)
         byte stx = 0x01;
         // 종료 바이트 (ETX: 0x03)
@@ -255,34 +249,56 @@ public class BellModule extends ReactContextBaseJavaModule {
 
         command[index] = etx;
 
-        // 전송
-        sendCommand(command);
+         */
 
-        /*
-        // 시작 바이트 (ASCII 'S' → 0x53)
-        //byte stx = 0x53;
         byte stx = 0x01;
-        byte lan = toByteArray(bellLan);
-        byte corner = toByteArray(bellCorner);
-        // 종료 바이트 (ETX → 0x03)
         byte etx = 0x03;
 
-        // 숫자 문자열을 바이트 배열로 변환 (예: "1234" → 0x31, 0x32, 0x33, 0x34)
-
+        // 고객번호 → ASCII
         byte[] numberBytes = bellNumber.getBytes(StandardCharsets.US_ASCII);
-        System.out.println("numberBytes: "+numberBytes);
-        // 전체 명령 배열 구성: S + 숫자들 + ETX
-        byte[] command = new byte[1 + numberBytes.length + 1];
 
-        command[0] = stx;
+        // 코너들 → ASCII (A~O)
+        int cornerLength = 0;
+        for (String c : corners) {
+            cornerLength += c.getBytes(StandardCharsets.US_ASCII).length;
+        }
 
-        System.arraycopy(numberBytes, 0, command, 1, numberBytes.length);
-        command[command.length - 1] = etx;
+        // 언어 → ASCII
+        byte[] lanBytes = (bellLan != null && !bellLan.isEmpty())
+                ? bellLan.getBytes(StandardCharsets.US_ASCII)
+                : new byte[0];
+
+        // 전체 길이 = STX + number + corners + language + ETX
+        int length = 1 + numberBytes.length + cornerLength + lanBytes.length + 1;
+        byte[] command = new byte[length];
+
+        int index = 0;
+        command[index++] = stx;
+
+        // 고객번호 복사
+        System.arraycopy(numberBytes, 0, command, index, numberBytes.length);
+        index += numberBytes.length;
+
+        // 코너 복사
+        for (String c : corners) {
+            byte[] cornerBytes = c.getBytes(StandardCharsets.US_ASCII);
+            System.arraycopy(cornerBytes, 0, command, index, cornerBytes.length);
+            index += cornerBytes.length;
+        }
+
+        // 언어 복사
+        System.arraycopy(lanBytes, 0, command, index, lanBytes.length);
+        index += lanBytes.length;
+
+        // 종료 바이트
+        command[index] = etx;
+
+
+
 
         // 전송
         sendCommand(command);
 
-         */
     }
 
 
@@ -291,23 +307,26 @@ public class BellModule extends ReactContextBaseJavaModule {
         System.out.println(command);
 
         // 명령 전송
-        try {
-            serialPort.write(command, 1000);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        Log.d("USB", "보냄 HEX: " + bytesToHex(command));
+        //new Thread(() -> {
 
+            try {
+                serialPort.write(command, 1000);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            Log.d("USB", "보냄 HEX: " + bytesToHex(command));
 
 
             isRun = true;
             while (isRun) {
+                Log.d("RECEIVED=====","RUINNING===========================================");
+
                 byte[] buffer = new byte[64];
                 int len = 0; // 1초 대기
 
                 try {
                     len = serialPort.read(buffer, 2000);
-                } catch(IOException e){
+                } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
 
@@ -320,27 +339,28 @@ public class BellModule extends ReactContextBaseJavaModule {
 
                     // STX~ETX 사이 페이로드 추출
                     //if (received.length >= 3 && received[0] == 0x02 && received[received.length - 1] == 0x03) {
-                    if (received.length >= 3) {
+                    if (received.length >= 2) {
                         byte[] payload = Arrays.copyOfRange(received, 1, received.length - 1);
                         String payloadStr = new String(payload, StandardCharsets.US_ASCII);
-                        Log.d("RECEIVED", "payload = " + payloadStr);
+                        Log.d("RECEIVED=====", "payload = " + payloadStr);
 
                         // 👉 여기서 payloadStr이 바로 "2"
                         // 원하면 int 값으로 변환
                         int value = Integer.parseInt(payloadStr);
-                        Log.d("RECEIVED", "value = " + value);
-                        if(value==1) {
-                            sendResponse("{\"response\":\""+value+"\",\"msg\":\"정상 처리\",\"code\":\"0000\"}");
+                        Log.d("RECEIVED=====", "value = " + value);
+                        if (value == 1) {
+                            sendResponse("{\"response\":\"" + value + "\",\"msg\":\"정상 처리\",\"code\":\"0000\"}");
                             //isRun = false;
-                        }else  if(value==2) {
-                            sendResponse("{\"response\":\""+value+"\",\"msg\":\"진동밸 픽업 대기중\",\"code\":\"0000\"}");
+                            break;
+                        } else if (value == 2) {
+                            sendResponse("{\"response\":\"" + value + "\",\"msg\":\"진동벨을 가져가 주세요...\",\"code\":\"0000\"}");
                             //isRun = false;
-                        }else  if(value==3) {
-                            sendResponse("{\"response\":\""+value+"\",\"msg\":\"픽업\",\"code\":\"0000\"}");
-                            //isRun = false;
-                        }else {
-                            sendResponse("{\"response\":\""+value+"\",\"msg\":\"진동벨 할당 에러\",\"code\":\"0001\"}");
-                            //isRun = false;
+                        } else if (value == 3) {
+                            sendResponse("{\"response\":\"" + value + "\",\"msg\":\"픽업\",\"code\":\"0000\"}");
+                            break;
+                        } else {
+                            sendResponse("{\"response\":\"" + value + "\",\"msg\":\"진동벨 할당 에러\",\"code\":\"0001\"}");
+                            break;
                         }
                         init();
 
@@ -349,7 +369,10 @@ public class BellModule extends ReactContextBaseJavaModule {
             }
 
 
+
+        //}).start();
         // 응답 읽기 (별도 스레드에서)
+
         /*
         new Thread(() -> {
 
@@ -357,6 +380,7 @@ public class BellModule extends ReactContextBaseJavaModule {
                 while (isRun) {
                     byte[] buffer = new byte[64];
                     int len = serialPort.read(buffer, 3000); // 최대 5초 대기
+
                     if (len > 0) {
                         // 실제 받은 바이트 배열 (len 길이만큼 자르기)
                         byte[] response = Arrays.copyOf(buffer, len);
@@ -368,6 +392,7 @@ public class BellModule extends ReactContextBaseJavaModule {
                         // ASCII로 변환 (0x31 -> "1")
                         String responseAscii = new String(response, StandardCharsets.US_ASCII);
                         Log.d("USB", "응답 ASCII: " + responseAscii);
+
 
                         // 프로토콜 파싱 예시
                         if (response.length >= 3 && response[0] == 0x02 && response[response.length - 1] == 0x03) {
@@ -385,6 +410,10 @@ public class BellModule extends ReactContextBaseJavaModule {
                             isRun = false;
 
                         }
+
+
+
+
                     } else {
                         Log.w("USB", "응답 없음 (timeout)");
                         sendResponse("{\"response\":\"error\",\"msg\":\"응답 없음\",\"code\":\"xxxx\"}");
@@ -400,7 +429,9 @@ public class BellModule extends ReactContextBaseJavaModule {
 
 
         }).start();
-        */
+
+         */
+
 
 
     }

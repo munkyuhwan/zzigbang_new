@@ -23,7 +23,7 @@ import { storage } from '../utils/localStorage';
 import { FullAutoClosePopup } from '../components/fullAutoclosePopup';
 import { KocesAppPay } from '../utils/kocess';
 import { setAlert } from '../store/alert';
-import { VAN_SMARTRO } from '../utils/apiRequest';
+import { VAN_KOCES, VAN_SMARTRO } from '../utils/apiRequest';
 
 const Stack = createStackNavigator()
 var statusInterval;
@@ -162,15 +162,21 @@ export default function Navigation() {
             console.log("result: ",result);
         })
 
-        var kocessAppPay = new KocesAppPay();
-        kocessAppPay.storeDownload()
-        .then(storeDownload=>{
-            console.log("storeDownload: ",storeDownload);
-            storage.set("STORE_INFO",JSON.stringify(storeDownload));
-        })
-        .catch(err=>{
-        });
-    
+        if(isEmpty(storage.getString("STORE_INFO"))) {
+            if(storage.getString("VAN")==VAN_KOCES){
+                var kocessAppPay = new KocesAppPay();
+                kocessAppPay.storeDownload()
+                .then(storeDownload=>{
+                    console.log("storeDownload: ",storeDownload);
+                    storage.set("STORE_INFO",JSON.stringify(storeDownload));
+                })
+                .catch(err=>{
+                });
+
+            }else if(storage.getString("VAN")==VAN_SMARTRO) {
+                
+            }
+        }
     },[])
 
     return (

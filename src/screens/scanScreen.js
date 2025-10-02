@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Alert, Animated, DeviceEventEmitter, Dimensions, Image, NativeModules, ScrollView, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
+import { Alert, Animated, AppState, DeviceEventEmitter, Dimensions, Image, NativeModules, ScrollView, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import { Camera, CameraType } from 'react-native-camera-kit';
 import RNFS from 'react-native-fs';
 import { CountdownCircleTimer } from 'react-native-countdown-circle-timer'
@@ -46,6 +46,7 @@ var mostFrequentWeight = 0;
 const MAX_SIZE = 20;
 
 const ScanScreen = () => {
+    const [appState, setAppState] = useState(AppState.currentState);
     const { Weight } = NativeModules;
     const camera = useRef();
     const sumRef = useRef(0);
@@ -131,10 +132,30 @@ const ScanScreen = () => {
         mostFrequentWeight = getMostFrequent(weightArr);
     },[weightArr])
        */
-    async function initScanScreen() {
-        Weight.connectDevice(); 
-        
-        //DeviceEventEmitter.removeAllListeners("onWeightChanged"); 
+
+    useEffect(() => {
+        const subscription = AppState.addEventListener("change", (nextAppState) => {
+          if (
+            appState.match(/inactive|background/) &&
+            nextAppState === "active"
+          ) {
+            console.log("✅ 앱이 백그라운드에서 포그라운드로 돌아왔습니다!");
+            // 👉 여기서 API 재호출, 토큰 갱신, 화면 새로고침 등을 처리하면 됩니다.
+            DeviceEventEmitter.removeAllListeners("onWeightChanged"); 
+            //Weight.closeSerialConnection();
+            Weight.connectDevice(storage.getString("weightPortNumber")); 
+            startWeighting();
+        }
+    
+          setAppState(nextAppState);
+        });
+    
+        return () => {
+          subscription.remove();
+        };
+    }, [appState]);
+    
+    function startWeighting() {
         DeviceEventEmitter.addListener("onWeightChanged",(data)=>{    
             //const result = data?.weight.replace(/[^0-9.]/g, ""); // 숫자와 소숫점 제외 모든 문자 제거
             const weight = parseFloat(data?.weight);
@@ -159,7 +180,14 @@ const ScanScreen = () => {
                 }
             
             }
-        });  
+        }); 
+    }
+    
+    async function initScanScreen() {
+        Weight.connectDevice(storage.getString("weightPortNumber")); 
+        
+        DeviceEventEmitter.removeAllListeners("onWeightChanged"); 
+        startWeighting();
     }
 
     useEffect(() => {
@@ -234,6 +262,7 @@ const ScanScreen = () => {
     useFocusEffect(
         useCallback(()=>{
             console.log("use callback")
+            initScanScreen();
         },[])
     )
 
@@ -277,14 +306,11 @@ const ScanScreen = () => {
         setPrice(numberWithCommas(tmpPrice));
     },[totalBreadList])
     useEffect(()=>{
-        if(isMainShow==false) {
-            //if(storage.getBoolean("WEIGHT_SET")) {
-                initScanScreen();
-            //}
+        /* if(isMainShow==false) {
+            initScanScreen();
         }else {
             DeviceEventEmitter.removeAllListeners("onWeightChanged"); 
-
-        }
+        } */
     },[isMainShow])
     useEffect(()=>{
         if(currentWeight<=0 && !isMainShow ) {
@@ -613,7 +639,7 @@ const ScanScreen = () => {
                     {/* <Text style={{fontSize:30,color:colorYellow}}>{strings["실제무게"][`${selectedLanguage}`]}: {scannedWeight}g</Text> */}
                 </View>
                 <View style={{position:'absolute', zIndex:9999999, right:0, bottom:35, right:10}}>
-                    <TouchableWithoutFeedback onPress={()=>{if(isScanning==false){ setMainShow(true); dispatch(setCommon({isAddShow:false})); dispatch(setMenu({breadOrderList:totalBreadList})); initCamera(); setTmpBreadList([]);setTotalBreadList([]); clearWeightInterval(); DeviceEventEmitter.removeAllListeners("onWeightChanged"); }}} >
+                    <TouchableWithoutFeedback onPress={()=>{if(isScanning==false){ setMainShow(true); dispatch(setCommon({isAddShow:false})); dispatch(setMenu({breadOrderList:totalBreadList})); initCamera(); setTmpBreadList([]);setTotalBreadList([]); /* clearWeightInterval(); DeviceEventEmitter.removeAllListeners("onWeightChanged"); */ }}} >
                         <SquareButtonView backgroundColor={colorDarkGrey} >
                             <ButtonText>{strings["키오스크\n바로주문"][`${selectedLanguage}`]}</ButtonText>
                             {/* (currentWeight>0 && !isMainShow  && tmpBreadList.length>0 )&&
@@ -695,7 +721,7 @@ const ScanScreen = () => {
         </View>
         {isMainShow&&
             <View style={{width:'100%',height:'100%',position:'absolute'}}>
-                <MainScreen setMainShow={setMainShow}/>
+                <MainScreen initScanScreen={initScanScreen} currentWeight={currentWeight} setMainShow={setMainShow}/>
             </View>
         }
         </>

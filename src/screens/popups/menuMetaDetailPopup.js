@@ -66,6 +66,7 @@ export const MenuMetaDetailPopup = (props) => {
                 return;
             }
         }
+        console.log("detailItem: ",detailItem);
         const orderItemData = {prodCD:detailItem.prod_cd, option:optionSelect, amt:amt};
         // 아이템 비교 
         const checkDuple = orderList.filter(el=> el.prodCD == detailItem.prod_cd);

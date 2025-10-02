@@ -18,7 +18,7 @@ import { VAN_KOCES, VAN_SMARTRO, apiRequest, callApiWithExceptionHandling, posAp
 import { LAN_CN, LAN_EN, LAN_JP } from '../resources/values';
 import Tts from 'react-native-tts';
 import { setAlert } from '../store/alert';
-import { NativeModules } from 'react-native';
+import { DeviceEventEmitter, NativeModules } from 'react-native';
 import { KocesAppPay } from './kocess';
 import store from '../store';
 import { storage } from './localStorage';
@@ -931,6 +931,91 @@ export function openAlert(dispatch,getState, titleStr, msgStr, okFunction, cance
         }
     }, 500);
 
+}
+
+export function setBell(dispatch,orderList,items) {
+    const {Bell} = NativeModules; 
+    const bellVID = storage.getString("bellVendorID")
+    const bellPID = storage.getString("bellProductID")
+    const orderNo = storage.getString("orderNo");
+
+    var lan = "a";
+    if(storage.getString("LAN")=="ko") {
+        lan = "a";
+    }else if(storage.getString("LAN")=="jp") {
+        lan = "c";
+    }else if(storage.getString("LAN")=="cn") {
+        lan = "d";
+    }else if(storage.getString("LAN")=="en") {
+        lan = "b";
+    }
+
+    //console.log("orderList: ",orderList)
+    //console.log("items: ",items)
+
+    
+    const corners = new Set();
+
+    for (var item of orderList) {
+      const prodCD = item.prodCD;
+      const itemDet = items.filter(el => el.prod_cd === prodCD);
+    
+      if (itemDet?.length > 0) {
+        console.log("itemDet[0]: ",itemDet[0]);
+        //corners.push(itemDet[0].corner)
+        itemDet.forEach(det => corners.add(det.corner));
+      }
+    }
+    
+    const uniqueCorners = [...corners];
+    console.log("uniqueCorners: ",uniqueCorners);
+    Bell.bellRing(lan,JSON.stringify(uniqueCorners),orderNo,bellVID,bellPID);
+    EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"주문완료", str:"진동벨을 챙겨주세요.",isCancle:false});
+    DeviceEventEmitter.removeAllListeners("onBellChange"); 
+    DeviceEventEmitter.addListener("onBellChange",(data)=>{    
+        if(data) {
+            console.log("responseData: ",(data.response));
+            const responseData = JSON.parse(data.response);
+            if(responseData?.code == "0000") {
+                if(responseData?.response == "1") {
+                    dispatch(setAlert(
+                        {
+                            title:"",
+                            msg:'',
+                            subMsg:"",
+                            okText:'닫기',
+                            cancelText:'',
+                            isCancle:false,
+                            isOK:false,
+                            icon:"",   
+                            isAlertOpen:false,
+                            clickType:"",
+                        }
+                    ));
+                }else{
+                    dispatch(setAlert(
+                        {
+                            title:"주문완료",
+                            msg:responseData?.msg,
+                            subMsg:"",
+                            okText:'닫기',
+                            cancelText:'',
+                            isCancle:false,
+                            isOK:false,
+                            icon:"",   
+                            showAlert:true,
+                            isAlertOpen:true,
+                            clickType:"",
+                        }
+                    ));
+                    EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"주문완료", str:responseData?.msg,isCancle:true});
+                }
+            }else {
+                EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"주문오류", str:"진동벨에 오류가 있습니다.",isCancle:true});
+            }
+        }
+    });
+    
 }
 
 export async function printReceipt(orderList, breadOrderList, items, payResultData) {

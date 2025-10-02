@@ -237,11 +237,7 @@ const MainScreen = (props) =>{
     }
 
 
-    if(isSetting == true) {
-        return(
-            <SettingScreen setSetting={setSetting} setMainShow={props.setMainShow} />
-        )
-    }
+    
     const findYOffsetCodeByCate = (catId) => {
         //dispatch(setSelectedItems());
         setTimeout(() => {
@@ -263,6 +259,9 @@ const MainScreen = (props) =>{
     }
     return(
         <>
+        {isSetting == true &&
+            <SettingScreen initScanScreen={props.initScanScreen} currentWeight={props.currentWeight} setSetting={setSetting} setMainShow={props.setMainShow} />
+        }
         {isAddShow &&
             <AdScreen setMainShow={props.setMainShow} />      
         }

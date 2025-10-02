@@ -21,6 +21,7 @@ import { NativeModules } from "react-native"
 import { storage } from "../utils/localStorage";
 import { MMKV, Mode } from 'react-native-mmkv'
 import { VAN_KOCES, VAN_KOCESS, VAN_SMARTRO } from "../utils/apiRequest";
+import { setAlert } from "../store/alert";
 
 
 const SettingScreen = (props) =>{
@@ -37,6 +38,8 @@ const SettingScreen = (props) =>{
     const pickerRef = useRef();
     const vanRef = useRef();
     const printerPickerRef = useRef();
+    const weightRef = useRef();
+    const bellRef = useRef();
 
     const [approvalAmt, setApprovalAmt] = useState("4091");
     const [vatAmt, setVatAmt] = useState("409");
@@ -51,6 +54,7 @@ const SettingScreen = (props) =>{
     const [weightProductName, setWeightProductName] = useState("");
     const [weightPortNumber, setWeightPortNumber] = useState("");
     const [bellProductName, setBellProductName] = useState("");
+    const [isBellUse, setBellUse] = useState("");
     const [printerList, setPrinterList] = useState([]);
     const [cdcList, setCdcLIst] = useState([]);
     const [isWeight, setWeight] = useState(true);
@@ -84,7 +88,7 @@ const SettingScreen = (props) =>{
             // 화면이 벗어날 때 실행
             console.log('화면에서 나감, 포커스 해제');
             // 여기서 USB 포트 닫기나 리소스 정리
-                Weight.closeSerialConnection();
+                props.initScanScreen();
             };
 
         },[])
@@ -135,6 +139,7 @@ const SettingScreen = (props) =>{
         setWeight(storage.getBoolean("WEIGHT_SET"));
         setVan(storage.getString("VAN"));
         setTrayWeight(storage.getString("TRAY_WEIGHT"));
+        setBellUse(storage.getString("isBellUse"));
 
         dispatch(getStoreInfo());
 
@@ -248,19 +253,19 @@ const SettingScreen = (props) =>{
             const portNo = storage.getString("weightPortNumber");
             console.log("connect: ",portNo);
             Weight.closeSerialConnection();
-            Weight.connectDevice();
+            Weight.connectDevice(storage.getString("weightPortNumber"));
         }
-        startMeasuring();
-        DeviceEventEmitter.removeAllListeners("onWeightChanged"); 
+        //startMeasuring();
+        // DeviceEventEmitter.removeAllListeners("onWeightChanged"); 
         DeviceEventEmitter.addListener("onWeightChanged",(data)=>{    
             const result = data?.weight.replace(/[^0-9.]/g, ""); // 숫자와 소숫점 제외 모든 문자 제거
             const weight = parseFloat(result);
             console.log("weight: ",weight);
-            //if(Number(weight)>0) {
+            if(Number(weight)>0) {
                 setTmpWeight(weight*1000);    //dispatch(setCommon({weight:weight*1000}))
                 //startScan(weight);
-            //}
-        });  
+            }
+        });   
     }
 
     async function testPrint() {
@@ -289,7 +294,7 @@ const SettingScreen = (props) =>{
                         <Text style={{flex:1,fontSize:40,color:colorBlack}} ></Text>
                     </View>
                     <View style={{flexDirection:'row', paddingLeft:30,paddingRight:30}}>
-                        <Text style={{flex:1,fontSize:20,color:colorBlack,textAlign:'center'}} >v1.0.11</Text>
+                        <Text style={{flex:1,fontSize:20,color:colorBlack,textAlign:'center'}} >v1.0.13</Text>
                     </View>
                     <SettingWrapper>
 
@@ -457,16 +462,44 @@ const SettingScreen = (props) =>{
                                     </TouchableWithoutFeedback>
                                 </SettingSenctionInputView>
                                 <SettingSenctionInputView>
-                                    <SettingSectionLabel>{weightProductName}</SettingSectionLabel>
+                                    <SettingSectionLabel>포트선택</SettingSectionLabel>
+                                        <Picker
+                                            ref={weightRef}
+                                            key={"weightPort"}
+                                            mode='dialog'
+                                            onValueChange = {(itemValue, itemIndex) => {
+                                                if(itemValue) {
+                                                    storage.set("weightPortNumber",`${itemValue}`);
+                                                    setWeightPortNumber(itemValue);
+                                                    props.initScanScreen();
+                                                }
+                                            }}
+                                            selectedValue={Number(storage.getString("weightPortNumber"))}
+                                            style = {{
+                                                width: 300,
+                                                height: 50,
+                                            }}>
+                                                <Picker.Item key={"none"} label = {"미선택"} value ={{}} />
+                                                <Picker.Item key={"weight_port_0"}  label = {0} value ={0} />
+                                                <Picker.Item key={"weight_port_1"}  label = {1} value ={1} />
+                                                <Picker.Item key={"weight_port_2"}  label = {2} value ={2} />
+                                                <Picker.Item key={"weight_port_3"}  label = {3} value ={3} />
+                                                
+                                          
+                                            
+                                        </Picker>
                                 </SettingSenctionInputView>
                                 <SettingSenctionInputView>
-                                    <SettingSectionLabel>{tmpWeight} g</SettingSectionLabel>
+                                    <SettingSectionLabel>{props.currentWeight}</SettingSectionLabel>
+                                </SettingSenctionInputView>
+                                {/* <SettingSenctionInputView>
+                                    <SettingSectionLabel>{props.currentWeight} g</SettingSectionLabel>
                                     <TouchableWithoutFeedback onPress={async()=>{ weighingTest(); }} >
                                         <SettingButtonView>
                                             <SettingSectionTitle>연결 테스트</SettingSectionTitle>
                                         </SettingButtonView>
                                     </TouchableWithoutFeedback>
-                                </SettingSenctionInputView>
+                                </SettingSenctionInputView> */}
                             </SettingSectionDetailWrapper>
                         </SettingSectionWrapper>
                         
@@ -503,6 +536,32 @@ const SettingScreen = (props) =>{
                                     }
                                 </SettingSenctionInputView>
                                 <SettingSenctionInputView>
+                                    <SettingSectionLabel>진동벨 사용여부</SettingSectionLabel>
+                                    {
+                                        <Picker
+                                            ref={bellRef}
+                                            key={"tablePicker"}
+                                            mode='dialog'
+                                            selectedValue={isBellUse}
+                                            onValueChange = {(itemValue, itemIndex) => {
+                                                //if(itemValue) {
+                                                    storage.set("isBellUse",`${itemValue}`);
+                                                    setBellUse(itemValue.productName);
+                                                //}
+                                            }}
+                                            style = {{
+                                                width: 300,
+                                                height: 50,
+                                            }}>
+                                                <Picker.Item key={"none"} label = {"미선택"} value ={""} />
+                                                <Picker.Item key={"none"} label = {"미사용"} value ={"N"} />
+                                                <Picker.Item key={"none"} label = {"사용"} value ={"Y"} />
+                                           
+                                            
+                                        </Picker>
+                                    }
+                                </SettingSenctionInputView>
+                                <SettingSenctionInputView>
                                     <SettingSectionLabel>{bellProductName}</SettingSectionLabel>
                                 </SettingSenctionInputView>
                                 {/* <SettingSenctionInputView>
@@ -535,22 +594,50 @@ const SettingScreen = (props) =>{
                                             }else if(storage.getString("LAN")=="en") {
                                                 lan = "b";
                                             }
-                                            console.log(lan,bellCorner,bellNumber,bellVID,bellPID);
+                                            console.log(lan,JSON.stringify([bellCorner]),bellNumber,bellVID,bellPID);
                                             Bell.bellRing(lan,bellCorner,bellNumber,bellVID,bellPID);
-                                            EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"주문완료", str:"진동벨을 챙겨주세요."});
+                                            EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"주문완료", str:"진동벨을 챙겨주세요.",isCancle:false});
                                             DeviceEventEmitter.removeAllListeners("onBellChange"); 
                                             DeviceEventEmitter.addListener("onBellChange",(data)=>{    
                                                 if(data) {
                                                     console.log("responseData: ",(data.response));
-                                                    const responseData = (data.response);
+                                                    const responseData = JSON.parse(data.response);
                                                     if(responseData?.code == "0000") {
                                                         if(responseData?.response == "1") {
-                                                            EventRegister.emit("showAlert",{showAlert:false, msg:"", title:"", str:""});
+                                                            dispatch(setAlert(
+                                                                {
+                                                                    title:"",
+                                                                    msg:'',
+                                                                    subMsg:"",
+                                                                    okText:'닫기',
+                                                                    cancelText:'',
+                                                                    isCancle:false,
+                                                                    isOK:false,
+                                                                    icon:"",   
+                                                                    isAlertOpen:false,
+                                                                    clickType:"",
+                                                                }
+                                                            ));
                                                         }else{
-                                                            EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"주문완료", str:responseData?.msg});
+                                                            dispatch(setAlert(
+                                                                {
+                                                                    title:"주문완료",
+                                                                    msg:responseData?.msg,
+                                                                    subMsg:"",
+                                                                    okText:'닫기',
+                                                                    cancelText:'',
+                                                                    isCancle:false,
+                                                                    isOK:false,
+                                                                    icon:"",   
+                                                                    showAlert:true,
+                                                                    isAlertOpen:true,
+                                                                    clickType:"",
+                                                                }
+                                                            ));
+                                                            EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"주문완료", str:responseData?.msg,isCancle:true});
                                                         }
                                                     }else {
-                                                        EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"주문오류", str:"진동벨에 오류가 있습"});
+                                                        EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"주문오류", str:"진동벨에 오류가 있습니다.",isCancle:true});
                                                     }
                                                 }
                                             });
@@ -676,8 +763,16 @@ const SettingScreen = (props) =>{
                             <SettingSectionTitle>업데이트 정보</SettingSectionTitle>
                             <SettingSectionDetailWrapper>
                                 <SettingSenctionInputViewColumn>
-                                    <SettingSectionLabel>- 세팅화면 뒤로가기시 선택화면으로 넘어가도록 수정.</SettingSectionLabel>
+                                    <SettingSectionLabel>- 진동벨 코너 여러개 테스트.</SettingSectionLabel>
+                                    <SettingSectionLabel>- 진동벨 주문에 적용.</SettingSectionLabel>
                                 </SettingSenctionInputViewColumn>
+                                {/* <SettingSenctionInputViewColumn>
+                                    <SettingSectionLabel>- 저울 포트 선택.</SettingSectionLabel>
+                                    <SettingSectionLabel>- 무게 측정 대기화면 부터 시작.</SettingSectionLabel>
+                                </SettingSenctionInputViewColumn> */}
+                                {/* <SettingSenctionInputViewColumn>
+                                    <SettingSectionLabel>- 세팅화면 뒤로가기시 선택화면으로 넘어가도록 수정.</SettingSectionLabel>
+                                </SettingSenctionInputViewColumn> */}
                                 {/* <SettingSenctionInputViewColumn>
                                     <SettingSectionLabel>- 진동벨 수정</SettingSectionLabel>
                                 </SettingSenctionInputViewColumn> */}
