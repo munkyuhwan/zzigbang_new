@@ -142,7 +142,7 @@ const ScanScreen = () => {
             console.log("✅ 앱이 백그라운드에서 포그라운드로 돌아왔습니다!");
             // 👉 여기서 API 재호출, 토큰 갱신, 화면 새로고침 등을 처리하면 됩니다.
             DeviceEventEmitter.removeAllListeners("onWeightChanged"); 
-            //Weight.closeSerialConnection();
+            Weight.closeSerialConnection();
             Weight.connectDevice(storage.getString("weightPortNumber")); 
             startWeighting();
         }
@@ -162,6 +162,7 @@ const ScanScreen = () => {
             if(!isNaN(weight) && Number(weight)>=0) {
                 const kiloWeight = weight*1000;
                 setCurrentWeight(kiloWeight);
+                console.log("kiloWeight: ",kiloWeight);
                 if(kiloWeight>Number(storage.getString("TRAY_WEIGHT"))) {
                     const newArr = weightArr.current;
                     newArr[indexRef.current] = kiloWeight; // 현재 인덱스에 덮어쓰기
@@ -183,11 +184,14 @@ const ScanScreen = () => {
         }); 
     }
     
-    async function initScanScreen() {
-        Weight.connectDevice(storage.getString("weightPortNumber")); 
+    function initScanScreen() {
+    
+        Weight.closeSerialConnection();
         
+        Weight.connectDevice(storage.getString("weightPortNumber")); 
         DeviceEventEmitter.removeAllListeners("onWeightChanged"); 
         startWeighting();
+
     }
 
     useEffect(() => {
@@ -268,7 +272,6 @@ const ScanScreen = () => {
 
     useEffect(()=>{
         setStoreID(storage.getString("BREAD_STORE_ID"));
-        //initScanScreen();
     },[])
     
     function screenTimeOut(){
@@ -305,13 +308,7 @@ const ScanScreen = () => {
         setAmt(numberWithCommas(tmpAmt));
         setPrice(numberWithCommas(tmpPrice));
     },[totalBreadList])
-    useEffect(()=>{
-        /* if(isMainShow==false) {
-            initScanScreen();
-        }else {
-            DeviceEventEmitter.removeAllListeners("onWeightChanged"); 
-        } */
-    },[isMainShow])
+
     useEffect(()=>{
         if(currentWeight<=0 && !isMainShow ) {
             setImgURL(``)
@@ -335,14 +332,6 @@ const ScanScreen = () => {
         }else {
 
         }
-    }
-
-    function clearWeightInterval() {
-        DeviceEventEmitter.removeAllListeners("onWeightChanged"); 
-        Weight.closeSerialConnection();
-        clearInterval(weightCDInterval);
-        weightCDInterval = null
-        weightCountDown = 30;
     }
     
     async function startScan(type,index=null) {
@@ -413,7 +402,8 @@ const ScanScreen = () => {
                     EventRegister.emit("showSpinner",{isSpinnerShow:false, msg:"", spinnerType:"",closeText:""})
                     EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"스캔오류", str:aiResult.message});
                     setScanning(false);
-     
+                    RNFS.unlink(`${RNFS.DownloadDirectoryPath}/${fileName}`);
+
                     //const breadOrderList = [{prodCD:900040, option:[], amt:1}, {prodCD:900041, option:[], amt:1}];
                     //addToTmpList(breadOrderList)
                     return;
@@ -639,7 +629,7 @@ const ScanScreen = () => {
                     {/* <Text style={{fontSize:30,color:colorYellow}}>{strings["실제무게"][`${selectedLanguage}`]}: {scannedWeight}g</Text> */}
                 </View>
                 <View style={{position:'absolute', zIndex:9999999, right:0, bottom:35, right:10}}>
-                    <TouchableWithoutFeedback onPress={()=>{if(isScanning==false){ setMainShow(true); dispatch(setCommon({isAddShow:false})); dispatch(setMenu({breadOrderList:totalBreadList})); initCamera(); setTmpBreadList([]);setTotalBreadList([]); /* clearWeightInterval(); DeviceEventEmitter.removeAllListeners("onWeightChanged"); */ }}} >
+                    <TouchableWithoutFeedback onPress={()=>{if(isScanning==false){ setMainShow(true); dispatch(setCommon({isAddShow:false})); dispatch(setMenu({breadOrderList:totalBreadList})); initCamera(); setTmpBreadList([]);setTotalBreadList([]); }}} >
                         <SquareButtonView backgroundColor={colorDarkGrey} >
                             <ButtonText>{strings["키오스크\n바로주문"][`${selectedLanguage}`]}</ButtonText>
                             {/* (currentWeight>0 && !isMainShow  && tmpBreadList.length>0 )&&

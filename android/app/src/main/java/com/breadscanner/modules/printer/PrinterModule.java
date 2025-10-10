@@ -18,6 +18,7 @@ import android.os.SystemClock;
 import android.print.PrinterInfo;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
@@ -403,350 +404,352 @@ public class PrinterModule extends ReactContextBaseJavaModule {
                 if (jsonArray.length() > 0) {
                     final List<UsbPrinterDriver> drivers = UsbPrinterProber.getDefaultProber().findAllDrivers((UsbManager) Objects.requireNonNull(mContext.getSystemService(Context.USB_SERVICE)));
                     final List<UsbPrinterPort> result = new ArrayList<UsbPrinterPort>();
-                    for (final UsbPrinterDriver driver : drivers) {
-                        final List<UsbPrinterPort> ports = driver.getPorts();
-                        Log.d("SAM4S", ports.toString());
-                        result.addAll(ports);
-                    }
-
-                    Log.d("SAM4S", result.get(0).toString());
-
-                    mUSBPrinterInfo = (USBPrinterInfo) new USBPrinterInfo(result.get(0));
-                    mUsbPort = mUSBPrinterInfo.getPort();     // 2024.06.12 sjsim
-                    boolean retBool = OpenPrinter();
-                    Log.d("SAM4S", "retBool: " + retBool);
-                    Log.d("SAM4S","payData: "+payData);
-                    String name = printer_model;
-                    Sam4sBuilder builder = null;
-                    builder = new Sam4sBuilder(name.trim(), 0);       // LANG_EN = 0
-                    try {
-                        //add command
-                        //addTextFont
-                        // 사업자 정보
-                        builder.addTextFont(Sam4sBuilder.FONT_A);          // Sam4sBuilder.FONT_B
-                        //addTextAlign
-                        //builder.addTextAlign(Sam4sBuilder.ALIGN_CENTER);   // Sam4sBuilder.ALIGN_LEFT, Sam4sBuilder.ALIGN_RIGHT, Sam4sBuilder.ALIGN_CENTER
-                        //addTextPosition
-                        builder.addTextPosition(0);
-                        //addTextLang
-                        builder.addTextLang(Sam4sBuilder.LANG_KO);         // Sam4sBuilder.LANG_EN
-                        //addTextSize
-                        builder.addTextSize(1, 1);
-                        //addTextStyle
-                        builder.addTextStyle(false, false, false, Sam4sBuilder.COLOR_1);
-                        //addText
-                        builder.addTextAlign(Sam4sBuilder.ALIGN_LEFT);
-                        builder.addTextCodepage(codenumber[0]);
-                        //builder.addText(testString, "Cp437");
-
-
-
-                        builder.addTextAlign(Sam4sBuilder.ALIGN_CENTER);
-                        builder.addTextSize(2, 2);
-                        builder.addTextBold(true);
-                        builder.addText("영수증\n");
-
-                        ///  사업자 정보 영역
-                        builder.addTextAlign(Sam4sBuilder.ALIGN_LEFT);
-
-                        builder.addTextSize(1, 1);
-                        //builder.addText(testString);
-                        int COLUMN_POSITION = 150;
-                        int BUSNISSINFO_POSITION = 180;
-                        builder.addTextLineSpace(70);
-                        builder.addText("------------------------------------------\n");
-
-                        builder.addTextBold(true);
-                        // 사업자명
-                        builder.addText("상 호");
-                        builder.addTextPosition(COLUMN_POSITION);
-                        builder.addText(":");
-                        builder.addTextPosition(BUSNISSINFO_POSITION);
-                        if(van.equals(KOCES)) {
-                            builder.addText(storeName+"\n");
-                        }else if(van.equals(SMARTRO) ) {
-                            builder.addText(payData.getString("business-name")+"\n");
+                    if(drivers.size()>0) {
+                        for (final UsbPrinterDriver driver : drivers) {
+                            final List<UsbPrinterPort> ports = driver.getPorts();
+                            Log.d("SAM4S", ports.toString());
+                            result.addAll(ports);
                         }
 
-                        // 연락처
-                        builder.addText("연락처");
-                        builder.addTextPosition(COLUMN_POSITION);
-                        builder.addText(":");
-                        builder.addTextPosition(BUSNISSINFO_POSITION);
-                        if(van.equals(KOCES)) {
-                            builder.addText(bData.getString("ShpTel")+"\n");
-                        }else if(van.equals(SMARTRO) ) {
-                            builder.addText(payData.getString("business-phone-no")+"\n");
-                        }
-                        builder.addTextBold(false);
+                        Log.d("SAM4S", result.get(0).toString());
 
-                        // 주 소
-                        builder.addText("주 소");
-                        builder.addTextPosition(COLUMN_POSITION);
-                        builder.addText(":");
-                        builder.addTextRotate(90);
-                        builder.addTextPosition(BUSNISSINFO_POSITION);
-                        String addressStr = "";
-                        if(van.equals(KOCES)) {
-                            addressStr = bData.getString("ShpAdr");
-                        }else if(van.equals(SMARTRO) ) {
-                            addressStr = payData.getString("business-address");
-                        }
-
-                        builder.addTextPosition(BUSNISSINFO_POSITION);
-                        //builder.addText(addressStr+"\n");
-
-                        for (int i = 0; i < addressStr.length(); i += 16) {
-                            int end = Math.min(addressStr.length(), i + 16);
-                            builder.addTextPosition(BUSNISSINFO_POSITION);
-                            builder.addText(addressStr.substring(i, end)+"\n");
-                        }
-
-
-                        builder.addText("사업자번호");
-                        builder.addTextPosition(COLUMN_POSITION);
-
-                        builder.addText(":");
-                        builder.addTextPosition(BUSNISSINFO_POSITION);
-                        if(van.equals(KOCES)) {
-                            builder.addText(formatBizNo(bData.getString("BsnNo"))+"\n");
-                        }else if(van.equals(SMARTRO) ) {
-                            builder.addText(formatBizNo(payData.getString("business-no"))+"\n");
-                        }
-
-                        builder.addText("날짜");
-                        builder.addTextPosition(COLUMN_POSITION);
-                        builder.addText(":");
-                        builder.addTextPosition(BUSNISSINFO_POSITION);
-                        if(van.equals(KOCES)) {
-                            builder.addText(formatDateTime(payData.getString("TrdDate"))+"\n");
-                        }else if(van.equals(SMARTRO) ) {
-                            builder.addText(formatDateTime(payData.getString("approval-date")+payData.getString("approval-time"))+"\n");
-
-                        }
-
-
-
-
-                        ///  결제 내역 영역
-                        builder.addTextLineSpace(40);
-                        builder.addText("------------------------------------------\n");
-                        builder.addTextPosition(ITEM_NAME_POSITION);
-                        builder.addText("\n품명");
-                        builder.addTextPosition(ITEM_AMT_COLUMN_TITLE_POSITION);
-                        builder.addText("수량");
-                        builder.addTextPosition(ITEM_PRICE_TITLE_POSITION);
-                        builder.addText("금액\n");
-                        builder.addText("------------------------------------------\n");
-                        builder.addTextLineSpace(80);
-                        Log.d("SAM4S", "finalData: "+finalData );
-                        Log.d("SAM4S", "ITEM_INFO: "+finalData.getJSONArray("ITEM_INFO") );
-                        JSONArray itemInfo = finalData.getJSONArray("ITEM_INFO");
-                        if(itemInfo.length()>0) {
-                            for (int i=0;i<itemInfo.length();i++) {
-                                JSONObject itemDetail = itemInfo.getJSONObject(i);
-
-                                builder.addTextPosition(ITEM_NAME_POSITION);
-                                builder.addText((i+1)+"."+itemDetail.getString("ITEM_NM"));
-                                builder.addTextPosition(ITEM_AMT_POSITION);
-                                builder.addText(itemDetail.getString("ITEM_QTY"));
-                                builder.addTextPosition(ITEM_PRICE_POSITION);
-
-                                builder.addTextPosition(getAlign(Integer.parseInt(itemDetail.getString("ITEM_AMT"))) );
-
-                                builder.addText(df.format(Integer.parseInt(itemDetail.getString("ITEM_AMT")) )+"\n");
-
-                                // 옵션 가격
-                                Log.d("SAM4S", "itemDetail: "+itemDetail );
-
-                                JSONArray setItemInfo = itemDetail.getJSONArray("SETITEM_INFO");
-                                Log.d("SAM4S", "setItemInfo: "+setItemInfo );
-
-                                if(setItemInfo.length()>0) {
-                                    for(int j=0;j<setItemInfo.length();j++) {
-                                        builder.addTextPosition(ITEM_NAME_POSITION);
-                                        builder.addText("->"+setItemInfo.getJSONObject(j).getString("PROD_I_NM"));
-                                        builder.addTextPosition(ITEM_AMT_POSITION);
-                                        builder.addText(setItemInfo.getJSONObject(j).getString("QTY"));
-                                        builder.addTextPosition(getAlign( Integer.parseInt(setItemInfo.getJSONObject(j).getString("AMT"))+Integer.parseInt(setItemInfo.getJSONObject(j).getString("VAT"))  ));
-                                        builder.addText(df.format(Integer.parseInt(setItemInfo.getJSONObject(j).getString("AMT"))+Integer.parseInt(setItemInfo.getJSONObject(j).getString("VAT")) )+"\n");
-
-                                    }
-                                }
-
-                            }
-                        }
-                        builder.addTextLineSpace(40);
-
-                        builder.addText("------------------------------------------\n");
-                        builder.addTextSize(1, 2);
-                        builder.addTextBold(true);
-                        builder.addTextLineSpace(100);
-                        builder.addTextPosition(ITEM_NAME_POSITION);
-                        builder.addText("소  계");
-
-                        if(van.equals(KOCES)) {
-                            builder.addTextPosition(getAlign(Integer.parseInt(payData.getString("TrdAmt"))+Integer.parseInt(payData.getString("TaxAmt"))) );
-                            builder.addText(df.format(Integer.parseInt(payData.getString("TrdAmt"))+Integer.parseInt(payData.getString("TaxAmt"))) +"\n");
-                        }else if(van.equals(SMARTRO) ) {
-                            builder.addTextPosition(getAlign(Integer.parseInt(payData.getString("total-amount"))) );
-                            builder.addText(df.format(Integer.parseInt(payData.getString("total-amount"))) +"\n");
-                        }
-
-                        builder.addTextLineSpace(70);
-                        builder.addTextSize(1, 1);
-                        builder.addTextPosition(ITEM_NAME_POSITION);
-                        builder.addText("순 매 출");
-                        builder.addTextPosition(ITEM_PRICE_POSITION);
-
-
-                        if(van.equals(KOCES)) {
-                            builder.addTextPosition(getAlign(Integer.parseInt(payData.getString("TrdAmt"))) );
-                            builder.addText(df.format(Integer.parseInt(payData.getString("TrdAmt"))) +"\n");
-                        }else if(van.equals(SMARTRO) ) {
-                            builder.addTextPosition(getAlign(Integer.parseInt(payData.getString("total-amount"))-Integer.parseInt(payData.getString("surtax"))) );
-                            builder.addText(df.format(Integer.parseInt(payData.getString("total-amount"))-Integer.parseInt(payData.getString("surtax"))) +"\n");
-                        }
-
-                        builder.addTextSize(1, 1);
-                        builder.addTextPosition(ITEM_NAME_POSITION);
-                        builder.addText("부 가 세");
-                        builder.addTextPosition(ITEM_PRICE_POSITION);
-
-                        if(van.equals(KOCES)) {
-                            builder.addTextPosition(getAlign(Integer.parseInt(payData.getString("TaxAmt"))) );
-                            builder.addText(df.format(Integer.parseInt(payData.getString("TaxAmt"))) +"\n");
-                        }else if(van.equals(SMARTRO) ) {
-                            builder.addTextPosition(getAlign(Integer.parseInt(payData.getString("surtax"))) );
-                            builder.addText(df.format(Integer.parseInt(payData.getString("surtax"))) +"\n");
-                        }
-
-                        builder.addTextLineSpace(100);
-                        builder.addTextSize(1, 2);
-                        builder.addTextPosition(ITEM_NAME_POSITION);
-                        builder.addText("매출합계");
-                        builder.addTextPosition(ITEM_PRICE_POSITION);
-                        if(van.equals(KOCES)) {
-                            builder.addTextPosition(getAlign(Integer.parseInt(payData.getString("TrdAmt"))+Integer.parseInt(payData.getString("TaxAmt"))) );
-                            builder.addText(df.format(Integer.parseInt(payData.getString("TrdAmt"))+Integer.parseInt(payData.getString("TaxAmt"))) +"\n");
-                        }else if(van.equals(SMARTRO) ) {
-                            builder.addTextPosition(getAlign(Integer.parseInt(payData.getString("total-amount"))) );
-                            builder.addText(df.format(Integer.parseInt(payData.getString("total-amount"))) +"\n");
-
-                        }
-
-
-                        builder.addTextSize(1, 1);
-                        builder.addTextBold(false);
-
-                        // 결제 승인 정보
-                        builder.addTextSize(1, 1);
-                        //builder.addText(testString);
-                        int PAY_COLUMN_POSITION = 150;
-                        int PAY_INFO_POSITION = 180;
-                        builder.addText("------------------------------------------\n");
-
-                        // 카드정보
-                        builder.addTextLineSpace(80);
-                        builder.addTextAlign(Sam4sBuilder.ALIGN_LEFT);
-
-                        builder.addText("[카 드 번 호]");
-                        builder.addTextPosition(PAY_COLUMN_POSITION);
-                        builder.addText(":");
-                        builder.addTextPosition(PAY_INFO_POSITION);
-
-
-                        if(van.equals(KOCES)) {
-                            builder.addText(payData.getString("CardNo")+"\n");
-                        }else if(van.equals(SMARTRO) ) {
-                            builder.addText(payData.getString("card-no")+"\n");
-                        }
-
-                        // 할부개월
-                        builder.addText("[할 부 개 월]");
-                        builder.addTextPosition(PAY_COLUMN_POSITION);
-                        builder.addText(":");
-                        builder.addTextPosition(PAY_INFO_POSITION);
-
-
-                        if(van.equals(KOCES)) {
-                            builder.addText(payData.getString("Month")+"\n");
-                        }else if(van.equals(SMARTRO) ) {
-                            builder.addText(payData.getString("installment")+"\n");
-                        }
-
-                        // 카드사명
-                        builder.addText("[카 드 사 명]");
-                        builder.addTextPosition(PAY_COLUMN_POSITION);
-                        builder.addText(":");
-                        builder.addTextPosition(PAY_INFO_POSITION);
-                        if(van.equals(KOCES)) {
-                            builder.addText(payData.getString("InpNm")+"\n");
-                        }else if(van.equals(SMARTRO) ) {
-                            builder.addText(payData.getString("acquire-info")+"\n");
-                        }
-
-                        // 승인번호
-                        builder.addText("[승 인 번 호]");
-                        builder.addTextPosition(PAY_COLUMN_POSITION);
-                        builder.addText(":");
-                        builder.addTextPosition(PAY_INFO_POSITION);
-
-                        if(van.equals(KOCES)) {
-                            builder.addText(payData.getString("AuNo")+"\n");
-                        }else if(van.equals(SMARTRO) ) {
-                            builder.addText(payData.getString("approval-no")+"\n");
-                        }
-
-
-                        // 결제금액
-                        builder.addText("[결 제 금 액]");
-                        builder.addTextPosition(PAY_COLUMN_POSITION);
-                        builder.addText(":");
-                        builder.addTextPosition(PAY_INFO_POSITION);
-                        if(van.equals(KOCES)) {
-                            builder.addText(df.format(Integer.parseInt(payData.getString("TrdAmt"))+Integer.parseInt(payData.getString("TaxAmt")))+"\n");
-                        }else if(van.equals(SMARTRO) ) {
-                            builder.addText(df.format(Integer.parseInt(payData.getString("total-amount")))+"\n");
-                        }
-
-
-
-
-
-
-                        builder.addText("                                                \n");
-                        builder.addTextAlign(Sam4sBuilder.ALIGN_CENTER);
-                        builder.addText("주문번호\n");
-                        builder.addTextSize(3, 3);
-                        builder.addText(orderNo+"\n");
-
-                        builder.addTextSize(1, 1);
-                        builder.addText("                                                \n");
-                        builder.addText("                                                \n");
-                        builder.addCut(Sam4sBuilder.CUT_NO_FEED); // Sam4sBuilder.CUT_FEED
-
-                        //addFeedUnit
-                        builder.addFeedUnit(0);
-
+                        mUSBPrinterInfo = (USBPrinterInfo) new USBPrinterInfo(result.get(0));
+                        mUsbPort = mUSBPrinterInfo.getPort();     // 2024.06.12 sjsim
+                        boolean retBool = OpenPrinter();
+                        Log.d("SAM4S", "retBool: " + retBool);
+                        Log.d("SAM4S", "payData: " + payData);
+                        String name = printer_model;
+                        Sam4sBuilder builder = null;
+                        builder = new Sam4sBuilder(name.trim(), 0);       // LANG_EN = 0
                         try {
-                            PrintData(builder);
-                        } catch (Exception e) {
-                            e.getStackTrace();
-                        }
+                            //add command
+                            //addTextFont
+                            // 사업자 정보
+                            builder.addTextFont(Sam4sBuilder.FONT_A);          // Sam4sBuilder.FONT_B
+                            //addTextAlign
+                            //builder.addTextAlign(Sam4sBuilder.ALIGN_CENTER);   // Sam4sBuilder.ALIGN_LEFT, Sam4sBuilder.ALIGN_RIGHT, Sam4sBuilder.ALIGN_CENTER
+                            //addTextPosition
+                            builder.addTextPosition(0);
+                            //addTextLang
+                            builder.addTextLang(Sam4sBuilder.LANG_KO);         // Sam4sBuilder.LANG_EN
+                            //addTextSize
+                            builder.addTextSize(1, 1);
+                            //addTextStyle
+                            builder.addTextStyle(false, false, false, Sam4sBuilder.COLOR_1);
+                            //addText
+                            builder.addTextAlign(Sam4sBuilder.ALIGN_LEFT);
+                            builder.addTextCodepage(codenumber[0]);
+                            //builder.addText(testString, "Cp437");
 
-                        // remove builder
-                        if (builder != null) {
-                            try {
-                                builder.clearCommandBuffer();
-                                builder = null;
-                            } catch (Exception e) {
-                                builder = null;
+
+                            builder.addTextAlign(Sam4sBuilder.ALIGN_CENTER);
+                            builder.addTextSize(2, 2);
+                            builder.addTextBold(true);
+                            builder.addText("영수증\n");
+
+                            ///  사업자 정보 영역
+                            builder.addTextAlign(Sam4sBuilder.ALIGN_LEFT);
+
+                            builder.addTextSize(1, 1);
+                            //builder.addText(testString);
+                            int COLUMN_POSITION = 150;
+                            int BUSNISSINFO_POSITION = 180;
+                            builder.addTextLineSpace(70);
+                            builder.addText("------------------------------------------\n");
+
+                            builder.addTextBold(true);
+                            // 사업자명
+                            builder.addText("상 호");
+                            builder.addTextPosition(COLUMN_POSITION);
+                            builder.addText(":");
+                            builder.addTextPosition(BUSNISSINFO_POSITION);
+                            if (van.equals(KOCES)) {
+                                builder.addText(storeName + "\n");
+                            } else if (van.equals(SMARTRO)) {
+                                builder.addText(payData.getString("business-name") + "\n");
                             }
-                        }
 
-                    } catch (Exception e) {
-                        Log.d("SAM4S", e.getMessage());
+                            // 연락처
+                            builder.addText("연락처");
+                            builder.addTextPosition(COLUMN_POSITION);
+                            builder.addText(":");
+                            builder.addTextPosition(BUSNISSINFO_POSITION);
+                            if (van.equals(KOCES)) {
+                                builder.addText(bData.getString("ShpTel") + "\n");
+                            } else if (van.equals(SMARTRO)) {
+                                builder.addText(payData.getString("business-phone-no") + "\n");
+                            }
+                            builder.addTextBold(false);
+
+                            // 주 소
+                            builder.addText("주 소");
+                            builder.addTextPosition(COLUMN_POSITION);
+                            builder.addText(":");
+                            builder.addTextRotate(90);
+                            builder.addTextPosition(BUSNISSINFO_POSITION);
+                            String addressStr = "";
+                            if (van.equals(KOCES)) {
+                                addressStr = bData.getString("ShpAdr");
+                            } else if (van.equals(SMARTRO)) {
+                                addressStr = payData.getString("business-address");
+                            }
+
+                            builder.addTextPosition(BUSNISSINFO_POSITION);
+                            //builder.addText(addressStr+"\n");
+
+                            for (int i = 0; i < addressStr.length(); i += 16) {
+                                int end = Math.min(addressStr.length(), i + 16);
+                                builder.addTextPosition(BUSNISSINFO_POSITION);
+                                builder.addText(addressStr.substring(i, end) + "\n");
+                            }
+
+
+                            builder.addText("사업자번호");
+                            builder.addTextPosition(COLUMN_POSITION);
+
+                            builder.addText(":");
+                            builder.addTextPosition(BUSNISSINFO_POSITION);
+                            if (van.equals(KOCES)) {
+                                builder.addText(formatBizNo(bData.getString("BsnNo")) + "\n");
+                            } else if (van.equals(SMARTRO)) {
+                                builder.addText(formatBizNo(payData.getString("business-no")) + "\n");
+                            }
+
+                            builder.addText("날짜");
+                            builder.addTextPosition(COLUMN_POSITION);
+                            builder.addText(":");
+                            builder.addTextPosition(BUSNISSINFO_POSITION);
+                            if (van.equals(KOCES)) {
+                                builder.addText(formatDateTime(payData.getString("TrdDate")) + "\n");
+                            } else if (van.equals(SMARTRO)) {
+                                builder.addText(formatDateTime(payData.getString("approval-date") + payData.getString("approval-time")) + "\n");
+
+                            }
+
+
+                            ///  결제 내역 영역
+                            builder.addTextLineSpace(40);
+                            builder.addText("------------------------------------------\n");
+                            builder.addTextPosition(ITEM_NAME_POSITION);
+                            builder.addText("\n품명");
+                            builder.addTextPosition(ITEM_AMT_COLUMN_TITLE_POSITION);
+                            builder.addText("수량");
+                            builder.addTextPosition(ITEM_PRICE_TITLE_POSITION);
+                            builder.addText("금액\n");
+                            builder.addText("------------------------------------------\n");
+                            builder.addTextLineSpace(80);
+                            Log.d("SAM4S", "finalData: " + finalData);
+                            Log.d("SAM4S", "ITEM_INFO: " + finalData.getJSONArray("ITEM_INFO"));
+                            JSONArray itemInfo = finalData.getJSONArray("ITEM_INFO");
+                            if (itemInfo.length() > 0) {
+                                for (int i = 0; i < itemInfo.length(); i++) {
+                                    JSONObject itemDetail = itemInfo.getJSONObject(i);
+
+                                    builder.addTextPosition(ITEM_NAME_POSITION);
+                                    builder.addText((i + 1) + "." + itemDetail.getString("ITEM_NM"));
+                                    builder.addTextPosition(ITEM_AMT_POSITION);
+                                    builder.addText(itemDetail.getString("ITEM_QTY"));
+                                    builder.addTextPosition(ITEM_PRICE_POSITION);
+
+                                    builder.addTextPosition(getAlign(Integer.parseInt(itemDetail.getString("ITEM_AMT"))));
+
+                                    builder.addText(df.format(Integer.parseInt(itemDetail.getString("ITEM_AMT"))) + "\n");
+
+                                    // 옵션 가격
+                                    Log.d("SAM4S", "itemDetail: " + itemDetail);
+
+                                    JSONArray setItemInfo = itemDetail.getJSONArray("SETITEM_INFO");
+                                    Log.d("SAM4S", "setItemInfo: " + setItemInfo);
+
+                                    if (setItemInfo.length() > 0) {
+                                        for (int j = 0; j < setItemInfo.length(); j++) {
+                                            builder.addTextPosition(ITEM_NAME_POSITION);
+                                            builder.addText("->" + setItemInfo.getJSONObject(j).getString("PROD_I_NM"));
+                                            builder.addTextPosition(ITEM_AMT_POSITION);
+                                            builder.addText(setItemInfo.getJSONObject(j).getString("QTY"));
+                                            builder.addTextPosition(getAlign(Integer.parseInt(setItemInfo.getJSONObject(j).getString("AMT")) + Integer.parseInt(setItemInfo.getJSONObject(j).getString("VAT"))));
+                                            builder.addText(df.format(Integer.parseInt(setItemInfo.getJSONObject(j).getString("AMT")) + Integer.parseInt(setItemInfo.getJSONObject(j).getString("VAT"))) + "\n");
+
+                                        }
+                                    }
+
+                                }
+                            }
+                            builder.addTextLineSpace(40);
+
+                            builder.addText("------------------------------------------\n");
+                            builder.addTextSize(1, 2);
+                            builder.addTextBold(true);
+                            builder.addTextLineSpace(100);
+                            builder.addTextPosition(ITEM_NAME_POSITION);
+                            builder.addText("소  계");
+
+                            if (van.equals(KOCES)) {
+                                builder.addTextPosition(getAlign(Integer.parseInt(payData.getString("TrdAmt")) + Integer.parseInt(payData.getString("TaxAmt"))));
+                                builder.addText(df.format(Integer.parseInt(payData.getString("TrdAmt")) + Integer.parseInt(payData.getString("TaxAmt"))) + "\n");
+                            } else if (van.equals(SMARTRO)) {
+                                builder.addTextPosition(getAlign(Integer.parseInt(payData.getString("total-amount"))));
+                                builder.addText(df.format(Integer.parseInt(payData.getString("total-amount"))) + "\n");
+                            }
+
+                            builder.addTextLineSpace(70);
+                            builder.addTextSize(1, 1);
+                            builder.addTextPosition(ITEM_NAME_POSITION);
+                            builder.addText("순 매 출");
+                            builder.addTextPosition(ITEM_PRICE_POSITION);
+
+
+                            if (van.equals(KOCES)) {
+                                builder.addTextPosition(getAlign(Integer.parseInt(payData.getString("TrdAmt"))));
+                                builder.addText(df.format(Integer.parseInt(payData.getString("TrdAmt"))) + "\n");
+                            } else if (van.equals(SMARTRO)) {
+                                builder.addTextPosition(getAlign(Integer.parseInt(payData.getString("total-amount")) - Integer.parseInt(payData.getString("surtax"))));
+                                builder.addText(df.format(Integer.parseInt(payData.getString("total-amount")) - Integer.parseInt(payData.getString("surtax"))) + "\n");
+                            }
+
+                            builder.addTextSize(1, 1);
+                            builder.addTextPosition(ITEM_NAME_POSITION);
+                            builder.addText("부 가 세");
+                            builder.addTextPosition(ITEM_PRICE_POSITION);
+
+                            if (van.equals(KOCES)) {
+                                builder.addTextPosition(getAlign(Integer.parseInt(payData.getString("TaxAmt"))));
+                                builder.addText(df.format(Integer.parseInt(payData.getString("TaxAmt"))) + "\n");
+                            } else if (van.equals(SMARTRO)) {
+                                builder.addTextPosition(getAlign(Integer.parseInt(payData.getString("surtax"))));
+                                builder.addText(df.format(Integer.parseInt(payData.getString("surtax"))) + "\n");
+                            }
+
+                            builder.addTextLineSpace(100);
+                            builder.addTextSize(1, 2);
+                            builder.addTextPosition(ITEM_NAME_POSITION);
+                            builder.addText("매출합계");
+                            builder.addTextPosition(ITEM_PRICE_POSITION);
+                            if (van.equals(KOCES)) {
+                                builder.addTextPosition(getAlign(Integer.parseInt(payData.getString("TrdAmt")) + Integer.parseInt(payData.getString("TaxAmt"))));
+                                builder.addText(df.format(Integer.parseInt(payData.getString("TrdAmt")) + Integer.parseInt(payData.getString("TaxAmt"))) + "\n");
+                            } else if (van.equals(SMARTRO)) {
+                                builder.addTextPosition(getAlign(Integer.parseInt(payData.getString("total-amount"))));
+                                builder.addText(df.format(Integer.parseInt(payData.getString("total-amount"))) + "\n");
+
+                            }
+
+
+                            builder.addTextSize(1, 1);
+                            builder.addTextBold(false);
+
+                            // 결제 승인 정보
+                            builder.addTextSize(1, 1);
+                            //builder.addText(testString);
+                            int PAY_COLUMN_POSITION = 150;
+                            int PAY_INFO_POSITION = 180;
+                            builder.addText("------------------------------------------\n");
+
+                            // 카드정보
+                            builder.addTextLineSpace(80);
+                            builder.addTextAlign(Sam4sBuilder.ALIGN_LEFT);
+
+                            builder.addText("[카 드 번 호]");
+                            builder.addTextPosition(PAY_COLUMN_POSITION);
+                            builder.addText(":");
+                            builder.addTextPosition(PAY_INFO_POSITION);
+
+
+                            if (van.equals(KOCES)) {
+                                builder.addText(payData.getString("CardNo") + "\n");
+                            } else if (van.equals(SMARTRO)) {
+                                builder.addText(payData.getString("card-no") + "\n");
+                            }
+
+                            // 할부개월
+                            builder.addText("[할 부 개 월]");
+                            builder.addTextPosition(PAY_COLUMN_POSITION);
+                            builder.addText(":");
+                            builder.addTextPosition(PAY_INFO_POSITION);
+
+
+                            if (van.equals(KOCES)) {
+                                builder.addText(payData.getString("Month") + "\n");
+                            } else if (van.equals(SMARTRO)) {
+                                builder.addText(payData.getString("installment") + "\n");
+                            }
+
+                            // 카드사명
+                            builder.addText("[카 드 사 명]");
+                            builder.addTextPosition(PAY_COLUMN_POSITION);
+                            builder.addText(":");
+                            builder.addTextPosition(PAY_INFO_POSITION);
+                            if (van.equals(KOCES)) {
+                                builder.addText(payData.getString("InpNm") + "\n");
+                            } else if (van.equals(SMARTRO)) {
+                                builder.addText(payData.getString("acquire-info") + "\n");
+                            }
+
+                            // 승인번호
+                            builder.addText("[승 인 번 호]");
+                            builder.addTextPosition(PAY_COLUMN_POSITION);
+                            builder.addText(":");
+                            builder.addTextPosition(PAY_INFO_POSITION);
+
+                            if (van.equals(KOCES)) {
+                                builder.addText(payData.getString("AuNo") + "\n");
+                            } else if (van.equals(SMARTRO)) {
+                                builder.addText(payData.getString("approval-no") + "\n");
+                            }
+
+
+                            // 결제금액
+                            builder.addText("[결 제 금 액]");
+                            builder.addTextPosition(PAY_COLUMN_POSITION);
+                            builder.addText(":");
+                            builder.addTextPosition(PAY_INFO_POSITION);
+                            if (van.equals(KOCES)) {
+                                builder.addText(df.format(Integer.parseInt(payData.getString("TrdAmt")) + Integer.parseInt(payData.getString("TaxAmt"))) + "\n");
+                            } else if (van.equals(SMARTRO)) {
+                                builder.addText(df.format(Integer.parseInt(payData.getString("total-amount"))) + "\n");
+                            }
+
+
+                            builder.addText("                                                \n");
+                            builder.addTextAlign(Sam4sBuilder.ALIGN_CENTER);
+                            builder.addText("주문번호\n");
+                            builder.addTextSize(3, 3);
+                            builder.addText(orderNo + "\n");
+
+                            builder.addTextSize(1, 1);
+                            builder.addText("                                                \n");
+                            builder.addText("                                                \n");
+                            builder.addCut(Sam4sBuilder.CUT_NO_FEED); // Sam4sBuilder.CUT_FEED
+
+                            //addFeedUnit
+                            builder.addFeedUnit(0);
+
+                            try {
+                                PrintData(builder);
+                            } catch (Exception e) {
+                                e.getStackTrace();
+                            }
+
+                            // remove builder
+                            if (builder != null) {
+                                try {
+                                    builder.clearCommandBuffer();
+                                    builder = null;
+                                } catch (Exception e) {
+                                    builder = null;
+                                }
+                            }
+
+                        } catch (Exception e) {
+                            Log.d("SAM4S", e.getMessage());
+                        }
+                    }else {
+                        getReactApplicationContext().runOnUiQueueThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(getReactApplicationContext(),"프린터를 찾을 수 없습니다.",Toast.LENGTH_SHORT).show();
+                            }
+                        });
                     }
                 }
             } catch (JSONException e) {
