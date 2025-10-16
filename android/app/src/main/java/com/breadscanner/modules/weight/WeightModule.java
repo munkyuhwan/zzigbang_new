@@ -135,6 +135,8 @@ public class WeightModule extends ReactContextBaseJavaModule {
             port = ports.get(Integer.parseInt(portNumber)); // 특정 포트 선택 (필요시 인덱스 변경)
             requestPermission(port.getDriver().getDevice());
             UsbDeviceConnection connection = usbManager.openDevice(port.getDriver().getDevice());
+            Log.e("WeightModule", "port.getDriver().getDevice(): "+port.getDriver());
+
             if (connection == null) {
                 Log.e("WeightModule", "Failed to open USB device. Permission may be required.");
                 return;
@@ -207,6 +209,7 @@ public class WeightModule extends ReactContextBaseJavaModule {
 
                         @Override
                         public void onRunError(Exception e) {
+                            Log.e("WeightModule", "onRunError: " +  e.getStackTrace()); // 에러 로그 추가
 
                         }
                     });

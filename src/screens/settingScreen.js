@@ -266,13 +266,13 @@ const SettingScreen = (props) =>{
                 <KeyboardAvoidingView enabled style={{width:'100%', height:'100%'}}>
                     <View style={{flexDirection:'row', paddingLeft:30,paddingRight:30}}>
                         <TouchableWithoutFeedback onPress={()=>{dispatch(setCommon({isAddShow:true})); props.setSetting(false); }}>
-                            <Text style={{flex:1,fontSize:40,color:colorBlack, textAlign:'left'}} >{"<"}</Text>
+                            <Text style={{flex:1,fontSize:60,color:colorBlack, textAlign:'left'}} >{"<"}</Text>
                         </TouchableWithoutFeedback>
                         <Text style={{flex:1,fontSize:40,color:colorBlack, textAlign:'center'}} >설정</Text>
                         <Text style={{flex:1,fontSize:40,color:colorBlack}} ></Text>
                     </View>
                     <View style={{flexDirection:'row', paddingLeft:30,paddingRight:30}}>
-                        <Text style={{flex:1,fontSize:20,color:colorBlack,textAlign:'center'}} >v1.0.13</Text>
+                        <Text style={{flex:1,fontSize:20,color:colorBlack,textAlign:'center'}} >v1.0.15</Text>
                     </View>
                     <SettingWrapper>
 
@@ -741,9 +741,18 @@ const SettingScreen = (props) =>{
                             <SettingSectionTitle>업데이트 정보</SettingSectionTitle>
                             <SettingSectionDetailWrapper>
                                 <SettingSenctionInputViewColumn>
+                                    <SettingSectionLabel>- 저울 대기 시간 추가</SettingSectionLabel>
+                                    <SettingSectionLabel>- 세팅화면 뒤로가기 버튼 크게 수정</SettingSectionLabel>
+                                    <SettingSectionLabel>- 쟁반추가 후 리스트 순서 변경</SettingSectionLabel>
+                                    <SettingSectionLabel>- 스캔 응답 로그 저장 추가</SettingSectionLabel>
+                                </SettingSenctionInputViewColumn>
+                               {/*  <SettingSenctionInputViewColumn>
+                                    <SettingSectionLabel>- 저울수정</SettingSectionLabel>
+                                </SettingSenctionInputViewColumn> */}
+                                {/* <SettingSenctionInputViewColumn>
                                     <SettingSectionLabel>- 진동벨 코너 여러개 테스트.</SettingSectionLabel>
                                     <SettingSectionLabel>- 진동벨 주문에 적용.</SettingSectionLabel>
-                                </SettingSenctionInputViewColumn>
+                                </SettingSenctionInputViewColumn> */}
                                 {/* <SettingSenctionInputViewColumn>
                                     <SettingSectionLabel>- 저울 포트 선택.</SettingSectionLabel>
                                     <SettingSectionLabel>- 무게 측정 대기화면 부터 시작.</SettingSectionLabel>

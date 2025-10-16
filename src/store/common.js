@@ -469,6 +469,12 @@ export const commonSlice = createSlice({
                 cn:"需要追加扫描时请触摸。",
                 ko:"추가 스캔시 터치\n해 주세요.",  
             },
+            "무게 측정 중 입니다.":{
+                en: "Measuring weight...",
+                jp: "重量を測定しています。",
+                cn: "正在测量重量。",
+                ko: "무게 측정 중...",
+            },
                 
         }
     },

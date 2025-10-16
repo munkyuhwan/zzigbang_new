@@ -10,7 +10,7 @@ import { fetch } from "@react-native-community/netinfo";
 // device info
 import DeviceInfo, { getUniqueId, getManufacturer } from 'react-native-device-info';
 import moment from 'moment';
-import { ADMIN_API_BASE_URL, ADMIN_API_MENU_CHECK, ADMIN_API_MENU_UPDATE, ADMIN_API_POST_ORDER, ADMIN_PAY_LOG, POS_BASE_URL, POS_VERSION_CODE, POS_WORK_CD_REQ_STORE_INFO } from '../resources/apiResources';
+import { ADMIN_API_BASE_URL, ADMIN_API_MENU_CHECK, ADMIN_API_MENU_UPDATE, ADMIN_API_POST_ORDER, ADMIN_ERROR_LOG, ADMIN_PAY_LOG, POS_BASE_URL, POS_VERSION_CODE, POS_WORK_CD_REQ_STORE_INFO } from '../resources/apiResources';
 import { EventRegister } from 'react-native-event-listeners';
 import axios from 'axios';
 import { setCommon } from '../store/common';
@@ -1066,6 +1066,30 @@ export function paginateArray(data, pageSize = 10) {
     }
     return paginated;
 }
+
+export const  postPayLog = async(data) =>{
+    console.log(`${ADMIN_API_BASE_URL}${ADMIN_ERROR_LOG}`);
+    console.log(data);
+    return await new Promise(function(resolve, reject){
+        axios.post(
+            `${ADMIN_API_BASE_URL}${ADMIN_ERROR_LOG}`,
+            data,
+            adminOrderHeader,
+        ) 
+        .then((response => {
+            const data = response?.data;
+            if(data?.result) {
+                resolve();     
+            }else {
+                reject()
+            }
+        })) 
+        .catch(error=>{
+            reject()
+        });
+    }) 
+}
+ 
 /*
 export function grandTotalCalculate(data) {
     let amt = 0;

@@ -15,7 +15,7 @@ import { CartList, CartListItem, ScannListItem } from '../components/mainCompone
 import { ButtonImage, ButtonText, ButtonView, SquareButtonView } from '../style/common';
 import { RescanText, RescanView, ScanProductCheckWrapper, ScanProductList } from '../style/scanScreenStyle';
 import {isEmpty} from 'lodash';
-import { numberWithCommas, parseValue, speak, trimBreadList, updateList } from '../utils/common';
+import { numberPad, numberWithCommas, parseValue, postPayLog, speak, trimBreadList, updateList } from '../utils/common';
 import { getBanner, setAdShow, setCommon } from '../store/common';
 import { SCREEN_TIMEOUT } from '../resources/values';
 import { CartItemTitleText } from '../style/main';
@@ -87,6 +87,7 @@ const ScanScreen = () => {
     const [storeID, setStoreID] = useState("");
     const [currentWeight, setCurrentWeight] = useState(0);
     const [scannedWeight, setScannedWeight] = useState("0");
+    const [isWeightStable, setWeightStable] = useState("0");
 
     //const [weightArr, setWeightArr] = useState(Array(MAX_SIZE).fill(null));
     const indexRef = useRef(0);
@@ -154,7 +155,29 @@ const ScanScreen = () => {
           subscription.remove();
         };
     }, [appState]);
-    
+    const isStableWeight = (arr, thresholdPercent = 0.9) => {
+        if (!arr || arr.length === 0) return false;
+      
+        // 빈값, null, undefined 제거
+        const filtered = arr.filter(v => v !== null && v !== undefined);
+      
+        if (filtered.length === 0) return false;
+      
+        // 각 값의 빈도 계산
+        const freq = {};
+        for (const val of filtered) {
+          const key = val.toFixed(3); // 부동소수 오차 방지용 문자열키
+          freq[key] = (freq[key] || 0) + 1;
+        }
+      
+        // 최대 등장 횟수 계산
+        const maxCount = Math.max(...Object.values(freq));
+      
+        // 등장 비율 계산
+        const ratio = maxCount / filtered.length;
+      
+        return ratio >= thresholdPercent;
+    };
     function startWeighting() {
         DeviceEventEmitter.addListener("onWeightChanged",(data)=>{    
             //const result = data?.weight.replace(/[^0-9.]/g, ""); // 숫자와 소숫점 제외 모든 문자 제거
@@ -162,12 +185,12 @@ const ScanScreen = () => {
             if(!isNaN(weight) && Number(weight)>=0) {
                 const kiloWeight = weight*1000;
                 setCurrentWeight(kiloWeight);
-                console.log("kiloWeight: ",kiloWeight);
                 if(kiloWeight>Number(storage.getString("TRAY_WEIGHT"))) {
                     const newArr = weightArr.current;
                     newArr[indexRef.current] = kiloWeight; // 현재 인덱스에 덮어쓰기
                     indexRef.current = (indexRef.current + 1) % MAX_SIZE; // 다음 위치 (100 넘으면 0부터)
                     weightArr.current = newArr;
+                    setWeightStable(isStableWeight(weightArr.current,0.9))
                     mostFrequentWeight = getMostFrequent(weightArr.current);
                     /* setWeightArr((prev) => {
                         const newArr = [...prev];
@@ -320,7 +343,8 @@ const ScanScreen = () => {
         var toSet = Object.assign([],tmpBreadList);
         if(type == ADD) {
             // 추가 스캔
-            toSet.push(addData);
+            //toSet.push(addData);
+            toSet.unshift(addData);
             setTmpBreadList(toSet);
         }else if(type == INIT) {
             // 초기화 스캔
@@ -396,8 +420,17 @@ const ScanScreen = () => {
                 
 
                 const aiResult = await formRequest(dispatch,`${AI_SERVER}${AI_QUERY}`, formData );
-                console.log("aiResult: ",aiResult);
+                console.log("aiResult: ",aiResult.data);
+                const date = new Date();
 
+                postPayLog({
+                    storeID:storage.getString("STORE_IDX"),
+                    time:`${date.getFullYear()}${numberPad(date.getMonth()+1,2)}${numberPad(date.getDate(),2)}`,
+                    ERROR_MSG:`${JSON.stringify(aiResult.data)}`,
+                    ERROR_CD:"XXXX"
+                });
+
+                
                 if(aiResult instanceof Error) {
                     EventRegister.emit("showSpinner",{isSpinnerShow:false, msg:"", spinnerType:"",closeText:""})
                     EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"스캔오류", str:aiResult.message});
@@ -576,6 +609,12 @@ const ScanScreen = () => {
             <View style={{width:'100%' ,height:'100%',position:'absolute',zIndex:999999999,justifyContent:'center'}}>
                 <View style={{width:'100%',height:'100%', position:'absolute',backgroundColor:'rgba(0,0,0,0.4)'}} ></View>
                 <Text style={{fontSize:240, fontWeight:'900',color:'white', textAlign:'center'}} >{strings["쟁반을 올려주세요."][`${selectedLanguage}`]}</Text>
+            </View>
+        }
+        {( (storage.getBoolean("WEIGHT_SET") && currentWeight>Number(storage.getString("TRAY_WEIGHT")) && !isMainShow )&&!isWeightStable) &&
+            <View style={{width:'100%' ,height:'100%',position:'absolute',zIndex:999999999,justifyContent:'center'}}>
+                <View style={{width:'100%',height:'100%', position:'absolute',backgroundColor:'rgba(0,0,0,0.4)'}} ></View>
+                <Text style={{fontSize:240, fontWeight:'900',color:'white', textAlign:'center'}} >{strings["무게 측정 중 입니다."][`${selectedLanguage}`]}</Text>
             </View>
         }
         {/* <View style={{ padding:10, position:'absolute',zIndex:999999999, right:340, bottom:200, justifyContent:'center', alignItems:'center', width:300,height:180}}>
