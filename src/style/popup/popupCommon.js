@@ -336,6 +336,18 @@ export const ConfirmPopupTitleText = styled.Text`
     fontSize:24px;
     fontWeight:bold;
 `
+// 이미지 영역
+export const ImageArea = styled.View`
+    flex:0.2;
+    flexDirection:row;
+    gap:5px;
+    paddingLeft:10px;
+    paddingRight:10px;
+`
+export const SampleImage = styled(FastImage)`
+    flex:1;
+`
+
 // 메시지 영역
 export const ConfirmPopupMsgArea = styled.View`
     flex:1;

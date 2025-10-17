@@ -15,7 +15,7 @@ import { CartList, CartListItem, ScannListItem } from '../components/mainCompone
 import { ButtonImage, ButtonText, ButtonView, SquareButtonView } from '../style/common';
 import { RescanText, RescanView, ScanProductCheckWrapper, ScanProductList } from '../style/scanScreenStyle';
 import {isEmpty} from 'lodash';
-import { numberPad, numberWithCommas, parseValue, postPayLog, speak, trimBreadList, updateList } from '../utils/common';
+import { getGimgChgByCandidates, getTopFive, numberPad, numberWithCommas, parseValue, postPayLog, speak, trimBreadList, updateList } from '../utils/common';
 import { getBanner, setAdShow, setCommon } from '../store/common';
 import { SCREEN_TIMEOUT } from '../resources/values';
 import { CartItemTitleText } from '../style/main';
@@ -155,29 +155,30 @@ const ScanScreen = () => {
           subscription.remove();
         };
     }, [appState]);
-    const isStableWeight = (arr, thresholdPercent = 0.9) => {
+    const isStableWeight = (arr, thresholdPercent = 0.9, tolerance = 2.0) => {
         if (!arr || arr.length === 0) return false;
       
-        // 빈값, null, undefined 제거
+        // null, undefined 제거
         const filtered = arr.filter(v => v !== null && v !== undefined);
-      
         if (filtered.length === 0) return false;
       
-        // 각 값의 빈도 계산
-        const freq = {};
-        for (const val of filtered) {
-          const key = val.toFixed(3); // 부동소수 오차 방지용 문자열키
-          freq[key] = (freq[key] || 0) + 1;
+        let maxCount = 0;
+      
+        // 각 값마다 비슷한 값들 카운트
+        for (let i = 0; i < filtered.length; i++) {
+          let count = 0;
+          for (let j = 0; j < filtered.length; j++) {
+            if (Math.abs(filtered[i] - filtered[j]) <= tolerance) {
+              count++;
+            }
+          }
+          if (count > maxCount) maxCount = count;
         }
       
-        // 최대 등장 횟수 계산
-        const maxCount = Math.max(...Object.values(freq));
-      
-        // 등장 비율 계산
         const ratio = maxCount / filtered.length;
-      
         return ratio >= thresholdPercent;
     };
+      
     function startWeighting() {
         DeviceEventEmitter.addListener("onWeightChanged",(data)=>{    
             //const result = data?.weight.replace(/[^0-9.]/g, ""); // 숫자와 소숫점 제외 모든 문자 제거
@@ -458,34 +459,83 @@ const ScanScreen = () => {
                     if(data.within_tolerance == false) {
                         EventRegister.emit("showSpinner",{isSpinnerShow:false, msg:"", spinnerType:"",closeText:""})
                         //EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"스캔오류", str:"스캔이 잘 될수있도록 가져오신 상품을 쟁반안에 넣어주세요. 빵이 겹치지 않은지 확인해주세요."});
-                        dispatch(setAlert(
-                            {
-                                title:"테스트",
-                                msg:"스캔이 잘 될 수 있도록\n가져오신 상품을 쟁반에\n넣어주세요.",
-                                subMsg:"빵이 겹치치 않은지 확인해 주세요!",
-                                okText:'닫기',
-                                cancelText:'',
-                                isCancle:false,
-                                isOK:true,
-                                icon:"",   
-                                isAlertOpen:true,
-                                clickType:"",
-                            }
-                        ));
-                        /* const sound = new Sound("z004.wav", null, (error) => {
-                            if (error) {
-                                console.log('오디오 로드 실패', error);
-                                return;
-                            }
-                            sound.play((success) => {
-                                if (success) {
-                                    console.log('재생 성공');
-                                } else {
-                                    console.log('재생 실패');
+                        
+                        const registeredWeight = Number(data.total_registered_weight)
+                        const inputWeight = Number(data.input_weight);
+                        const tolerance = Number(data.total_tolerance);
+                        const difference = inputWeight - registeredWeight;
+                        console.log("items: ",items)
+                        console.log("difference: ",difference)
+
+                        if(difference < 0) {
+                            // 스캔한 빵의 무게가 올린 무게보다 높음
+                            dispatch(setAlert(
+                                {
+                                    title:"테스트",
+                                    msg:"스캔이 잘 될 수 있도록\n가져오신 상품을 쟁반에\n넣어주세요.",
+                                    subMsg:"빵이 겹치치 않은지 확인해 주세요!",
+                                    okText:'닫기',
+                                    cancelText:'',
+                                    isCancle:false,
+                                    isOK:true,
+                                    icon:"",   
+                                    isAlertOpen:true,
+                                    clickType:"",
+                                    imageArr:[]
                                 }
-                            });
-                        }); */
-                        //speak(selectedLanguage, strings["무게오류"][selectedLanguage]);
+                            ));
+                        }else {
+                            if(difference>tolerance) {
+                                // 겹침
+                                const topFive = getTopFive(items, difference);
+                                console.log("topFive: ",topFive);
+                                dispatch(setAlert(
+                                    {
+                                        title:"테스트",
+                                        msg:"스캔이 잘 될 수 있도록\n가져오신 상품을 쟁반에\n넣어주세요.",
+                                        subMsg:"아래 빵들이 겹치치 않은지 확인해 주세요!",
+                                        okText:'닫기',
+                                        cancelText:'',
+                                        isCancle:false,
+                                        isOK:true,
+                                        icon:"",   
+                                        isAlertOpen:true,
+                                        clickType:"",
+                                        imageArr:topFive
+                                    }
+                                ));
+
+                            }else {
+                                // 오인식
+                                const altCandidates = data?.alt_candidates;
+
+                                if(altCandidates.length>0) {
+                                    const altCandImgs = getGimgChgByCandidates(altCandidates,items);
+                                    console.log(altCandImgs);
+                                }else {
+                                    dispatch(setAlert(
+                                        {
+                                            title:"테스트",
+                                            msg:"스캔이 잘 될 수 있도록\n가져오신 상품을 쟁반에\n넣어주세요.",
+                                            subMsg:"인식이 잘 되지 않았습니다. 아래 빵들을 확인해 주세요!",
+                                            okText:'닫기',
+                                            cancelText:'',
+                                            isCancle:false,
+                                            isOK:true,
+                                            icon:"",   
+                                            isAlertOpen:true,
+                                            clickType:"",
+                                            imageArr:[]
+                                        }
+                                    ));
+                                }
+    
+                            }
+    
+                        }
+
+
+                        
                         return;
                     }
     

@@ -24,6 +24,13 @@ export const alertSlice = createSlice({
         subMsg:"",
         isAlertOpen:false,
         clickType:"",
+        imageArr:[
+            "http://zzigbbang.com/a_tablet/upload_file/goods/1739326740-hcnzn.jpg",
+            "http://zzigbbang.com/a_tablet/upload_file/goods/1739326740-hcnzn.jpg",
+            "http://zzigbbang.com/a_tablet/upload_file/goods/1739326740-hcnzn.jpg",
+            "http://zzigbbang.com/a_tablet/upload_file/goods/1739326740-hcnzn.jpg",
+            "http://zzigbbang.com/a_tablet/upload_file/goods/1739326740-hcnzn.jpg",
+        ],
     },
     extraReducers:(builder)=>{
         // 초기화

@@ -383,7 +383,6 @@ export const MainItem = (props) => {
     const item = props?.item;
     const { orderList, menu } = useSelector(state=>state.menu);
     const isIn = isProductInCart(item,orderList);
-    
     return(
         <>
         <Pressable key={"press_"+item?.cate_code+"_"+item?.prod_cd} onPress={()=>{ props?.onPress(); }} >

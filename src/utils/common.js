@@ -1090,6 +1090,46 @@ export const  postPayLog = async(data) =>{
     }) 
 }
  
+export function getTopFive(items, difference) {
+    if (!Array.isArray(items) || items.length === 0) return [];
+
+  const validItems = items
+    .filter(item => item.weight !== null && item.weight !== undefined)
+    .map(item => ({
+      ...item,
+      weight: Number(item.weight)
+    }))
+    .filter(item => !isNaN(item.weight));
+
+  if (validItems.length === 0) return [];
+
+  // 기준값과의 차이로 정렬
+  const sorted = validItems.sort(
+    (a, b) => Math.abs(a.weight - difference) - Math.abs(b.weight - difference)
+  );
+
+  // 상위 5개에서 gimg_chg만 추출
+  const result = sorted.slice(0, 5).map(item => item.gimg_chg);
+
+  return result;
+
+}
+
+export function getGimgChgByCandidates(altCandidates, items) {
+    if (!Array.isArray(altCandidates) || !Array.isArray(items)) return [];
+  
+    // allCandidates의 product_code 목록 추출
+    const candidateCodes = altCandidates.map(c => c.product_code);
+  
+    // items 중 product_code가 일치하는 항목들의 gimg_chg만 추출
+    const result = items
+      .filter(item => candidateCodes.includes(item.product_code))
+      .map(item => item.gimg_chg);
+  
+    return result;
+  }
+  
+  
 /*
 export function grandTotalCalculate(data) {
     let amt = 0;

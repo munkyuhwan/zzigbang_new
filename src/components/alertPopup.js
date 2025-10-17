@@ -1,5 +1,5 @@
 import { useDispatch, useSelector } from "react-redux"
-import { ConfirmPopupButtonArea, ConfirmPopupButtonCancel, ConfirmPopupButtonCancelText, ConfirmPopupButtonOK, ConfirmPopupButtonOKText, ConfirmPopupDim, ConfirmPopupIcon, ConfirmPopupMsgArea, ConfirmPopupTextArea, ConfirmPopupTextBlack, ConfirmPopupTextBlackSmall, ConfirmPopupTextRed, ConfirmPopupTitleText, ConfirmPopupTitleWrapper, ConfirmPopupView, ConfirmPopupWrapper } from "../style/popup/popupCommon";
+import { ConfirmPopupButtonArea, ConfirmPopupButtonCancel, ConfirmPopupButtonCancelText, ConfirmPopupButtonOK, ConfirmPopupButtonOKText, ConfirmPopupDim, ConfirmPopupIcon, ConfirmPopupMsgArea, ConfirmPopupTextArea, ConfirmPopupTextBlack, ConfirmPopupTextBlackSmall, ConfirmPopupTextRed, ConfirmPopupTitleText, ConfirmPopupTitleWrapper, ConfirmPopupView, ConfirmPopupWrapper, ImageArea, SampleImage } from "../style/popup/popupCommon";
 import FastImage from "react-native-fast-image";
 import { TouchableWithoutFeedback } from "react-native";
 import { onConfirmCancelClick, onConfirmOKClick, setCommon } from "../store/common";
@@ -14,7 +14,7 @@ export const AlertPopup = () => {
         receipt: require("../resources/imgs/drawable-xxxhdpi/img_receipt.png"),
     }
 
-    const {title, msg, isAlertOpen, okText, subMsg, cancelText, isCancle, isOK, icon} = useSelector(state=>state.alert);
+    const {title, msg, isAlertOpen, okText, subMsg, cancelText, isCancle, isOK, icon, imageArr} = useSelector(state=>state.alert);
 
     const { orderList, breadOrderList, items } = useSelector(state=>state.menu);
     
@@ -46,6 +46,16 @@ export const AlertPopup = () => {
                             <ConfirmPopupTextBlackSmall>{subMsg}</ConfirmPopupTextBlackSmall>
                         }
                     </ConfirmPopupMsgArea>
+                    {imageArr.length>0 &&
+                        <ImageArea>
+                            {imageArr.map(el=>{
+                                return(
+                                    <SampleImage resizeMode="contain" source={{uri:el}}/>
+                                )
+                            })
+                            }
+                        </ImageArea>
+                    }
                     <ConfirmPopupButtonArea>
                         {isOK &&
                             <TouchableWithoutFeedback onPress={()=>{ close("OK"); /* dispatch(onConfirmCancelClick({confirmType:"pay"})); */  }} >
