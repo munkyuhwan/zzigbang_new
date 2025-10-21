@@ -185,7 +185,6 @@ export const startPayment = createAsyncThunk("menu/startPayment", async(data,{di
             EventRegister.emit("showSpinner",{isSpinnerShow:false, msg:"", spinnerType:"",closeText:""});
             return rejectWithValue();
         }
-        /*
         const storeInfo = await getPosStoreInfo();
         // 개점정보 확인
         if(!storeInfo?.SAL_YMD) {
@@ -209,8 +208,8 @@ export const startPayment = createAsyncThunk("menu/startPayment", async(data,{di
             EventRegister.emit("showSpinner",{isSpinnerShow:false, msg:"", spinnerType:"",closeText:""});
             EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"주문 오류", str:"포스번호를 설정해 주세요."});
             return rejectWithValue();  
-        } */
-                
+        }
+           
     }catch(err) {
         console.log("err: ",err)
         EventRegister.emit("showSpinner",{isSpinnerShow:false, msg:"", spinnerType:"",closeText:""});
@@ -271,7 +270,7 @@ export const startPayment = createAsyncThunk("menu/startPayment", async(data,{di
         //const smartroData = {...{"service":"payment", "type":"credit", "deal":"approval", "personal-id":""}, ...paymentData, ...SMARTRO_COMMON_DATA};
         //console.log("smartroData: ",smartroData);
 
-        result = await servicePayment(dispatch,false, paymentData);       
+        result = await servicePayment(dispatch,false, paymentData);   
         result = JSON.parse(result);
         //result = {"service": "payment","type": "credit","persional-id": "01040618432","deal": "approval","total-amount": totalAmt+surtax,"cat-id": "7109912041","business-no": "2118806806","device-name": "SMT-Q453","device-auth-info": "####SMT-Q453","device-auth-ver": "1201","device-serial": "S423050950","card-no": "94119400********","van-tran-seq": "240605215745","business-name": "주식회사 우리포스","business-owner-name": "김정엽","business-phone-no": "02  15664551","business-address": "인천 부평구 부평대로 337  (청천동) 제이타워3차지신산업센터 806,807호","display-msg": "정상승인거래r간편결제수단: 삼성페이승인","response-code": "00","approval-date": "240605","approval-time": "215744","issuer-info": "0300마이홈플러스신한","acquire-info": "0300신한카드사","merchant-no": "0105512446","approval-no": "37151483","receipt-msg": "정상승인거래r간편결제수단: 삼성페이승인","service-result": "0000"}
         /* result = {"service":"payment"
@@ -307,7 +306,7 @@ export const startPayment = createAsyncThunk("menu/startPayment", async(data,{di
         ,"display-msg":"정상승인거래 간편결제수단: 삼성페이승인"
         ,"receipt-msg":"정상승인거래 간편결제수단: 삼성페이승인"
         ,"service-result":"0000"}
- */
+   */
 
         console.log("smartro result: ",result);
 
@@ -338,13 +337,13 @@ export const startPayment = createAsyncThunk("menu/startPayment", async(data,{di
 
     //console.log("orderfinal data: ",orderFinalData);
     // 포스에 요청
-    /* var posOrderResult = await postOrderToPos(storage.getString("VAN"), result,orderFinalData, PRINT_ORDER_NO).catch(err=>err);  
+    var posOrderResult = await postOrderToPos(storage.getString("VAN"), result,orderFinalData, PRINT_ORDER_NO).catch(err=>err);  
     //console.log("posOrderResult: ",posOrderResult)
     if(posOrderResult instanceof Error) {
         EventRegister.emit("showSpinner",{isSpinnerShow:false, msg:"", spinnerType:"",closeText:""});
         EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"주문 오류", str:posOrderResult.errorMsg});    
         return rejectWithValue();
-    } */
+    }
 
     // 서버에 올림
     //const postAdminResult = adminDataPost(result,orderFinalData,items).catch(err=>{return err}); 

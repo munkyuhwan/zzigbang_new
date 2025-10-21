@@ -44,7 +44,13 @@ var endTime = 0;
 var duration = 0;
 var mostFrequentWeight = 0;
 const MAX_SIZE = 20;
-
+const sound = new Sound("shutter.wav", null, (error) => {
+    if (error) {
+        console.log('오디오 로드 실패', error);
+        return;
+    }
+    
+});
 const ScanScreen = () => {
     const [appState, setAppState] = useState(AppState.currentState);
     const { Weight } = NativeModules;
@@ -361,20 +367,14 @@ const ScanScreen = () => {
     
     async function startScan(type,index=null) {
         
-        const sound = new Sound("shutter.wav", null, (error) => {
-            if (error) {
-                console.log('오디오 로드 실패', error);
-                return;
+        
+        sound.play((success) => {
+            if (success) {
+                console.log('재생 성공');
+            } else {
+                console.log('재생 실패');
             }
-            sound.play((success) => {
-                if (success) {
-                    console.log('재생 성공');
-                } else {
-                    console.log('재생 실패');
-                }
-            });
         });
-  
         //var breadStoreID = "test";
         setImgURL("");
 

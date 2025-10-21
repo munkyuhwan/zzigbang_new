@@ -40,6 +40,7 @@ const SettingScreen = (props) =>{
     const printerPickerRef = useRef();
     const weightRef = useRef();
     const bellRef = useRef();
+    const printerRef = useRef();
 
     const [approvalAmt, setApprovalAmt] = useState("4091");
     const [vatAmt, setVatAmt] = useState("409");
@@ -54,6 +55,7 @@ const SettingScreen = (props) =>{
     const [weightProductName, setWeightProductName] = useState("");
     const [weightPortNumber, setWeightPortNumber] = useState("");
     const [bellProductName, setBellProductName] = useState("");
+    const [printerPort, setPrinterPort] = useState("");
     const [isBellUse, setBellUse] = useState("");
     const [printerList, setPrinterList] = useState([]);
     const [cdcList, setCdcLIst] = useState([]);
@@ -96,7 +98,7 @@ const SettingScreen = (props) =>{
 
     async function smartroCancel() {
 
-        const data = { "total-amount":502, "approval-no":"00139750","approval-date":"250904",  "attribute":["attr-continuous-trx","attr-include-sign-bmp-buffer","attr-enable-switching-payment","attr-display-ui-of-choice-pay"]};
+        const data = { "total-amount":2900, "approval-no":"21937150","approval-date":"251022",  "attribute":["attr-continuous-trx","attr-include-sign-bmp-buffer","attr-enable-switching-payment","attr-display-ui-of-choice-pay"]};
 
         const result = await servicePayment(dispatch,true, data);
     }
@@ -140,6 +142,7 @@ const SettingScreen = (props) =>{
         setVan(storage.getString("VAN"));
         setTrayWeight(storage.getString("TRAY_WEIGHT"));
         setBellUse(storage.getString("isBellUse"));
+        setPrinterPort(storage.getString("PRINT_PORT"));
 
         dispatch(getStoreInfo());
 
@@ -272,11 +275,11 @@ const SettingScreen = (props) =>{
                         <Text style={{flex:1,fontSize:40,color:colorBlack}} ></Text>
                     </View>
                     <View style={{flexDirection:'row', paddingLeft:30,paddingRight:30}}>
-                        <Text style={{flex:1,fontSize:20,color:colorBlack,textAlign:'center'}} >v1.0.15</Text>
+                        <Text style={{flex:1,fontSize:20,color:colorBlack,textAlign:'center'}} >v1.0.17</Text>
                     </View>
                     <SettingWrapper>
 
-                        {/* <SettingSectionWrapper>
+                        {<SettingSectionWrapper>
                             <SettingSectionTitle></SettingSectionTitle>
                             <SettingSectionDetailWrapper>
                                 <SettingSenctionInputView>
@@ -288,7 +291,7 @@ const SettingScreen = (props) =>{
                                 </SettingSenctionInputView>
                             </SettingSectionDetailWrapper>
                         </SettingSectionWrapper>
-                         */}
+                        }
                          <SettingSectionWrapper>
                             <SettingSectionTitle>관리자 설정</SettingSectionTitle>
                             <SettingSectionDetailWrapper>
@@ -634,22 +637,51 @@ const SettingScreen = (props) =>{
 
                         <SettingSectionWrapper>
                             <SettingSectionTitle>프린터 테스트</SettingSectionTitle>
+                            
                             <SettingSectionDetailWrapper>
+                                <SettingSenctionInputView>
+                                    <SettingSectionLabel>프린터 포트 선택</SettingSectionLabel>
+                                    {
+                                        <Picker
+                                            ref={printerRef}
+                                            key={"tablePicker"}
+                                            mode='dialog'
+                                            selectedValue={printerPort}
+                                            onValueChange = {(itemValue, itemIndex) => {
+                                                //if(itemValue) {
+                                                    storage.set("PRINT_PORT",`${itemValue}`);
+                                                    setPrinterPort(itemValue);
+                                                //}
+                                            }}
+                                            style = {{
+                                                width: 300,
+                                                height: 50,
+                                            }}>
+                                                <Picker.Item key={"none"} label = {"미선택"} value ={""} />
+                                                <Picker.Item key={"none"} label = {"0"} value ={"0"} />
+                                                <Picker.Item key={"none"} label = {"1"} value ={"1"} />
+                                                <Picker.Item key={"none"} label = {"2"} value ={"2"} />
+                                                <Picker.Item key={"none"} label = {"3"} value ={"3"} />
+                                           
+                                            
+                                        </Picker>
+                                    }
+                                </SettingSenctionInputView>
                                 <SettingSenctionInputView>
                                     <TouchableWithoutFeedback onPress={async()=>{  
                                             const {Printer} = NativeModules; 
                                             const orderFinalData = {"VERSION":"0010","WORK_CD":"6010","ORDER_NO":"2508081754618026148","TBL_NO":"001","PRINT_YN":"Y","USER_PRINT_YN":"N","PRINT_ORDER_NO":"1-147","TOT_INWON":4,"ITEM_CNT":1,"ITEM_INFO":[{"ITEM_SEQ":1,"ITEM_CD":"900014","ITEM_NM":"아메리카노","ITEM_QTY":1,"ITEM_AMT":5,"ITEM_VAT":46,"ITEM_DC":0,"ITEM_CANCEL_YN":"N","ITEM_GB":"","ITEM_MSG":"","SETITEM_CNT":3,"SETITEM_INFO":[{"ITEM_SEQ":1,"SET_SEQ":1,"PROD_I_NM":"시나몬 추가","QTY":1,"AMT":0,"VAT":0},{"ITEM_SEQ":1,"SET_SEQ":2,"PROD_I_NM":"아이스","QTY":1,"AMT":0,"VAT":0},{"ITEM_SEQ":1,"SET_SEQ":3,"PROD_I_NM":"샷추가","QTY":3,"AMT":1365,"VAT":135}]}]};
                                             const finalOrderData = [{"sale_status":"2","store_account":"504","good_use":"100","use_timea":"","use_timeaa":"","use_timeb":"","use_timebb":"","good_use1":"100","use_time1a":"","use_time1aa":"","use_time1b":"","use_time1bb":"","mem_idx":"2","index_no":"2","brand_idx":"1","prod_l1_cd":"111","prod_l2_cd":"","prod_gb":"09","gname_kr":"아메리카노","gname_en":"americano","gname_kr1":"","gname_jp":"アメリカーノ","gname_cn":"美式咖啡","wonsanji":"","wonsanji_en":"","wonsanji_jp":"","wonsanji_cn":"","howmany":"","cate_code":"111","account":"504","sal_tot_amt":"504","account_etc":null,"account_pur":"4500","sal_amt":"458","sal_vat":"46","vat_rate":"10","tax_sw":"1","gmemo":"","gmemo_en":"","gmemo_jp":"","gmemo_cn":"","related_goods":"","gimg_org":"ccccc.jpeg","gimg_chg":"http://zzigbbang.com/a_tablet/upload_file/goods/1735224026-nrwov.jpeg","gimg_thum":"http://zzigbbang.com/a_tablet/upload_file/goods/img_thumb/1735224026-nrwov.jpeg","spicy":"0","temp":"","colors":"","prod_cd":"900014","pos_yn":"N","kiosk_yn":"N","always":"N","recom_date":"","is_view":"Y","weight":"0","w_margin_error":"0","soldout":"N","is_new":"N","is_best":"N","is_popup":"N","is_use":"Y","is_on":"N","is_fav":"N","is_whipping":"N","is_stamp":"N","is_stamp_ok":"N","regDate":"2024-12-26 23:39:32","is_del":"N","total_sort":"1","delDate":null,"related":[],"option":[{"idx":"3","shop_idx":"2","shop_id":"3113810001","cate_code":null,"op_name":"시럽추가","op_name_en":"Syrup","op_name_jp":"シロップ","op_name_cn":"糖漿","op_price":"0","limit_count":"0","number":"0","op_use":"Y","prod_cd":"","gimg_org":"ccccc.jpeg","gimg_chg":"/a_tablet/upload_file/goods/1735224595-qtvdc.jpeg","op_del":"N","op_regDate":"2024-12-26 23:49:55","op_modDate":"2025-01-09 00:05:27","prod_i_cd":["2828","10012"]},{"idx":"2","shop_idx":"2","shop_id":"3113810001","cate_code":null,"op_name":"아메리카노 얼음","op_name_en":"","op_name_jp":"","op_name_cn":"","op_price":"0","limit_count":"1","number":"0","op_use":"Y","prod_cd":"","gimg_org":"ccccc.jpeg","gimg_chg":"/a_tablet/upload_file/goods/1735224320-xibtm.jpeg","op_del":"N","op_regDate":"2024-12-26 23:45:20","op_modDate":"2024-12-26 23:47:52","prod_i_cd":["4545","10003"]},{"idx":"1","shop_idx":"2","shop_id":"3113810001","cate_code":null,"op_name":"아메리카노 샷추가","op_name_en":"","op_name_jp":"","op_name_cn":"","op_price":"0","limit_count":"3","number":"0","op_use":"Y","prod_cd":"","gimg_org":"ccccc.jpeg","gimg_chg":"/a_tablet/upload_file/goods/1735224275-rdkvn.jpeg","op_del":"N","op_regDate":"2024-12-26 23:44:35","op_modDate":"2024-12-27 01:07:53","prod_i_cd":["78098","1111111"]}],"order_amt":1}]
                                             const payResultData = {"AnsCode":"0000","AnswerTrdNo":"null","AuNo":"28872915","AuthType":"null","BillNo":"","CardKind":"1","CardNo":"9411-9400-****-****","ChargeAmt":"null","DDCYn":"1","DisAmt":"null","EDCYn":"0","GiftAmt":"","InpCd":"1107","InpNm":"신한카드","Keydate":"","MchData":"wooriorder","MchNo":"22101257","Message":"마이신한P잔여 : 109                     ","Month":"00","OrdCd":"1107","OrdNm":"개인신용","PcCard":"null","PcCoupon":"null","PcKind":"null","PcPoint":"null","QrKind":"null","RefundAmt":"null","SvcAmt":"0","TaxAmt":"181","TaxFreeAmt":"0","TermID":"0710000900","TradeNo":"000004689679","TrdAmt":"1823","TrdDate":"240902182728","TrdType":"A15"};
-                                            const SmartroPayResultData = {"service": "payment","type": "credit","persional-id": "01040618432","deal": "approval","total-amount": "1004","cat-id": "7109912041","business-no": "2118806806","device-name": "SMT-Q453","device-auth-info": "####SMT-Q453","device-auth-ver": "1201","device-serial": "S423050950","card-no": "94119400********","van-tran-seq": "240605215745","business-name": "주식회사 우리포스","business-owner-name": "김정엽","business-phone-no": "02  15664551","business-address": "인천 부평구 부평대로 337  (청천동) 제이타워3차지신산업센터 806,807호","display-msg": "정상승인거래r간편결제수단: 삼성페이승인","response-code": "00","approval-date": "240605","approval-time": "215744","issuer-info": "0300마이홈플러스신한","acquire-info": "0300신한카드사","merchant-no": "0105512446","approval-no": "37151483","receipt-msg": "정상승인거래r간편결제수단: 삼성페이승인","service-result": "0000"}
+                                            const SmartroPayResultData = {"service": "payment","type": "credit","persional-id": "01040618432","deal": "approval","total-amount": totalAmt+surtax,"surtax":surtax,"cat-id": "7109912041","business-no": "2118806806","device-name": "SMT-Q453","device-auth-info": "####SMT-Q453","device-auth-ver": "1201","device-serial": "S423050950","card-no": "94119400********","van-tran-seq": "240605215745","business-name": "주식회사 우리포스","business-owner-name": "김정엽","business-phone-no": "02  15664551","business-address": "인천 부평구 부평대로 337  (청천동) 제이타워3차지신산업센터 806,807호","display-msg": "정상승인거래r간편결제수단: 삼성페이승인","response-code": "00","approval-date": "240605","approval-time": "215744","issuer-info": "0300마이홈플러스신한","acquire-info": "0300신한카드사","merchant-no": "0105512446","approval-no": "37151483","receipt-msg": "정상승인거래r간편결제수단: 삼성페이승인","service-result": "0000"}
 
                                             const businessData = "{\"TrdDate\":\"250808105306\",\"HardwareKey\":\"133D34F060AFE2B\",\"Message\":\"정상처리\",\"BsnNo\":\"6645600780\",\"AnsCode\":\"0000\",\"ShpTel\":\"0215664551     \",\"MchData\":\"\",\"PtcInfo\":\"011OK 캐쉬백     020MyLGPoint     030바우처카드    040그린카드      050한마음의료    060Oh 포인트     070GB포인트      090과천 바로마켓 110LG보너스클럽  150파주농수산    160코엑스포인트  170바나나포인트  180Extrade       190코레일멤버쉽  200SC리워드      \",\"ShpNm\":\"에이치제이상사                          \",\"ShpAdr\":\"인천 부평구 부평대로 337 807호 일부(청천동, 부평제\",\"TermID\":\"1612417002\",\"TrdType\":\"D15\",\"AsNum\":\"1566-4551      \",\"PreNm\":\"김현정              \",\"PtcCnt\":\"15\"}";
                                             const adminStoreName = "테스트";
                                             const orderNo = "1-145";
                                             if(storage.getString("VAN") == VAN_KOCES) {
-                                                Printer.Sam4sStartPrint(storage.getString("VAN"),JSON.stringify(orderFinalData), JSON.stringify(finalOrderData), JSON.stringify(payResultData), businessData, adminStoreName, orderNo);
+                                                Printer.Sam4sStartPrint(storage.getString("PRINT_PORT"), storage.getString("VAN"),JSON.stringify(orderFinalData), JSON.stringify(finalOrderData), JSON.stringify(payResultData), businessData, adminStoreName, orderNo);
                                             }else if(storage.getString("VAN") == VAN_SMARTRO) {
-                                                Printer.Sam4sStartPrint(storage.getString("VAN"),JSON.stringify(orderFinalData), JSON.stringify(finalOrderData), JSON.stringify(SmartroPayResultData), businessData, adminStoreName, orderNo);
+                                                Printer.Sam4sStartPrint(storage.getString("PRINT_PORT"), storage.getString("VAN"),JSON.stringify(orderFinalData), JSON.stringify(finalOrderData), JSON.stringify(SmartroPayResultData), businessData, adminStoreName, orderNo);
                                             }
                                             
                                             //Printer.OpenPrinter()
@@ -739,13 +771,20 @@ const SettingScreen = (props) =>{
                         </SettingSectionWrapper>
                         <SettingSectionWrapper>
                             <SettingSectionTitle>업데이트 정보</SettingSectionTitle>
-                            <SettingSectionDetailWrapper>
-                                <SettingSenctionInputViewColumn>
+                                <SettingSectionDetailWrapper><SettingSenctionInputViewColumn>
+                                    <SettingSectionLabel>- 셔터소리 안나는 버그 수정</SettingSectionLabel>
+                                    <SettingSectionLabel>- 프린터 수정</SettingSectionLabel>
+                                </SettingSenctionInputViewColumn>
+                                {/* 16<SettingSectionDetailWrapper><SettingSenctionInputViewColumn>
+                                    <SettingSectionLabel>- 무게 측정중 문구 나오는 기준 수정</SettingSectionLabel>
+                                    <SettingSectionLabel>- 스캔 실패시 빵 리스트 노출</SettingSectionLabel>
+                                </SettingSenctionInputViewColumn> */}
+                                {/* <SettingSenctionInputViewColumn>
                                     <SettingSectionLabel>- 저울 대기 시간 추가</SettingSectionLabel>
                                     <SettingSectionLabel>- 세팅화면 뒤로가기 버튼 크게 수정</SettingSectionLabel>
                                     <SettingSectionLabel>- 쟁반추가 후 리스트 순서 변경</SettingSectionLabel>
                                     <SettingSectionLabel>- 스캔 응답 로그 저장 추가</SettingSectionLabel>
-                                </SettingSenctionInputViewColumn>
+                                </SettingSenctionInputViewColumn> */}
                                {/*  <SettingSenctionInputViewColumn>
                                     <SettingSectionLabel>- 저울수정</SettingSectionLabel>
                                 </SettingSenctionInputViewColumn> */}

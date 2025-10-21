@@ -1035,7 +1035,7 @@ export async function printReceipt(orderList, breadOrderList, items, payResultDa
 
 
     const orderNo = storage.getString("orderNo");
-    console.log("orderNo: ",orderNo);
+   console.log("orderNo: ",orderNo);
     console.log("====================================================================");
     console.log(JSON.stringify(orderFinalData));
     console.log(JSON.stringify(finalOrderData));
@@ -1044,7 +1044,7 @@ export async function printReceipt(orderList, breadOrderList, items, payResultDa
     console.log(adminStoreName);
     console.log(orderNo);
     console.log("====================================================================");
-    Printer.Sam4sStartPrint(storage.getString("VAN"),JSON.stringify(orderFinalData), JSON.stringify(finalOrderData), JSON.stringify(payResultData), businessData, adminStoreName, orderNo);
+    Printer.Sam4sStartPrint(storage.getString("PRINT_PORT"), storage.getString("VAN"),JSON.stringify(orderFinalData), JSON.stringify(finalOrderData), JSON.stringify(payResultData), businessData, adminStoreName, orderNo);
 }
 
 export function trimReceiptData(data, items) {
