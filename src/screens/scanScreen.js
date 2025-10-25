@@ -463,37 +463,55 @@ const ScanScreen = () => {
                         const registeredWeight = Number(data.total_registered_weight)
                         const inputWeight = Number(data.input_weight);
                         const tolerance = Number(data.total_tolerance);
-                        const difference = inputWeight - registeredWeight;
-                        console.log("items: ",items)
-                        console.log("difference: ",difference)
+                        const difference = Math.abs(inputWeight - registeredWeight);
+                        const minWeight = Number(storage.getString("MIN_WEIGHT"));
 
-                        if(difference < 0) {
-                            // 스캔한 빵의 무게가 올린 무게보다 높음
-                            dispatch(setAlert(
-                                {
-                                    title:"테스트",
-                                    msg:"스캔이 잘 될 수 있도록\n가져오신 상품을 쟁반에\n넣어주세요.",
-                                    subMsg:"빵이 겹치치 않은지 확인해 주세요!",
-                                    okText:'닫기',
-                                    cancelText:'',
-                                    isCancle:false,
-                                    isOK:true,
-                                    icon:"",   
-                                    isAlertOpen:true,
-                                    clickType:"",
-                                    imageArr:[]
-                                }
-                            ));
-                        }else {
-                            if(difference>tolerance) {
-                                // 겹침
-                                const topFive = getTopFive(items, difference);
-                                console.log("topFive: ",topFive);
+
+                        if (data?.item_counts && 'none' in data.item_counts) {
+                            const altCandidates = data?.alt_candidates;
+                            if(altCandidates.length>0) {
+                                const altCandImgs = getGimgChgByCandidates(altCandidates,items);
                                 dispatch(setAlert(
                                     {
                                         title:"테스트",
                                         msg:"스캔이 잘 될 수 있도록\n가져오신 상품을 쟁반에\n넣어주세요.",
-                                        subMsg:"아래 빵들이 겹치치 않은지 확인해 주세요!",
+                                        subMsg:"스캔된 빵이 인식이 잘못됐으니 다시 찍어주세요.",
+                                        okText:'닫기',
+                                        cancelText:'',
+                                        isCancle:false,
+                                        isOK:true,
+                                        icon:"",   
+                                        isAlertOpen:true,
+                                        clickType:"",
+                                        imageArr:altCandImgs
+                                    }
+                                ));
+                            }else {
+                                dispatch(setAlert(
+                                    {
+                                        title:"테스트",
+                                        msg:"스캔이 잘 될 수 있도록\n가져오신 상품을 쟁반에\n넣어주세요.",
+                                        subMsg:"스캔된 빵이 인식이 잘못됐으니 다시 찍어주세요.",
+                                        okText:'닫기',
+                                        cancelText:'',
+                                        isCancle:false,
+                                        isOK:true,
+                                        icon:"",   
+                                        isAlertOpen:true,
+                                        clickType:"",
+                                        imageArr:[]
+                                    }
+                                ));
+                            }
+                        }else {
+                            if(difference < minWeight) {
+                                // 겹침
+                                const topFive = getTopFive(items, difference);
+                                dispatch(setAlert(
+                                    {
+                                        title:"테스트",
+                                        msg:"스캔이 잘 될 수 있도록\n가져오신 상품을 쟁반에\n넣어주세요.",
+                                        subMsg:"스캔이 잘될수있도록 빵이 겹치지않게 골고루 펼쳐주세요.",
                                         okText:'닫기',
                                         cancelText:'',
                                         isCancle:false,
@@ -508,16 +526,30 @@ const ScanScreen = () => {
                             }else {
                                 // 오인식
                                 const altCandidates = data?.alt_candidates;
-
                                 if(altCandidates.length>0) {
                                     const altCandImgs = getGimgChgByCandidates(altCandidates,items);
                                     console.log(altCandImgs);
+                                    dispatch(setAlert(
+                                        {
+                                            title:"테스트",
+                                            msg:"스캔이 잘 될 수 있도록\n가져오신 상품을 쟁반에\n넣어주세요.",
+                                            subMsg:"스캔된 빵이 인식이 잘못됐으니 다시 찍어주세요.",
+                                            okText:'닫기',
+                                            cancelText:'',
+                                            isCancle:false,
+                                            isOK:true,
+                                            icon:"",   
+                                            isAlertOpen:true,
+                                            clickType:"",
+                                            imageArr:altCandImgs
+                                        }
+                                    ));
                                 }else {
                                     dispatch(setAlert(
                                         {
                                             title:"테스트",
                                             msg:"스캔이 잘 될 수 있도록\n가져오신 상품을 쟁반에\n넣어주세요.",
-                                            subMsg:"인식이 잘 되지 않았습니다. 아래 빵들을 확인해 주세요!",
+                                            subMsg:"스캔된 빵이 인식이 잘못됐으니 다시 찍어주세요.",
                                             okText:'닫기',
                                             cancelText:'',
                                             isCancle:false,
@@ -529,13 +561,8 @@ const ScanScreen = () => {
                                         }
                                     ));
                                 }
-    
                             }
-    
                         }
-
-
-                        
                         return;
                     }
     

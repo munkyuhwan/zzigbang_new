@@ -1120,15 +1120,35 @@ export function getGimgChgByCandidates(altCandidates, items) {
   
     // allCandidates의 product_code 목록 추출
     const candidateCodes = altCandidates.map(c => c.product_code);
-  
+    console.log("items: ",items[0])
     // items 중 product_code가 일치하는 항목들의 gimg_chg만 추출
+    
+    
     const result = items
-      .filter(item => candidateCodes.includes(item.product_code))
+      .filter(item => candidateCodes.includes(item.prod_cd))
       .map(item => item.gimg_chg);
   
     return result;
   }
   
+export   function getMinWeightItem(menuData) {
+    if (!Array.isArray(menuData) || menuData.length === 0) return null;
+  
+    // 빵 데이터만 
+    const breadMenuData = menuData.filter(item => item.cate_code == "8000");
+    
+    // weight가 유효한 숫자인 항목만 필터링
+    const validItems = breadMenuData.filter(
+      item => item.weight !== null && item.weight !== undefined && !isNaN(Number(item.weight))
+    );
+  
+    if (validItems.length === 0) return null;
+  
+    // 최소 weight를 가진 객체 찾기
+    return validItems.reduce((minItem, current) =>
+      Number(current.weight) < Number(minItem.weight) ? current : minItem
+    );
+  }
   
 /*
 export function grandTotalCalculate(data) {

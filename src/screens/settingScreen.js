@@ -275,11 +275,11 @@ const SettingScreen = (props) =>{
                         <Text style={{flex:1,fontSize:40,color:colorBlack}} ></Text>
                     </View>
                     <View style={{flexDirection:'row', paddingLeft:30,paddingRight:30}}>
-                        <Text style={{flex:1,fontSize:20,color:colorBlack,textAlign:'center'}} >v1.0.17</Text>
+                        <Text style={{flex:1,fontSize:20,color:colorBlack,textAlign:'center'}} >v1.0.19</Text>
                     </View>
                     <SettingWrapper>
 
-                        {<SettingSectionWrapper>
+                        {/* <SettingSectionWrapper>
                             <SettingSectionTitle></SettingSectionTitle>
                             <SettingSectionDetailWrapper>
                                 <SettingSenctionInputView>
@@ -291,7 +291,7 @@ const SettingScreen = (props) =>{
                                 </SettingSenctionInputView>
                             </SettingSectionDetailWrapper>
                         </SettingSectionWrapper>
-                        }
+                     */}
                          <SettingSectionWrapper>
                             <SettingSectionTitle>관리자 설정</SettingSectionTitle>
                             <SettingSectionDetailWrapper>
@@ -772,9 +772,16 @@ const SettingScreen = (props) =>{
                         <SettingSectionWrapper>
                             <SettingSectionTitle>업데이트 정보</SettingSectionTitle>
                                 <SettingSectionDetailWrapper><SettingSenctionInputViewColumn>
+                                    <SettingSectionLabel>- 빵 카테고리 수정</SettingSectionLabel>
+                                </SettingSenctionInputViewColumn>
+                                {/* <SettingSectionDetailWrapper><SettingSenctionInputViewColumn>
+                                    <SettingSectionLabel>- 스캔 실패 문구 수정</SettingSectionLabel>
+                                    <SettingSectionLabel>- 스캔실패 경우 수정</SettingSectionLabel>
+                                </SettingSenctionInputViewColumn> */}
+                                {/* <SettingSectionDetailWrapper><SettingSenctionInputViewColumn>
                                     <SettingSectionLabel>- 셔터소리 안나는 버그 수정</SettingSectionLabel>
                                     <SettingSectionLabel>- 프린터 수정</SettingSectionLabel>
-                                </SettingSenctionInputViewColumn>
+                                </SettingSenctionInputViewColumn> */}
                                 {/* 16<SettingSectionDetailWrapper><SettingSenctionInputViewColumn>
                                     <SettingSectionLabel>- 무게 측정중 문구 나오는 기준 수정</SettingSectionLabel>
                                     <SettingSectionLabel>- 스캔 실패시 빵 리스트 노출</SettingSectionLabel>

@@ -7,7 +7,7 @@ import FastImage from "react-native-fast-image";
 import { serviceFunction, servicePayment } from "../utils/smartro";
 import { EventRegister } from "react-native-event-listeners";
 import { metaPostPayFormat } from "../utils/metaPosDataForm";
-import { adminDataPost, getPosStoreInfo, getStoreID, isNetworkAvailable, isNewDay, itemEnableCheck, openAlert, openInstallmentPopup, postLog, postOrderToPos, printReceipt, trimSmartroResultData } from "../utils/common";
+import { adminDataPost, getMinWeightItem, getPosStoreInfo, getStoreID, isNetworkAvailable, isNewDay, itemEnableCheck, openAlert, openInstallmentPopup, postLog, postOrderToPos, printReceipt, trimSmartroResultData } from "../utils/common";
 import { dispatchShowAlert, onConfirmCancelClick, setCommon } from "./common";
 import { KocesAppPay } from "../utils/kocess";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -59,6 +59,11 @@ export const getMenu = createAsyncThunk("menu/getMenu", async(_,{dispatch,getSta
     }   
     categories = categories.filter(el=>(el.is_del=="N" && el.is_use=="Y"  && el.is_view=="Y") );
     const menuData = result.order;
+    const minWeight = getMinWeightItem(menuData);
+    console.log("minWeight: ",minWeight);
+    if(minWeight!=null) {
+        storage.set("MIN_WEIGHT",minWeight?.weight);
+    }
     // 카테고리 별로 데이터 정렬 
     const menuInOrder = [];
     for(var i=0;i<categories.length;i++) {
