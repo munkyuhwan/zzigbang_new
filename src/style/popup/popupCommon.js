@@ -338,14 +338,18 @@ export const ConfirmPopupTitleText = styled.Text`
 `
 // 이미지 영역
 export const ImageArea = styled.View`
-    flex:0.2;
+    flex:0.5;
+    width:100%;
     flexDirection:row;
     gap:5px;
     paddingLeft:10px;
     paddingRight:10px;
+    paddingBottom:25px;
 `
 export const SampleImage = styled(FastImage)`
     flex:1;
+    width:100%;
+    height:200px;
 `
 
 // 메시지 영역
@@ -366,6 +370,8 @@ export const ConfirmPopupTextArea = styled.View`
     flexDirection:row;
     justifyContent:center;
     alignItems:center;
+    paddingLeft:20px;
+    paddingRight:20px;
 `
 export const ConfirmPopupTextRed = styled.Text`
     fontSize:50px;

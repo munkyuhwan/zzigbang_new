@@ -1091,6 +1091,8 @@ export const  postPayLog = async(data) =>{
 }
  
 export function getTopFive(items, difference) {
+
+    console.log("difference:",difference);
     if (!Array.isArray(items) || items.length === 0) return [];
 
   const validItems = items
@@ -1109,7 +1111,7 @@ export function getTopFive(items, difference) {
   );
 
   // 상위 5개에서 gimg_chg만 추출
-  const result = sorted.slice(0, 5).map(item => item.gimg_chg);
+  const result = sorted.slice(0, 1).map(item => item);
 
   return result;
 
@@ -1126,10 +1128,10 @@ export function getGimgChgByCandidates(altCandidates, items) {
     
     const result = items
       .filter(item => candidateCodes.includes(item.prod_cd))
-      .map(item => item.gimg_chg);
+      .map(item => item);
   
     return result;
-  }
+}
   
 export   function getMinWeightItem(menuData) {
     if (!Array.isArray(menuData) || menuData.length === 0) return null;
@@ -1148,7 +1150,84 @@ export   function getMinWeightItem(menuData) {
     return validItems.reduce((minItem, current) =>
       Number(current.weight) < Number(minItem.weight) ? current : minItem
     );
-  }
+}
+
+export function findWeightCombinations(menuData, targetWeight, tolerance = 10, maxResults = 5) {
+    if (!Array.isArray(menuData) || menuData.length === 0) return [];
+  
+    const weights = menuData.map(item => Number(item.weight)).filter(w => !isNaN(w));
+  
+    const results = new Set();
+  
+    // 1~3개 조합까지 탐색 (A, A+B, A+B+C)
+    for (let i = 0; i < weights.length; i++) {
+      const w1 = weights[i];
+  
+      // 1개짜리 (단독)
+      if (Math.abs(w1 - targetWeight) <= tolerance) {
+        results.add(`${w1} = ${targetWeight}`);
+      }
+  
+      for (let j = 0; j < weights.length; j++) {
+        const w2 = weights[j];
+  
+        // 2개짜리 조합
+        if (Math.abs(w1 + w2 - targetWeight) <= tolerance) {
+          results.add(`${w1} + ${w2} = ${targetWeight}`);
+        }
+  
+        for (let k = 0; k < weights.length; k++) {
+          const w3 = weights[k];
+  
+          // 3개짜리 조합
+          if (Math.abs(w1 + w2 + w3 - targetWeight) <= tolerance) {
+            results.add(`${w1} + ${w2} + ${w3} = ${targetWeight}`);
+          }
+        }
+      }
+    }
+  
+    // 중복 제거 후 최대 5개까지만 반환
+    return Array.from(results).slice(0, maxResults);
+}
+
+export function getTopWeightMatches(items, difference, maxResults = 4) {
+    if (!Array.isArray(items) || items.length === 0) return [];
+  
+    // items의 무게 배열 추출
+    const weights = items
+      .map(item => Number(item.weight))
+      .filter(w => !isNaN(w));
+  
+    const results = [];
+  
+    // 100g 단위로 계산 (100, 200, 300, ...)
+    for (let base = 100; base < difference; base += 100) {
+      const target = difference - base;
+  
+      // target 무게와 같은 아이템이 있는지 확인
+      const matched = items.filter(
+        item => Math.abs(item.weight - target) < 0.001 // 오차 방지
+      );
+  
+      matched.forEach(m => {
+        results.push({
+          baseWeight: base,
+          item: m,
+          sum: base + m.weight,
+        });
+      });
+    }
+  
+    // sum이 difference에 가까운 순으로 정렬
+    const sorted = results.sort(
+      (a, b) => Math.abs((a.sum ?? 0) - difference) - Math.abs((b.sum ?? 0) - difference)
+    );
+  
+    // 상위 4개만 반환
+    return sorted.slice(0, maxResults);
+}
+  
   
 /*
 export function grandTotalCalculate(data) {

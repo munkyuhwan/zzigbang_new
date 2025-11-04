@@ -151,30 +151,33 @@ const MainScreen = (props) =>{
         if(orderList.length>0) {
             //calculate order 
             var orderAmt = 0;
-            for(var i=0;i<orderList.length;i++) {
-                var item = items.filter(el=>el.prod_cd == orderList[i].prodCD);
-                if(item.length>0) {
-                    tmpSale = (Number(tmpSale)+(Number(item[0].sal_amt)*Number(orderList[i].amt)));
-                    tmpVat = (Number(tmpVat)+(Number(item[0].sal_vat)*Number(orderList[i].amt)));
-                    tmpAmt = (Number(tmpAmt)+Number(orderList[i].amt));
-                    orderAmt += Number(orderList[i].amt);
-                    const options = orderList[i].option;
-                    if(options.length>0) {
-                        for(var j=0;j<options.length;j++) {
-                            const optionItemAmt = options[j].amt;
-                            const optionItem = items.filter(el=>el.prod_cd == options[j].prodCD);
-                            console.log(optionItem[0].gname_kr,"optionItemAmt: ",optionItemAmt)
-                            if(optionItem.length>0) {
-                                tmpSale = Number(tmpSale)+(Number(optionItem[0].sal_amt)*Number(optionItemAmt)*Number(orderList[i].amt));
-                                tmpVat = (Number(tmpVat)+(Number(optionItem[0].sal_vat)*Number(optionItemAmt))*Number(orderList[i].amt));
-                                //tmpAmt = Number(tmpAmt)+(Number(optionItem[0].sal_vat)*Number(optionItemAmt));
+            if(orderList.length>0){
+                for(var i=0;i<orderList.length;i++) {
+                    var item = items.filter(el=>el.prod_cd == orderList[i].prodCD);
+                    if(item.length>0) {
+                        tmpSale = (Number(tmpSale)+(Number(item[0].sal_amt)*Number(orderList[i].amt)));
+                        tmpVat = (Number(tmpVat)+(Number(item[0].sal_vat)*Number(orderList[i].amt)));
+                        tmpAmt = (Number(tmpAmt)+Number(orderList[i].amt));
+                        orderAmt += Number(orderList[i].amt);
+                        const options = orderList[i].option;
+                        if(options.length>0) {
+                            for(var j=0;j<options.length;j++) {
+                                const optionItemAmt = options[j].amt;
+                                const optionItem = items.filter(el=>el.prod_cd == options[j].prodCD);
+                                console.log(optionItem[0].gname_kr,"optionItemAmt: ",optionItemAmt)
+                                if(optionItem.length>0) {
+                                    tmpSale = Number(tmpSale)+(Number(optionItem[0].sal_amt)*Number(optionItemAmt)*Number(orderList[i].amt));
+                                    tmpVat = (Number(tmpVat)+(Number(optionItem[0].sal_vat)*Number(optionItemAmt))*Number(orderList[i].amt));
+                                    //tmpAmt = Number(tmpAmt)+(Number(optionItem[0].sal_vat)*Number(optionItemAmt));
+                                }
                             }
                         }
                     }
                 }
             }
             setOrderCnt(Number(orderAmt));
-
+        }else {
+            setOrderCnt(0);
         }
         
         if(breadOrderList.length>0) {
@@ -190,6 +193,8 @@ const MainScreen = (props) =>{
                 }
             }
             setBreadCnt(breadAmt);
+        }else {
+            setBreadCnt(0);
         }
         
         setTotalPrice(tmpSale);
@@ -215,6 +220,7 @@ const MainScreen = (props) =>{
     function cancelList(index) {
         var tmpList = Object.assign([],orderList);
         tmpList.splice(index,1);
+        console.log("tmpList: ",tmpList);
         dispatch(setMenu({orderList:tmpList}))
     }
     function handleScroll(ev) {
@@ -243,7 +249,7 @@ const MainScreen = (props) =>{
         setTimeout(() => {
             const targetY = itemLayouts.current[`${catId}`];
             if (targetY !== undefined && cartListRef.current) {
-                cartListRef.current.scrollTo({ y: targetY, animated: false });
+                cartListRef.current.scrollTo({ y: (breadOrderList.length*520)+targetY, animated: false });
                 setLastAdded(catId);
                 setTrigger(!trigger);
             }    
@@ -299,18 +305,20 @@ const MainScreen = (props) =>{
                             setCartBottom(isBottom)
                         }}
                         >
+                        
                         {breadOrderList.length>0 && 
                             <CartList
                                 onLayout={onListLayout}
                                 data={breadOrderList}
                                 isCancelUse={false}
                                 isImageUse={true}
-                                isMargin={false}
+                                isMargin={orderList.length>0}
                                 placeHolder={strings["빵"][`${selectedLanguage}`]}
                                 onCancelPress={(index)=>{ cancelList(index); }}
                                 />
                         }
-                        {orderList.length>0 &&       
+                        
+                       {orderList.length>0 &&       
                             <CartList
                                 onLayout={onListLayout}
                                 lastAdded={lastAdded}

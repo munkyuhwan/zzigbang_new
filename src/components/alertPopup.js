@@ -1,14 +1,16 @@
 import { useDispatch, useSelector } from "react-redux"
 import { ConfirmPopupButtonArea, ConfirmPopupButtonCancel, ConfirmPopupButtonCancelText, ConfirmPopupButtonOK, ConfirmPopupButtonOKText, ConfirmPopupDim, ConfirmPopupIcon, ConfirmPopupMsgArea, ConfirmPopupTextArea, ConfirmPopupTextBlack, ConfirmPopupTextBlackSmall, ConfirmPopupTextRed, ConfirmPopupTitleText, ConfirmPopupTitleWrapper, ConfirmPopupView, ConfirmPopupWrapper, ImageArea, SampleImage } from "../style/popup/popupCommon";
 import FastImage from "react-native-fast-image";
-import { TouchableWithoutFeedback } from "react-native";
+import { Text, TouchableWithoutFeedback, View } from "react-native";
 import { onConfirmCancelClick, onConfirmOKClick, setCommon } from "../store/common";
 import { stat } from "react-native-fs";
 import { useEffect } from "react";
 import { setAlert } from "../store/alert";
+import { menuName } from "../utils/common";
 
 export const AlertPopup = () => {
     const dispatch = useDispatch();
+    const { selectedLanguage} = useSelector(state=>state.common);
 
     const IMGS = {
         receipt: require("../resources/imgs/drawable-xxxhdpi/img_receipt.png"),
@@ -50,7 +52,10 @@ export const AlertPopup = () => {
                         <ImageArea>
                             {imageArr.map(el=>{
                                 return(
-                                    <SampleImage resizeMode="contain" source={{uri:el}}/>
+                                    <View style={{width:148,alignItems:'center', flexDirection:"column" }}>
+                                        <SampleImage resizeMode="contain" source={{uri:el.gimg_chg}}/>
+                                        <Text style={{fontSize:30,width:'100%', textAlign:'center'}}>{menuName(el, selectedLanguage)}</Text>
+                                    </View>
                                 )
                             })
                             }

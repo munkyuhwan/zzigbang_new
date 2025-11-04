@@ -15,7 +15,7 @@ import { CartList, CartListItem, ScannListItem } from '../components/mainCompone
 import { ButtonImage, ButtonText, ButtonView, SquareButtonView } from '../style/common';
 import { RescanText, RescanView, ScanProductCheckWrapper, ScanProductList } from '../style/scanScreenStyle';
 import {isEmpty} from 'lodash';
-import { getGimgChgByCandidates, getTopFive, numberPad, numberWithCommas, parseValue, postPayLog, speak, trimBreadList, updateList } from '../utils/common';
+import { findWeightCombinations, getGimgChgByCandidates, getTopFive, getTopWeightMatches, numberPad, numberWithCommas, parseValue, postPayLog, speak, trimBreadList, updateList } from '../utils/common';
 import { getBanner, setAdShow, setCommon } from '../store/common';
 import { SCREEN_TIMEOUT } from '../resources/values';
 import { CartItemTitleText } from '../style/main';
@@ -465,33 +465,33 @@ const ScanScreen = () => {
                         const tolerance = Number(data.total_tolerance);
                         const difference = Math.abs(inputWeight - registeredWeight);
                         const minWeight = Number(storage.getString("MIN_WEIGHT"));
+                        console.log("minWeight: ",minWeight);
 
-
-                        if (data?.item_counts && 'none' in data.item_counts) {
-                            const altCandidates = data?.alt_candidates;
-                            if(altCandidates.length>0) {
-                                const altCandImgs = getGimgChgByCandidates(altCandidates,items);
+                        if (data?.item_counts && 'none' in data.item_counts) { 
+                            
+                            dispatch(setAlert(
+                                {
+                                    title:"테스트",
+                                    msg:"미 등록된 상품이니 상품을 다시 확인해주세요.",
+                                    subMsg:"확인요청 빵",
+                                    okText:'닫기',
+                                    cancelText:'',
+                                    isCancle:false,
+                                    isOK:true,
+                                    icon:"",   
+                                    isAlertOpen:true,
+                                    clickType:"",
+                                    imageArr:[]
+                                }
+                            ));
+                            
+                        }else {
+                            /* if(inputWeight>registeredWeight) {
                                 dispatch(setAlert(
                                     {
                                         title:"테스트",
-                                        msg:"스캔이 잘 될 수 있도록\n가져오신 상품을 쟁반에\n넣어주세요.",
-                                        subMsg:"스캔된 빵이 인식이 잘못됐으니 다시 찍어주세요.",
-                                        okText:'닫기',
-                                        cancelText:'',
-                                        isCancle:false,
-                                        isOK:true,
-                                        icon:"",   
-                                        isAlertOpen:true,
-                                        clickType:"",
-                                        imageArr:altCandImgs
-                                    }
-                                ));
-                            }else {
-                                dispatch(setAlert(
-                                    {
-                                        title:"테스트",
-                                        msg:"스캔이 잘 될 수 있도록\n가져오신 상품을 쟁반에\n넣어주세요.",
-                                        subMsg:"스캔된 빵이 인식이 잘못됐으니 다시 찍어주세요.",
+                                        msg:"스캔이 잘될수있도록 빵이 겹치지않게 골고루 펼쳐주세요.",
+                                        subMsg:"확인요청 빵",
                                         okText:'닫기',
                                         cancelText:'',
                                         isCancle:false,
@@ -502,38 +502,20 @@ const ScanScreen = () => {
                                         imageArr:[]
                                     }
                                 ));
-                            }
-                        }else {
-                            if(difference < minWeight) {
-                                // 겹침
-                                const topFive = getTopFive(items, difference);
-                                dispatch(setAlert(
-                                    {
-                                        title:"테스트",
-                                        msg:"스캔이 잘 될 수 있도록\n가져오신 상품을 쟁반에\n넣어주세요.",
-                                        subMsg:"스캔이 잘될수있도록 빵이 겹치지않게 골고루 펼쳐주세요.",
-                                        okText:'닫기',
-                                        cancelText:'',
-                                        isCancle:false,
-                                        isOK:true,
-                                        icon:"",   
-                                        isAlertOpen:true,
-                                        clickType:"",
-                                        imageArr:topFive
-                                    }
-                                ));
+                            }else { */
 
-                            }else {
-                                // 오인식
-                                const altCandidates = data?.alt_candidates;
-                                if(altCandidates.length>0) {
-                                    const altCandImgs = getGimgChgByCandidates(altCandidates,items);
-                                    console.log(altCandImgs);
+                                if(difference > minWeight) {
+                                    console.log("겹침");
+                                    const sampleData = getTopWeightMatches(items, difference);
+                                    console.log("sampleData: ",sampleData);
+                                    // 겹침
+                                    const topFive = getTopFive(items, difference);
+                                    console.log("top five: ",topFive);
                                     dispatch(setAlert(
                                         {
                                             title:"테스트",
-                                            msg:"스캔이 잘 될 수 있도록\n가져오신 상품을 쟁반에\n넣어주세요.",
-                                            subMsg:"스캔된 빵이 인식이 잘못됐으니 다시 찍어주세요.",
+                                            msg:"스캔이 잘될수있도록 빵이 겹치지\n않게 골고루 펼쳐주세요.",
+                                            subMsg:"확인요청 빵",
                                             okText:'닫기',
                                             cancelText:'',
                                             isCancle:false,
@@ -541,27 +523,51 @@ const ScanScreen = () => {
                                             icon:"",   
                                             isAlertOpen:true,
                                             clickType:"",
-                                            imageArr:altCandImgs
+                                            imageArr:[...topFive, ...sampleData]
                                         }
                                     ));
+
                                 }else {
-                                    dispatch(setAlert(
-                                        {
-                                            title:"테스트",
-                                            msg:"스캔이 잘 될 수 있도록\n가져오신 상품을 쟁반에\n넣어주세요.",
-                                            subMsg:"스캔된 빵이 인식이 잘못됐으니 다시 찍어주세요.",
-                                            okText:'닫기',
-                                            cancelText:'',
-                                            isCancle:false,
-                                            isOK:true,
-                                            icon:"",   
-                                            isAlertOpen:true,
-                                            clickType:"",
-                                            imageArr:[]
-                                        }
-                                    ));
+                                    console.log("오인식");
+                                    // 오인식
+                                    const altCandidates = data?.alt_candidates;
+                                    if(altCandidates.length>0) {
+                                        const altCandImgs = getGimgChgByCandidates(altCandidates,items);
+                                        console.log(altCandImgs);
+                                        dispatch(setAlert(
+                                            {
+                                                title:"테스트",
+                                                msg:"스캔된 빵이 인식이 잘못됐으니\n다시 찍어주세요.",
+                                                subMsg:"확인요청 빵",
+                                                okText:'닫기',
+                                                cancelText:'',
+                                                isCancle:false,
+                                                isOK:true,
+                                                icon:"",   
+                                                isAlertOpen:true,
+                                                clickType:"",
+                                                imageArr:altCandImgs
+                                            }
+                                        ));
+                                    }else {
+                                        dispatch(setAlert(
+                                            {
+                                                title:"테스트",
+                                                msg:"스캔된 빵이 인식이 잘못됐으니\n다시 찍어주세요.",
+                                                subMsg:"확인요청 빵",
+                                                okText:'닫기',
+                                                cancelText:'',
+                                                isCancle:false,
+                                                isOK:true,
+                                                icon:"",   
+                                                isAlertOpen:true,
+                                                clickType:"",
+                                                imageArr:[]
+                                            }
+                                        ));
+                                    }
                                 }
-                            }
+                            //}
                         }
                         return;
                     }

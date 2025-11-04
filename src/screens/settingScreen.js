@@ -275,7 +275,7 @@ const SettingScreen = (props) =>{
                         <Text style={{flex:1,fontSize:40,color:colorBlack}} ></Text>
                     </View>
                     <View style={{flexDirection:'row', paddingLeft:30,paddingRight:30}}>
-                        <Text style={{flex:1,fontSize:20,color:colorBlack,textAlign:'center'}} >v1.0.19</Text>
+                        <Text style={{flex:1,fontSize:20,color:colorBlack,textAlign:'center'}} >v1.0.23</Text>
                     </View>
                     <SettingWrapper>
 
@@ -771,9 +771,26 @@ const SettingScreen = (props) =>{
                         </SettingSectionWrapper>
                         <SettingSectionWrapper>
                             <SettingSectionTitle>업데이트 정보</SettingSectionTitle>
-                                <SettingSectionDetailWrapper><SettingSenctionInputViewColumn>
-                                    <SettingSectionLabel>- 빵 카테고리 수정</SettingSectionLabel>
+                            <SettingSectionDetailWrapper>
+                                <SettingSenctionInputViewColumn>
+                                    <SettingSectionLabel>- 확인요청 빵 수정</SettingSectionLabel>
                                 </SettingSenctionInputViewColumn>
+                                {/* <SettingSenctionInputViewColumn>
+                                    <SettingSectionLabel>- 오류 팝업 문구 줄바꿈 수정</SettingSectionLabel>
+                                    <SettingSectionLabel>- 음료 선택 시 스크롤</SettingSectionLabel>
+                                </SettingSenctionInputViewColumn> */}
+                                {/* <SettingSenctionInputViewColumn>
+                                    <SettingSectionLabel>- 결과에 none 포함 시 팝업 수정</SettingSectionLabel>
+                                    <SettingSectionLabel>- 결과 오류 시 확인요청 빵 사이즈 조정 / 문구 추가</SettingSectionLabel>
+                                    <SettingSectionLabel>- 음료 주문 내역 모두 삭제시 음료 개수 1로 남아 있는 버그 수정</SettingSectionLabel>
+                                    <SettingSectionLabel>- 빵 / 음료 주문 리스트 위치 수정. 빵 주문 후 음료 주무시 스크롤 이동 확인</SettingSectionLabel>
+                                </SettingSenctionInputViewColumn> */}
+                                {/* <SettingSenctionInputViewColumn>
+                                    <SettingSectionLabel>- 팝업 수정</SettingSectionLabel>
+                                </SettingSenctionInputViewColumn> */}
+                                {/* <SettingSectionDetailWrapper><SettingSenctionInputViewColumn>
+                                    <SettingSectionLabel>- 빵 카테고리 수정</SettingSectionLabel>
+                                </SettingSenctionInputViewColumn> */}
                                 {/* <SettingSectionDetailWrapper><SettingSenctionInputViewColumn>
                                     <SettingSectionLabel>- 스캔 실패 문구 수정</SettingSectionLabel>
                                     <SettingSectionLabel>- 스캔실패 경우 수정</SettingSectionLabel>
