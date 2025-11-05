@@ -14,8 +14,8 @@ export const getAlert = createAsyncThunk("alert/getAlert", async(data,{dispatch,
 export const alertSlice = createSlice({
     name: 'alert',
     initialState: {
-        title:"테스트",
-        msg:"스트",
+        title:"",
+        msg:"",
         okText:'확인',
         cancelText:'취소',
         isCancle:true,

@@ -7,7 +7,7 @@ import FastImage from "react-native-fast-image";
 import { serviceFunction, servicePayment } from "../utils/smartro";
 import { EventRegister } from "react-native-event-listeners";
 import { metaPostPayFormat } from "../utils/metaPosDataForm";
-import { adminDataPost, getMinWeightItem, getPosStoreInfo, getStoreID, isNetworkAvailable, isNewDay, itemEnableCheck, openAlert, openInstallmentPopup, postLog, postOrderToPos, printReceipt, trimSmartroResultData } from "../utils/common";
+import { adminDataPost, getMinWeightItem, getPosStoreInfo, getStoreID, isNetworkAvailable, isNewDay, itemEnableCheck, openAlert, openInstallmentPopup, postLog, postOrderToPos, printReceipt, setBell, trimSmartroResultData } from "../utils/common";
 import { dispatchShowAlert, onConfirmCancelClick, setCommon } from "./common";
 import { KocesAppPay } from "../utils/kocess";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -183,7 +183,6 @@ export const startPayment = createAsyncThunk("menu/startPayment", async(data,{di
 
     // 주문 가능 상태 확인
     const POS_NO = storage.getString("POS_NO");
-       
     try {
         const isPostable = await isNetworkAvailable();
         if(!isPostable) {
@@ -357,7 +356,6 @@ export const startPayment = createAsyncThunk("menu/startPayment", async(data,{di
     EventRegister.emit("showSpinner",{isSpinnerShow:false, msg:"", spinnerType:"",closeText:""});
     //EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"주문 완료", str:"주문완료"});  
     const bellData = [...orderList,...breadOrderList];
-    console.log("bellData: ",bellData);
 
     if(orderList.length<=0 && breadOrderList.length>0) {
         
@@ -376,7 +374,27 @@ export const startPayment = createAsyncThunk("menu/startPayment", async(data,{di
             )
         ); 
     }else {
-        dispatch(onConfirmCancelClick({confirmType:"pay",payData:{result,orderFinalData,items}}));
+        if(storage.getString("isBellUse")=="Y"){
+
+            adminDataPost(result, orderFinalData ,items, `010`).catch(err=>{return err});
+            
+            dispatch(dispatchShowAlert({title:"영수증", msg:"영수증을 출력하시겠습니까?", 
+                okFunction:async ()=>{ 
+                    await printReceipt(orderList, breadOrderList, items, result); 
+                    await dispatch(initOrderList()); 
+                    setBell(dispatch,orderList,items);
+                }, 
+                cancelFunction:()=>{
+                    dispatch(initOrderList());
+                    setBell(dispatch,orderList,items);
+                } 
+            }
+            )
+          );
+        
+        }else {
+            dispatch(onConfirmCancelClick({confirmType:"pay",payData:{result,orderFinalData,items}}));
+        }
     }
 
     //openAlert(dispatch,getState, "영수증", "영수증을 출력하시겠습니까?", ()=>{console.log("on ok clicked");})

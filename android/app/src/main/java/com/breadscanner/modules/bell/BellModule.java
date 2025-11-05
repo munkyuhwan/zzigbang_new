@@ -81,6 +81,13 @@ public class BellModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
+    public void stopBell() {
+        isRun=false;
+        usbManager = null;
+        serialPort = null;
+    }
+
+    @ReactMethod
     public void bellRing(String bellLan,String bellCorner,String bellNumber,String vendorId, String productId) {
         System.out.println("BELL TEST=============================");
         System.out.println(bellLan+","+bellCorner+","+bellNumber+","+vendorId+","+productId);
@@ -111,10 +118,9 @@ public class BellModule extends ReactContextBaseJavaModule {
 
 
 // LED1을 빨강으로 설정
-
-
-
     }
+
+
 
 
     private void findAndConnectUsbDevice(String bellLan,String bellCorner,String bellNumber,String vendorId, String productId) {
@@ -318,9 +324,15 @@ public class BellModule extends ReactContextBaseJavaModule {
 
 
             isRun = true;
+            int countDown = 15;
             while (isRun) {
-                Log.d("RECEIVED=====","RUINNING===========================================");
-
+                Log.d("RECEIVED=====",countDown+"RUINNING===========================================");
+                if(countDown <= 0) {
+                    stopBell();
+                    sendResponse("{\"response\":\"1\",\"msg\":\"진동벨 할당 에러\",\"code\":\"0002\"}");
+                    break;
+                }
+                countDown--;
                 byte[] buffer = new byte[64];
                 int len = 0; // 1초 대기
 
@@ -365,6 +377,9 @@ public class BellModule extends ReactContextBaseJavaModule {
                         init();
 
                     }
+                }else {
+                    Log.d("RECEIVED=====", "no response = ");
+
                 }
             }
 

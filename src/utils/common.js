@@ -934,6 +934,7 @@ export function openAlert(dispatch,getState, titleStr, msgStr, okFunction, cance
 }
 
 export function setBell(dispatch,orderList,items) {
+    console.log("============set bell-=====================");
     const {Bell} = NativeModules; 
     const bellVID = storage.getString("bellVendorID")
     const bellPID = storage.getString("bellProductID")
@@ -970,9 +971,24 @@ export function setBell(dispatch,orderList,items) {
     const uniqueCorners = [...corners];
     console.log("uniqueCorners: ",uniqueCorners);
     Bell.bellRing(lan,JSON.stringify(uniqueCorners),orderNo,bellVID,bellPID);
-    EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"주문완료", str:"진동벨을 챙겨주세요.",isCancle:false});
+    //EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"주문완료", str:"진동벨을 챙겨주세요.",isCancle:false, isOK:false});
+    dispatch(setAlert(
+        {
+            title:"주문완료",
+            msg:'진동벨을 챙겨주세요.',
+            subMsg:"",
+            okText:'닫기',
+            cancelText:'닫기',
+            isCancle:false,
+            isOK:false,
+            icon:"",   
+            isAlertOpen:true,
+            clickType:"",
+        }
+    ));
     DeviceEventEmitter.removeAllListeners("onBellChange"); 
     DeviceEventEmitter.addListener("onBellChange",(data)=>{    
+        dispatch(setCommon({isAddShow:true}));
         if(data) {
             console.log("responseData: ",(data.response));
             const responseData = JSON.parse(data.response);
@@ -1011,7 +1027,25 @@ export function setBell(dispatch,orderList,items) {
                     EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"주문완료", str:responseData?.msg,isCancle:true});
                 }
             }else {
-                EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"주문오류", str:"진동벨에 오류가 있습니다.",isCancle:true});
+                if(responseData?.code == "0002") {
+                    dispatch(setAlert(
+                        {
+                            title:"",
+                            msg:'',
+                            subMsg:"",
+                            okText:'닫기',
+                            cancelText:'',
+                            isCancle:false,
+                            isOK:false,
+                            icon:"",   
+                            isAlertOpen:false,
+                            clickType:"",
+                        }
+                    ));
+                }else {
+                    EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"주문오류", str:"진동벨에 오류가 있습니다.",isCancle:true});
+                }
+
             }
         }
     });

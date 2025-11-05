@@ -55,24 +55,28 @@ export const PhonePopup = () => {
             onClose(); // 팝업 닫기
 
             dispatch(dispatchShowAlert({title:"영수증", msg:"영수증을 출력하시겠습니까?", 
-            okFunction:()=>{ 
-              printReceipt(orderList, breadOrderList, items, payResultData); 
-              dispatch(initOrderList()); 
-              dispatch(setCommon({isAddShow:true})); 
-              if(storage.getString("isBellUse")=="Y"){
-                setBell(dispatch,orderList,items);
-              }
-              /* dispatch(setFullPopup({isShow:true,fullPopupText:strings["주문완료"][`${selectedLanguage}`]})); */
-            }, 
-            cancelFunction:()=>{
-              dispatch(initOrderList());
-              dispatch(setCommon({isAddShow:true}));
-              if(storage.getString("isBellUse")=="Y"){
-                setBell(dispatch,orderList,items);
-              }
-              /* dispatch(setFullPopup({isShow:true,fullPopupText:strings["주문완료"][`${selectedLanguage}`]})); */
-            } 
-          })); 
+              okFunction:async ()=>{ 
+                await printReceipt(orderList, breadOrderList, items, payResultData); 
+                dispatch(initOrderList()); 
+                if(storage.getString("isBellUse")=="Y"){
+                  setBell(dispatch,orderList,items);
+                }else {
+                  dispatch(setCommon({isAddShow:true})); 
+                }
+                /* dispatch(setFullPopup({isShow:true,fullPopupText:strings["주문완료"][`${selectedLanguage}`]})); */
+              }, 
+              cancelFunction:()=>{
+                dispatch(initOrderList());
+                if(storage.getString("isBellUse")=="Y"){
+                  setBell(dispatch,orderList,items);
+                }else {
+                  dispatch(setCommon({isAddShow:true}));
+                }
+                /* dispatch(setFullPopup({isShow:true,fullPopupText:strings["주문완료"][`${selectedLanguage}`]})); */
+              } 
+            }
+            )
+          ); 
         }
     };
     if(isPhonePopup == false) {

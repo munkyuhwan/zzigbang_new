@@ -557,7 +557,7 @@ export const CartListItem = (props) =>{
                 
             </CartItemView>
             {
-                <Animated.View style={{height:heightAnim,position:'absolute', backgroundColor:'rgba(210,27,25,0.5)',borderRadius:10, width:'100%',opacity}} />
+                <Animated.View style={{height:'100%',position:'absolute', backgroundColor:'rgba(210,27,25,0.5)',borderRadius:10, width:'100%',opacity}} />
             }  
         </View>
 

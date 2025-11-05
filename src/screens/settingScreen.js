@@ -275,7 +275,7 @@ const SettingScreen = (props) =>{
                         <Text style={{flex:1,fontSize:40,color:colorBlack}} ></Text>
                     </View>
                     <View style={{flexDirection:'row', paddingLeft:30,paddingRight:30}}>
-                        <Text style={{flex:1,fontSize:20,color:colorBlack,textAlign:'center'}} >v1.0.23</Text>
+                        <Text style={{flex:1,fontSize:20,color:colorBlack,textAlign:'center'}} >v1.0.25</Text>
                     </View>
                     <SettingWrapper>
 
@@ -773,8 +773,15 @@ const SettingScreen = (props) =>{
                             <SettingSectionTitle>업데이트 정보</SettingSectionTitle>
                             <SettingSectionDetailWrapper>
                                 <SettingSenctionInputViewColumn>
-                                    <SettingSectionLabel>- 확인요청 빵 수정</SettingSectionLabel>
+                                    <SettingSectionLabel>- 진동벨 버그 수정</SettingSectionLabel>
+                                    <SettingSectionLabel>- 진동벨 사용시 휴대전화번호 입력 안함</SettingSectionLabel>
                                 </SettingSenctionInputViewColumn>
+                                {/* <SettingSenctionInputViewColumn>
+                                    <SettingSectionLabel>- 프린터 안되는 버그 수정</SettingSectionLabel>
+                                </SettingSenctionInputViewColumn> */}
+                                {/* <SettingSenctionInputViewColumn>
+                                    <SettingSectionLabel>- 확인요청 빵 수정</SettingSectionLabel>
+                                </SettingSenctionInputViewColumn> */}
                                 {/* <SettingSenctionInputViewColumn>
                                     <SettingSectionLabel>- 오류 팝업 문구 줄바꿈 수정</SettingSectionLabel>
                                     <SettingSectionLabel>- 음료 선택 시 스크롤</SettingSectionLabel>
