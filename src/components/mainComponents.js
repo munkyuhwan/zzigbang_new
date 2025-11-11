@@ -482,7 +482,7 @@ export const CartListItem = (props) =>{
                 useNativeDriver: true,
             }),
         ]).start();
-        Animated.sequence([
+        /* Animated.sequence([
             Animated.timing(heightAnim, {
             toValue: 95, // 높이 커짐
             duration: 100,
@@ -494,7 +494,7 @@ export const CartListItem = (props) =>{
             duration: 350,
             useNativeDriver: true,
             }),
-        ]).start();
+        ]).start(); */
 
     }
     useEffect(() => {

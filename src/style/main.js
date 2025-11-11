@@ -325,6 +325,8 @@ export const CartItemCancelWrapper = styled.View`
 export const CartItemCancelImage = styled.Image`
     width:45px;
     height:45px;
+    position:absolute;
+    zIndex:9999;
 `
 // 총금액
 export const CartPaymentWrapper = styled.View`

@@ -355,26 +355,28 @@ public class BellModule extends ReactContextBaseJavaModule {
                         byte[] payload = Arrays.copyOfRange(received, 1, received.length - 1);
                         String payloadStr = new String(payload, StandardCharsets.US_ASCII);
                         Log.d("RECEIVED=====", "payload = " + payloadStr);
-
-                        // 👉 여기서 payloadStr이 바로 "2"
-                        // 원하면 int 값으로 변환
-                        int value = Integer.parseInt(payloadStr);
-                        Log.d("RECEIVED=====", "value = " + value);
-                        if (value == 1) {
-                            sendResponse("{\"response\":\"" + value + "\",\"msg\":\"정상 처리\",\"code\":\"0000\"}");
-                            //isRun = false;
-                            break;
-                        } else if (value == 2) {
-                            sendResponse("{\"response\":\"" + value + "\",\"msg\":\"진동벨을 가져가 주세요...\",\"code\":\"0000\"}");
-                            //isRun = false;
-                        } else if (value == 3) {
-                            sendResponse("{\"response\":\"" + value + "\",\"msg\":\"픽업\",\"code\":\"0000\"}");
-                            break;
-                        } else {
-                            sendResponse("{\"response\":\"" + value + "\",\"msg\":\"진동벨 할당 에러\",\"code\":\"0001\"}");
-                            break;
+                        if (payloadStr != null && !payloadStr.trim().isEmpty()) {
+                            // null, "", "   " (공백만 있는 문자열) 전부 처리됨
+                                                    // 👉 여기서 payloadStr이 바로 "2"
+                            // 원하면 int 값으로 변환
+                            int value = Integer.parseInt(payloadStr);
+                            Log.d("RECEIVED=====", "value = " + value);
+                            if (value == 1) {
+                                sendResponse("{\"response\":\"" + value + "\",\"msg\":\"정상 처리\",\"code\":\"0000\"}");
+                                //isRun = false;
+                                break;
+                            } else if (value == 2) {
+                                sendResponse("{\"response\":\"" + value + "\",\"msg\":\"진동벨을 가져가 주세요...\",\"code\":\"0000\"}");
+                                //isRun = false;
+                            } else if (value == 3) {
+                                sendResponse("{\"response\":\"" + value + "\",\"msg\":\"픽업\",\"code\":\"0000\"}");
+                                break;
+                            } else {
+                                sendResponse("{\"response\":\"" + value + "\",\"msg\":\"진동벨 할당 에러\",\"code\":\"0001\"}");
+                                break;
+                            }
+                            init();
                         }
-                        init();
 
                     }
                 }else {

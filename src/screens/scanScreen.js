@@ -486,12 +486,20 @@ const ScanScreen = () => {
                             ));
                             
                         }else {
-                            /* if(inputWeight>registeredWeight) {
+                    
+                            if(difference >= minWeight) {
+                                console.log("겹침");
+                                const sampleData = getTopWeightMatches(items, difference);
+                                console.log("sampleData: ",sampleData);
+                                // 겹침
+                                const topFive = getTopFive(items, difference);
+                                console.log("top five: ",topFive);
+                                //[...topFive, ...sampleData]
                                 dispatch(setAlert(
                                     {
                                         title:"테스트",
-                                        msg:"스캔이 잘될수있도록 빵이 겹치지않게 골고루 펼쳐주세요.",
-                                        subMsg:"확인요청 빵",
+                                        msg:"스캔이 잘될수있도록 빵이 겹치지\n않게 골고루 펼쳐주세요.",
+                                        subMsg:"",
                                         okText:'닫기',
                                         cancelText:'',
                                         isCancle:false,
@@ -502,20 +510,18 @@ const ScanScreen = () => {
                                         imageArr:[]
                                     }
                                 ));
-                            }else { */
-
-                                if(difference > minWeight) {
-                                    console.log("겹침");
-                                    const sampleData = getTopWeightMatches(items, difference);
-                                    console.log("sampleData: ",sampleData);
-                                    // 겹침
-                                    const topFive = getTopFive(items, difference);
-                                    console.log("top five: ",topFive);
+                            }else {
+                                console.log("오인식");
+                                // 오인식
+                                const altCandidates = data?.alt_candidates;
+                                if(altCandidates.length>0) {
+                                    const altCandImgs = getGimgChgByCandidates(altCandidates,items);
+                                    console.log(altCandImgs);
                                     dispatch(setAlert(
                                         {
                                             title:"테스트",
-                                            msg:"스캔이 잘될수있도록 빵이 겹치지\n않게 골고루 펼쳐주세요.",
-                                            subMsg:"확인요청 빵",
+                                            msg:"스캔된 빵이 인식이 잘못됐으니\n다시 찍어주세요.",
+                                            subMsg:"",
                                             okText:'닫기',
                                             cancelText:'',
                                             isCancle:false,
@@ -523,51 +529,27 @@ const ScanScreen = () => {
                                             icon:"",   
                                             isAlertOpen:true,
                                             clickType:"",
-                                            imageArr:[...topFive, ...sampleData]
+                                            imageArr:[]
                                         }
                                     ));
-
                                 }else {
-                                    console.log("오인식");
-                                    // 오인식
-                                    const altCandidates = data?.alt_candidates;
-                                    if(altCandidates.length>0) {
-                                        const altCandImgs = getGimgChgByCandidates(altCandidates,items);
-                                        console.log(altCandImgs);
-                                        dispatch(setAlert(
-                                            {
-                                                title:"테스트",
-                                                msg:"스캔된 빵이 인식이 잘못됐으니\n다시 찍어주세요.",
-                                                subMsg:"확인요청 빵",
-                                                okText:'닫기',
-                                                cancelText:'',
-                                                isCancle:false,
-                                                isOK:true,
-                                                icon:"",   
-                                                isAlertOpen:true,
-                                                clickType:"",
-                                                imageArr:altCandImgs
-                                            }
-                                        ));
-                                    }else {
-                                        dispatch(setAlert(
-                                            {
-                                                title:"테스트",
-                                                msg:"스캔된 빵이 인식이 잘못됐으니\n다시 찍어주세요.",
-                                                subMsg:"확인요청 빵",
-                                                okText:'닫기',
-                                                cancelText:'',
-                                                isCancle:false,
-                                                isOK:true,
-                                                icon:"",   
-                                                isAlertOpen:true,
-                                                clickType:"",
-                                                imageArr:[]
-                                            }
-                                        ));
-                                    }
+                                    dispatch(setAlert(
+                                        {
+                                            title:"테스트",
+                                            msg:"스캔된 빵이 인식이 잘못됐으니\n다시 찍어주세요.",
+                                            subMsg:"",
+                                            okText:'닫기',
+                                            cancelText:'',
+                                            isCancle:false,
+                                            isOK:true,
+                                            icon:"",   
+                                            isAlertOpen:true,
+                                            clickType:"",
+                                            imageArr:[]
+                                        }
+                                    ));
                                 }
-                            //}
+                            }
                         }
                         return;
                     }

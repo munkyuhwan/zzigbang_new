@@ -96,16 +96,16 @@ export const metaPostPayFormat = async (orderList,payData, allItems, PRINT_ORDER
 
 
             //const PRNT_ORD_NO = loadCounter();
-            const storedCount = storage.getString("counterValue");
+            /* const storedCount = storage.getString("counterValue");
             if(storedCount == null) {
                 var newCount = 1
             }else {
                 var newCount = Number(storedCount)+1
             }
             storage.set("counterValue",`${newCount}`);
-            var PRINT_ORDER_NO = `${POS_NO}-${newCount}`
+            var PRINT_ORDER_NO = `${POS_NO}${newCount}`
             console.log("PRINT_ORDER_NO: ",PRINT_ORDER_NO);
- 
+            */
 
             //const printOrderNo = ``;
             // order item 

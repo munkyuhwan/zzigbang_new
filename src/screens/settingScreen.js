@@ -275,7 +275,7 @@ const SettingScreen = (props) =>{
                         <Text style={{flex:1,fontSize:40,color:colorBlack}} ></Text>
                     </View>
                     <View style={{flexDirection:'row', paddingLeft:30,paddingRight:30}}>
-                        <Text style={{flex:1,fontSize:20,color:colorBlack,textAlign:'center'}} >v1.0.25</Text>
+                        <Text style={{flex:1,fontSize:20,color:colorBlack,textAlign:'center'}} >v1.0.29</Text>
                     </View>
                     <SettingWrapper>
 
@@ -773,9 +773,20 @@ const SettingScreen = (props) =>{
                             <SettingSectionTitle>업데이트 정보</SettingSectionTitle>
                             <SettingSectionDetailWrapper>
                                 <SettingSenctionInputViewColumn>
+                                    <SettingSectionLabel>- 주방 프린트 주문번호 수정</SettingSectionLabel>
+                                </SettingSenctionInputViewColumn>
+                                {/* <SettingSenctionInputViewColumn>
+                                    <SettingSectionLabel>- 스캔 오류 팝업 이미지 제거</SettingSectionLabel>
+                                </SettingSenctionInputViewColumn> */}
+                                {/* <SettingSenctionInputViewColumn>
+                                    <SettingSectionLabel>- 진동벨 버그 수정</SettingSectionLabel>
+                                    <SettingSectionLabel>- 장바구니 취소 버튼 버그 수정</SettingSectionLabel>
+                                    <SettingSectionLabel>- 주문번호 형식 수정</SettingSectionLabel>
+                                </SettingSenctionInputViewColumn> */}
+                                {/* <SettingSenctionInputViewColumn>
                                     <SettingSectionLabel>- 진동벨 버그 수정</SettingSectionLabel>
                                     <SettingSectionLabel>- 진동벨 사용시 휴대전화번호 입력 안함</SettingSectionLabel>
-                                </SettingSenctionInputViewColumn>
+                                </SettingSenctionInputViewColumn> */}
                                 {/* <SettingSenctionInputViewColumn>
                                     <SettingSectionLabel>- 프린터 안되는 버그 수정</SettingSectionLabel>
                                 </SettingSenctionInputViewColumn> */}

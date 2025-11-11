@@ -26,6 +26,7 @@ export const MenuMetaDetailPopup = (props) => {
 
     function init() {
         setOptionSelect([]);
+        setOptPrice(0);
         setAmt(1);
         setOptString("");
     }
@@ -206,7 +207,7 @@ export const MenuMetaDetailPopup = (props) => {
                 <BackgroundDim />
                 <PopupWrapper>
                     <OrderArea>
-                        <TouchableWithoutFeedback onPress={()=>{dispatch(setMenu({ detailItem: {} }));}} >
+                        <TouchableWithoutFeedback onPress={()=>{dispatch(setMenu({ detailItem: {} })); init(); }} >
                             <CloseBtnView>
                                 <CloseBtnIcon source={require("../../resources/imgs/drawable-xxxhdpi/img_close_1.png")}/>
                             </CloseBtnView>
