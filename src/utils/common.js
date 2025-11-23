@@ -350,6 +350,7 @@ export async function adminDataPost(payData, orderData, allItems,phoneNumber) {
         // 결제시 추가 결제 결과 데이터
         let addOrderData = {};
         if(!isEmpty(payData)) {
+            if(storage.getString("VAN")==VAN_KOCES) {
                 addOrderData = {
                     TOTAL_AMT:Number(payData?.TrdAmt)+Number(payData?.TaxAmt),
                     TOTAL_VAT:Number(payData?.TaxAmt),
@@ -374,6 +375,32 @@ export async function adminDataPost(payData, orderData, allItems,phoneNumber) {
                         PAY_CARD_MONTH:`${payData?.Month}`
                     }]
                 };
+            }else if(storage.getString("VAN")==VAN_SMARTRO){
+                addOrderData = {
+                    TOTAL_AMT:Number(payData['total-amount']),
+                    TOTAL_VAT:0,
+                    TOTAL_DC:0,
+                    ORDER_STATUS:"3",
+                    CANCEL_YN:"N",
+                    PREPAYMENT_YN:"N",
+                    CUST_CARD_NO:`${payData['card-no']}`,
+                    CUST_NM:``,
+                    PAYMENT_CNT:1,
+                    PAYMENT_INFO:[{
+                        PAY_SEQ:1,
+                        PAY_KIND:"2",
+                        PAY_AMT:Number(payData['total-amount']),
+                        PAY_VAT:0,
+                        PAY_APV_NO:`${payData['approval-no']}`,
+                        PAY_APV_DATE:`20${payData['approval-date']}`,
+                        PAY_CARD_NO:`${payData['card-no']}`,
+                        PAY_UPD_DT:`20${payData['approval-date']}`,
+                        PAY_CANCEL_YN:"N",
+                        PAY_CARD_TYPE:``,
+                        PAY_CARD_MONTH:``
+                    }]
+                };
+            }
             postOrderData = {...orderData,...addOrderData};
         }
         
@@ -1123,31 +1150,105 @@ export const  postPayLog = async(data) =>{
         });
     }) 
 }
- 
-export function getTopFive(items, difference) {
+export function getOptimizedWeightCombinations(items, minWeight, difference, maxResults = 30) {
+    // prod_l1_cd 8000만 사용
+    const raw = items.filter(it => it.prod_l1_cd === "8000");
 
-    console.log("difference:",difference);
+    // 숫자 변환
+    const candidates = raw
+        .map(it => ({
+            ...it,
+            w: parseFloat(it.weight),
+            err: parseFloat(it.w_margin_error || 0)
+        }))
+        .filter(it => !isNaN(it.w));
+
+    // ⭐ 1) difference와 정확히 일치하는 빵 찾기 (여러 개일 수 있음)
+    const exactMatches = candidates.filter(item => item.w === difference);
+
+    if (exactMatches.length > 0) {
+        // 여러 개일 경우 maxResults 만큼만 반환
+        return exactMatches.slice(0, maxResults);
+    }
+
+    // ⬇️ exact match가 없을 때만 조합 알고리즘 실행
+
+    const filtered = candidates.filter(i => i.w <= difference);
+    filtered.sort((a, b) => a.w - b.w);
+
+    let bestCombo = null;
+    let bestGap = Infinity;
+
+    function backtrack(start, combo, sumW, sumMin, sumMax) {
+        if (combo.length > 5) return;
+
+        if (combo.length >= 1) {
+            if (sumMin <= difference && difference <= sumMax) {
+                const gap = Math.abs(sumW - difference);
+                if (gap < bestGap) {
+                    bestGap = gap;
+                    bestCombo = [...combo];
+                }
+            }
+        }
+
+        if (combo.length === 5) return;
+
+        for (let i = start; i < filtered.length; i++) {
+            const item = filtered[i];
+
+            const w = item.w;
+            const err = item.err;
+
+            const newSumW = sumW + w;
+            const newSumMin = sumMin + (w - err);
+            const newSumMax = sumMax + (w + err);
+
+            if (newSumMin > difference) break;
+
+            combo.push(item);
+            backtrack(i + 1, combo, newSumW, newSumMin, newSumMax);
+            combo.pop();
+        }
+    }
+
+    backtrack(0, [], 0, 0, 0);
+
+    return bestCombo;
+}
+
+
+
+export function getTopFive(items, difference, maxResults=5) {
+    console.log("difference: ",difference);
+
     if (!Array.isArray(items) || items.length === 0) return [];
 
-  const validItems = items
-    .filter(item => item.weight !== null && item.weight !== undefined)
-    .map(item => ({
-      ...item,
-      weight: Number(item.weight)
-    }))
-    .filter(item => !isNaN(item.weight));
+    // 숫자형으로 변환 + 필터링
+    const validItems = items
+        .map(item => {
+        const weight = parseFloat(item.weight);
+        console.log(item.gname_kr,": ",weight);
+        const margin = parseFloat(item.w_margin_error);
+        return { ...item, weight, margin };
+        })
+        .filter(item => !isNaN(item.weight) && !isNaN(item.margin));
 
-  if (validItems.length === 0) return [];
+    // difference가 아이템 무게 ± 허용오차 안에 있는지 체크
+    const matched = validItems.filter(item => {
+        const min = item.weight - item.margin;
+        const max = item.weight + item.margin;
+        return difference >= min && difference <= max;
+    });
 
-  // 기준값과의 차이로 정렬
-  const sorted = validItems.sort(
-    (a, b) => Math.abs(a.weight - difference) - Math.abs(b.weight - difference)
-  );
-
-  // 상위 5개에서 gimg_chg만 추출
-  const result = sorted.slice(0, 1).map(item => item);
-
-  return result;
+    // difference에 가장 가까운 순서대로 정렬
+    const sorted = matched.sort(
+        (a, b) =>
+        Math.abs(a.weight - difference) - Math.abs(b.weight - difference)
+    );
+    console.log("sorted: ",sorted);
+    // 상위 5개만 반환
+    return sorted.slice(0, maxResults);
 
 }
 

@@ -107,11 +107,11 @@ export const RoundButtonTextBig = styled.Text`
 // 닫기 버튼
 export const CloseBtnView = styled.View`
     position:absolute;
-    width:40px;
-    height:40px;
+    width:50px;
+    height:50px;
     right:10px;
     backgroundColor:${colorRed};
-    borderRadius:20px;
+    borderRadius:40px;
     padding:1px;
     justifyContent:center;
     alignItems:center;

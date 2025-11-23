@@ -345,6 +345,7 @@ export const ImageArea = styled.View`
     paddingLeft:10px;
     paddingRight:10px;
     paddingBottom:25px;
+    justifyContent:center;
 `
 export const SampleImage = styled(FastImage)`
     flex:1;

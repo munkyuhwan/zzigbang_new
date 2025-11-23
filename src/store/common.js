@@ -257,7 +257,7 @@ export const commonSlice = createSlice({
                 en:"Add To Cart",
                 jp:"注文する",
                 cn:"下訂單",
-                ko:"주문하기",
+                ko:"선택완료",
             },      
             "닫기":{
                 en:"Close",

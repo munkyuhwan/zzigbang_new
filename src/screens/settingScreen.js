@@ -275,7 +275,7 @@ const SettingScreen = (props) =>{
                         <Text style={{flex:1,fontSize:40,color:colorBlack}} ></Text>
                     </View>
                     <View style={{flexDirection:'row', paddingLeft:30,paddingRight:30}}>
-                        <Text style={{flex:1,fontSize:20,color:colorBlack,textAlign:'center'}} >v1.0.29</Text>
+                        <Text style={{flex:1,fontSize:20,color:colorBlack,textAlign:'center'}} >v1.0.34</Text>
                     </View>
                     <SettingWrapper>
 
@@ -773,8 +773,25 @@ const SettingScreen = (props) =>{
                             <SettingSectionTitle>업데이트 정보</SettingSectionTitle>
                             <SettingSectionDetailWrapper>
                                 <SettingSenctionInputViewColumn>
-                                    <SettingSectionLabel>- 주방 프린트 주문번호 수정</SettingSectionLabel>
+                                    <SettingSectionLabel>- 쿠폰/포인트 버튼 회색 변경</SettingSectionLabel>
+                                    <SettingSectionLabel>- 주문하기 문구 선택완료로 수정</SettingSectionLabel>
+                                    <SettingSectionLabel>- 메뉴 상세 닫기 버튼 크기 수정</SettingSectionLabel>
+                                    <SettingSectionLabel>- 스캔 실패시 곂침의 경우 상품 노출</SettingSectionLabel>
+                                    <SettingSectionLabel>- 진동벨 재할당 수정</SettingSectionLabel>
                                 </SettingSenctionInputViewColumn>
+                                {/* <SettingSenctionInputViewColumn>
+                                    <SettingSectionLabel>- 확인가능한빵 리스트 수정</SettingSectionLabel>
+                                </SettingSenctionInputViewColumn> */}
+                               {/*  <SettingSenctionInputViewColumn>
+                                    <SettingSectionLabel>- 스마트로 결제 어드민 결제한 금액 안나오는 현상 수정</SettingSectionLabel>
+                                </SettingSenctionInputViewColumn> */}
+                                {/* <SettingSenctionInputViewColumn>
+                                    <SettingSectionLabel>- 상세페이지 옵션금액 안바뀌는 버그 수정</SettingSectionLabel>
+                                    <SettingSectionLabel>- 스캔 후 겹침 빵 리스트 노출</SettingSectionLabel>
+                                </SettingSenctionInputViewColumn> */}
+                                {/* <SettingSenctionInputViewColumn>
+                                    <SettingSectionLabel>- 주방 프린트 주문번호 수정</SettingSectionLabel>
+                                </SettingSenctionInputViewColumn> */}
                                 {/* <SettingSenctionInputViewColumn>
                                     <SettingSectionLabel>- 스캔 오류 팝업 이미지 제거</SettingSectionLabel>
                                 </SettingSenctionInputViewColumn> */}

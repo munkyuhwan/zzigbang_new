@@ -15,7 +15,7 @@ import { CartList, CartListItem, ScannListItem } from '../components/mainCompone
 import { ButtonImage, ButtonText, ButtonView, SquareButtonView } from '../style/common';
 import { RescanText, RescanView, ScanProductCheckWrapper, ScanProductList } from '../style/scanScreenStyle';
 import {isEmpty} from 'lodash';
-import { findWeightCombinations, getGimgChgByCandidates, getTopFive, getTopWeightMatches, numberPad, numberWithCommas, parseValue, postPayLog, speak, trimBreadList, updateList } from '../utils/common';
+import { findWeightCombinations, getGimgChgByCandidates, getOptimizedWeightCombinations, getTopFive, getTopWeightMatches, numberPad, numberWithCommas, parseValue, postPayLog, speak, trimBreadList, updateList } from '../utils/common';
 import { getBanner, setAdShow, setCommon } from '../store/common';
 import { SCREEN_TIMEOUT } from '../resources/values';
 import { CartItemTitleText } from '../style/main';
@@ -464,16 +464,37 @@ const ScanScreen = () => {
                         const inputWeight = Number(data.input_weight);
                         const tolerance = Number(data.total_tolerance);
                         const difference = Math.abs(inputWeight - registeredWeight);
+                        //const difference = 394;
                         const minWeight = Number(storage.getString("MIN_WEIGHT"));
-                        console.log("minWeight: ",minWeight);
+                        console.log("difference: ",difference);
+                        var topFive = getOptimizedWeightCombinations(items, minWeight,difference,5);
+                        console.log("topFive: ",topFive);
 
                         if (data?.item_counts && 'none' in data.item_counts) { 
-                            
+                            /* var topFive = getOptimizedWeightCombinations(items, minWeight,difference,5);
+                                //const topFive = getTopFive(items, difference);
+                                console.log("top five: ",topFive);
+                                //[...topFive, ...sampleData]
+                                dispatch(setAlert(
+                                    {
+                                        title:"테스트",
+                                        msg:"스캔이 잘될수있도록 빵이 겹치지\n않게 골고루 펼쳐주세요.",
+                                        subMsg:topFive.length>0?"확인요청 빵":"",
+                                        okText:'닫기',
+                                        cancelText:'',
+                                        isCancle:false,
+                                        isOK:true,
+                                        icon:"",   
+                                        isAlertOpen:true,
+                                        clickType:"",
+                                        imageArr:topFive
+                                    }
+                                )); */
                             dispatch(setAlert(
                                 {
                                     title:"테스트",
                                     msg:"미 등록된 상품이니 상품을 다시 확인해주세요.",
-                                    subMsg:"확인요청 빵",
+                                    subMsg:"",
                                     okText:'닫기',
                                     cancelText:'',
                                     isCancle:false,
@@ -489,17 +510,16 @@ const ScanScreen = () => {
                     
                             if(difference >= minWeight) {
                                 console.log("겹침");
-                                const sampleData = getTopWeightMatches(items, difference);
-                                console.log("sampleData: ",sampleData);
                                 // 겹침
-                                const topFive = getTopFive(items, difference);
+                                var topFive = getOptimizedWeightCombinations(items, minWeight,difference,5);
+                                //const topFive = getTopFive(items, difference);
                                 console.log("top five: ",topFive);
                                 //[...topFive, ...sampleData]
                                 dispatch(setAlert(
                                     {
                                         title:"테스트",
                                         msg:"스캔이 잘될수있도록 빵이 겹치지\n않게 골고루 펼쳐주세요.",
-                                        subMsg:"",
+                                        subMsg:topFive.length>0?"확인요청 빵":"",
                                         okText:'닫기',
                                         cancelText:'',
                                         isCancle:false,
@@ -507,7 +527,7 @@ const ScanScreen = () => {
                                         icon:"",   
                                         isAlertOpen:true,
                                         clickType:"",
-                                        imageArr:[]
+                                        imageArr:topFive
                                     }
                                 ));
                             }else {

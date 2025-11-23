@@ -509,7 +509,7 @@ const MainScreen = (props) =>{
                         </TouchableWithoutFeedback>
 
                         <TouchableWithoutFeedback onPress={()=>{EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"결제", str:"준비중 입니다."});}} >
-                            <ButtonViewPercent backgroundColor={colorLightGreen} >
+                            <ButtonViewPercent backgroundColor={colorDarkGrey} >
                                 <ButtonImage source={require("../resources/imgs/drawable-xxxhdpi/img_cupon_01.png")} resizeMode="contain" />
                                 <ButtonText>{strings["쿠폰/포인트"][`${selectedLanguage}`]}</ButtonText>
                             </ButtonViewPercent>

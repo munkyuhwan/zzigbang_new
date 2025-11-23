@@ -183,7 +183,7 @@ export const startPayment = createAsyncThunk("menu/startPayment", async(data,{di
 
     // 주문 가능 상태 확인
     const POS_NO = storage.getString("POS_NO");
-    /* try {
+    try {
         const isPostable = await isNetworkAvailable();
         if(!isPostable) {
             EventRegister.emit("showSpinner",{isSpinnerShow:false, msg:"", spinnerType:"",closeText:""});
@@ -219,16 +219,16 @@ export const startPayment = createAsyncThunk("menu/startPayment", async(data,{di
         EventRegister.emit("showSpinner",{isSpinnerShow:false, msg:"", spinnerType:"",closeText:""});
         EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"포스 오류", str:err.errorMsg});
         return rejectWithValue();
-    } */
+    }
     /// 카트메뉴 주문 가능 여부 체크
     
-   /*  const isItemOrderble = await itemEnableCheck(STORE_IDX,[...orderList,...breadOrderList]).catch(err=>{ return{isAvailable:false, result:null} } );
+    const isItemOrderble = await itemEnableCheck(STORE_IDX,[...orderList,...breadOrderList]).catch(err=>{ return{isAvailable:false, result:null} } );
     if(isItemOrderble?.isAvailable == false) {
         EventRegister.emit("showSpinner",{isSpinnerShow:false, msg:"", spinnerType:"",closeText:""});
         EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"주문 오류", str:"수량을 초과해 주문을 할 수 없습니다."});
         return rejectWithValue();
     }
- */
+  
     const bsnNo = storage.getString("BSN_NO");
     const tidNo = storage.getString("TID_NO");
     const amtData = {amt:totalAmt, taxAmt:surtax, months:installment, bsnNo:bsnNo,termID:tidNo }

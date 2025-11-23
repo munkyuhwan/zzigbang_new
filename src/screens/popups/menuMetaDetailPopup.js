@@ -209,7 +209,7 @@ export const MenuMetaDetailPopup = (props) => {
                     <OrderArea>
                         <TouchableWithoutFeedback onPress={()=>{dispatch(setMenu({ detailItem: {} })); init(); }} >
                             <CloseBtnView>
-                                <CloseBtnIcon source={require("../../resources/imgs/drawable-xxxhdpi/img_close_1.png")}/>
+                                <CloseBtnIcon source={require("../../resources/imgs/drawable-xxxhdpi/img_close_1.png")} resizeMode={"contain"}/>
                             </CloseBtnView>
                         </TouchableWithoutFeedback>
                         <ItemView>
