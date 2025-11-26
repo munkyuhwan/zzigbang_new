@@ -464,11 +464,10 @@ const ScanScreen = () => {
                         const inputWeight = Number(data.input_weight);
                         const tolerance = Number(data.total_tolerance);
                         const difference = Math.abs(inputWeight - registeredWeight);
-                        //const difference = 394;
+                        //const difference = 294;
                         const minWeight = Number(storage.getString("MIN_WEIGHT"));
                         console.log("difference: ",difference);
-                        var topFive = getOptimizedWeightCombinations(items, minWeight,difference,5);
-                        console.log("topFive: ",topFive);
+                        
 
                         if (data?.item_counts && 'none' in data.item_counts) { 
                             /* var topFive = getOptimizedWeightCombinations(items, minWeight,difference,5);
@@ -489,8 +488,8 @@ const ScanScreen = () => {
                                         clickType:"",
                                         imageArr:topFive
                                     }
-                                )); */
-                            dispatch(setAlert(
+                                ));  */
+                             dispatch(setAlert(
                                 {
                                     title:"테스트",
                                     msg:"미 등록된 상품이니 상품을 다시 확인해주세요.",

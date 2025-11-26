@@ -233,7 +233,7 @@ export const startPayment = createAsyncThunk("menu/startPayment", async(data,{di
     const tidNo = storage.getString("TID_NO");
     const amtData = {amt:totalAmt, taxAmt:surtax, months:installment, bsnNo:bsnNo,termID:tidNo }
     
-    const storedCount = storage.getString("counterValue");
+    /* const storedCount = storage.getString("counterValue");
     if(storedCount == null) {
         var newCount = 1
     }else {
@@ -246,7 +246,44 @@ export const startPayment = createAsyncThunk("menu/startPayment", async(data,{di
     storage.set("counterValue",`${newCount}`);
     console.log("newCount: ",newCount);
     var PRINT_ORDER_NO = `${POS_NO}${newCount}`
-    storage.set("orderNo",`${PRINT_ORDER_NO}`); 
+    storage.set("orderNo",`${PRINT_ORDER_NO}`);  */
+    // 오늘 날짜 문자열 (예: 2025-11-26)
+    const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+
+    // 저장된 날짜
+    const storedDate = storage.getString("counterDate");
+
+    // 저장된 카운트
+    const storedCount = storage.getString("counterValue");
+
+    // 날짜가 다르면 카운트 리셋
+    let newCount;
+
+    if (storedDate !== today) {
+        // 날짜가 다르면 1로 초기화
+        newCount = 1;
+        storage.set("counterDate", today); // 날짜 갱신
+    } else {
+        // 날짜가 같으면 기존 카운트 증가
+        if (storedCount == null) {
+            newCount = 1;
+        } else {
+            if (Number(storedCount) >= 999) {
+                newCount = 1; // 최대값 초과 시 초기화
+            } else {
+                newCount = Number(storedCount) + 1;
+            }
+        }
+    }
+
+    // 카운트 저장
+    storage.set("counterValue", `${newCount}`);
+
+    console.log("newCount:", newCount);
+
+    // 주문 번호 생성
+    const PRINT_ORDER_NO = `${POS_NO}${newCount}`;
+    storage.set("orderNo", PRINT_ORDER_NO);
 
     var result;
 

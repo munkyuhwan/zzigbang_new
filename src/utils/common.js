@@ -1150,10 +1150,105 @@ export const  postPayLog = async(data) =>{
         });
     }) 
 }
-export function getOptimizedWeightCombinations(items, minWeight, difference, maxResults = 30) {
-    // prod_l1_cd 8000만 사용
-    const raw = items.filter(it => it.prod_l1_cd === "8000");
+function findExactCombination(list, target, maxCount) {
+    let found = null;
 
+    function dfs(start, combo, sum) {
+        if (found) return;
+        if (combo.length > maxCount) return;
+
+        if (sum === target) {
+            found = [...combo];
+            return;
+        }
+        if (sum > target) return;
+
+        for (let i = start; i < list.length; i++) {
+            const item = list[i];
+            dfs(i + 1, [...combo, item], sum + item.w);
+        }
+    }
+
+    dfs(0, [], 0);
+    return found;
+}
+
+/**
+ * 우선순위 3: 오차범위 적용 조합
+ */
+function findErrorCombination(list, target, maxCount) {
+    let best = null;
+
+    function dfs(start, combo, sumW, sumMin, sumMax) {
+        if (best) return;
+        if (combo.length > maxCount) return;
+
+        // 오차범위 안에 들어오면 성공
+        if (combo.length > 0) {
+            if (sumMin <= target && target <= sumMax) {
+                best = [...combo];
+                return;
+            }
+        }
+
+        for (let i = start; i < list.length; i++) {
+            const it = list[i];
+
+            const w = it.w;
+            const err = it.err;
+
+            const newSum = sumW + w;
+            const newMin = sumMin + (w - err);
+            const newMax = sumMax + (w + err);
+
+            if (newMin > target) return; // 더 볼 필요 없음
+
+            dfs(i + 1, [...combo, it], newSum, newMin, newMax);
+        }
+    }
+
+    dfs(0, [], 0, 0, 0);
+    return best;
+}
+
+export function getOptimizedWeightCombinations(items, minWeight, difference, maxCount = 5) {
+      // 0. prod_l1_cd === '8000' 필터 추가
+    var raw = items.filter(it => it.prod_l1_cd === "8000");
+    if(storage.getString("MIN_WEIGHT")) {
+        raw = raw.filter(it => Number(it.weight)>storage.getString("MIN_WEIGHT"));
+    }
+
+    // 1. 숫자 변환
+    const candidates = raw
+        .map(it => ({
+            ...it,
+            w: parseFloat(it.weight),
+            err: parseFloat(it.w_margin_error || 0)
+        }))
+        .filter(it => !isNaN(it.w));
+
+    // ===== 우선순위 1 : difference 와 정확히 동일한 단일 제품 =====
+    const exactSingle = candidates.filter(it => it.w === difference);
+
+    if (exactSingle.length > 0) {
+        return exactSingle.slice(0, maxCount); // 여러 개면 maxCount 만큼
+    }
+
+    // ===== 우선순위 2 : 오차 없이 정확 조합 =====
+    const exactCandidates = candidates.filter(it => it.w <= difference);
+    exactCandidates.sort((a, b) => a.w - b.w);
+
+    const exactCombo = findExactCombination(exactCandidates, difference, maxCount);
+    if (exactCombo) return exactCombo;
+
+    // ===== 우선순위 3 : 오차 포함 조합 =====
+    const errorCombo = findErrorCombination(exactCandidates, difference, maxCount);
+    if (errorCombo) return errorCombo;
+
+    // 없으면 빈 배열
+    return [];
+    /* // prod_l1_cd 8000만 사용
+    const raw = items.filter(it => it.prod_l1_cd === "8000");
     // 숫자 변환
     const candidates = raw
         .map(it => ({
@@ -1175,6 +1270,7 @@ export function getOptimizedWeightCombinations(items, minWeight, difference, max
 
     const filtered = candidates.filter(i => i.w <= difference);
     filtered.sort((a, b) => a.w - b.w);
+    console.log("filtered: ",filtered.length)
 
     let bestCombo = null;
     let bestGap = Infinity;
@@ -1214,7 +1310,7 @@ export function getOptimizedWeightCombinations(items, minWeight, difference, max
 
     backtrack(0, [], 0, 0, 0);
 
-    return bestCombo;
+    return bestCombo; */
 }
 
 

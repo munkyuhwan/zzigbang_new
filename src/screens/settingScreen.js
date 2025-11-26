@@ -275,7 +275,7 @@ const SettingScreen = (props) =>{
                         <Text style={{flex:1,fontSize:40,color:colorBlack}} ></Text>
                     </View>
                     <View style={{flexDirection:'row', paddingLeft:30,paddingRight:30}}>
-                        <Text style={{flex:1,fontSize:20,color:colorBlack,textAlign:'center'}} >v1.0.34</Text>
+                        <Text style={{flex:1,fontSize:20,color:colorBlack,textAlign:'center'}} >v1.0.36</Text>
                     </View>
                     <SettingWrapper>
 
@@ -773,12 +773,19 @@ const SettingScreen = (props) =>{
                             <SettingSectionTitle>업데이트 정보</SettingSectionTitle>
                             <SettingSectionDetailWrapper>
                                 <SettingSenctionInputViewColumn>
+                                    <SettingSectionLabel>- 날짜 지나면 주문번호 초기화</SettingSectionLabel> 
+                                    <SettingSectionLabel>- 무게 오류 시 빵 리스트 수정</SettingSectionLabel> 
+                                </SettingSenctionInputViewColumn>
+                                {/* <SettingSenctionInputViewColumn>
+                                    <SettingSectionLabel>- 스캔 오류 화면 빵 리스팅 수정</SettingSectionLabel> 
+                                </SettingSenctionInputViewColumn> */}
+                                {/* <SettingSenctionInputViewColumn>
                                     <SettingSectionLabel>- 쿠폰/포인트 버튼 회색 변경</SettingSectionLabel>
                                     <SettingSectionLabel>- 주문하기 문구 선택완료로 수정</SettingSectionLabel>
                                     <SettingSectionLabel>- 메뉴 상세 닫기 버튼 크기 수정</SettingSectionLabel>
-                                    <SettingSectionLabel>- 스캔 실패시 곂침의 경우 상품 노출</SettingSectionLabel>
+                                    <SettingSectionLabel>- 스캔 실패시 곂침 상품 노출 수정</SettingSectionLabel>
                                     <SettingSectionLabel>- 진동벨 재할당 수정</SettingSectionLabel>
-                                </SettingSenctionInputViewColumn>
+                                </SettingSenctionInputViewColumn> */}
                                 {/* <SettingSenctionInputViewColumn>
                                     <SettingSectionLabel>- 확인가능한빵 리스트 수정</SettingSectionLabel>
                                 </SettingSenctionInputViewColumn> */}
