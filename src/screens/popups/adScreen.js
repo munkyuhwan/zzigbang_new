@@ -4,8 +4,8 @@ import { AdButtonIcon, AdButtonIconWrapper, AdButtonSquare, AdButtonText, AdButt
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { setCommon } from "../../store/common";
 import { MainHeader } from "../../components/mainComponents";
-import { NativeModules, Pressable, TouchableWithoutFeedback, View } from "react-native";
-import { useCallback, useEffect, useState } from "react";
+import { Animated, NativeModules, Pressable, TouchableWithoutFeedback, View } from "react-native";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { ADMIN_API_BANNER_DIR } from "../../resources/apiResources";
 import { LanguageWrapper, MainMenuHeaderLanguage, MainMenuHeaderLanguageWrapper, MainMenuHeaderSectionWrapper } from "../../style/main";
 import { LAN_CN, LAN_EN, LAN_JP, LAN_KO } from "../../resources/values";
@@ -30,7 +30,28 @@ const AdScreen = (props) => {
     const [adIndex, setAdIndex] = useState();
     const [displayUrl, setDisplayUrl] = useState("");
     const [isOpen, setOpen] = useState(false);
+    const opacity = useRef(new Animated.Value(1)).current;
 
+    useEffect(() => {
+        // 2. 깜빡이는 애니메이션 루프 설정
+        //if(tmpBreadList.length>0 &&rescanIndex!=null){
+            Animated.loop(
+                Animated.sequence([
+                    Animated.timing(opacity, {
+                    toValue: 0,
+                    duration: 1000,
+                    useNativeDriver: true,
+                    }),
+                    Animated.timing(opacity, {
+                    toValue: 1,
+                    duration: 1000,
+                    useNativeDriver: true,
+                    }),
+                    
+                ])
+            ).start();
+        //}
+    }, []);
     useEffect(()=>{
         if( bannerList?.length > 0) {
             setDisplayUrl(ADMIN_API_BANNER_DIR+bannerList[0]?.img_chg)
@@ -198,21 +219,24 @@ const AdScreen = (props) => {
                         }); */
                         props.setMainShow(false);
                         /* navigate.navigate("scan"); */ }} >
-                        <AdButtonSquare bgColor={colorGreen} >
+                        <AdButtonSquare style={{width:"100%"}} bgColor={colorGreen} >
+                            <Animated.View style={{ opacity, position:'absolute',justifyContent:"center", backgroundColor:"rgba(255,255,255,0.4)",width:'100%',height:300 }}>
+                                        
+                            </Animated.View>
                             <AdButtonIconWrapper>
                                 <AdButtonIcon resizeMode={FastImage.resizeMode.contain} source={require("../../resources/imgs/drawable-xxxhdpi/bread_scan.png")} />
                             </AdButtonIconWrapper>
                             <AdButtonText>{ strings["빵 + 음료\n주문"][`${selectedLanguage}`] }</AdButtonText>
                         </AdButtonSquare>
                     </TouchableWithoutFeedback>
-                    <TouchableWithoutFeedback onPress={()=>{ /* const {Etc}=NativeModules; Etc.openManageIntent(storage.getString("STORE_IDX"),storage.getString("STORE_NAME")); */ dispatch(setCommon({isAddShow:false}));props.setMainShow(true); /* navigate.navigate("main"); */}} >
+                    {/* <TouchableWithoutFeedback onPress={()=>{  dispatch(setCommon({isAddShow:false}));props.setMainShow(true);  }} >
                         <AdButtonSquare bgColor={colorRed} >
                             <AdButtonIconWrapper>
                                 <AdButtonIcon  resizeMode={FastImage.resizeMode.contain} source={require("../../resources/imgs/drawable-xxxhdpi/drink_order.png")} />
                             </AdButtonIconWrapper>
                             <AdButtonText>{strings["음료 / 식사만\n주문"][`${selectedLanguage}`]}</AdButtonText>
                         </AdButtonSquare>
-                    </TouchableWithoutFeedback>
+                    </TouchableWithoutFeedback> */}
                 </AdButtonView>
 
                 {/* <View style={{position:'absolute',bottom:0,padding:0}}>

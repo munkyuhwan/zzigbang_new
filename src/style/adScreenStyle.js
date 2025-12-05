@@ -27,7 +27,6 @@ export const AdButtonView = styled.View`
     justifyContent:flex-end;
     alignItems:center;
     flexDirection:row;
-    backgroundColor:yellow;
 `
 export const AdButtonSquare = styled.View`
     justifyContent:center;

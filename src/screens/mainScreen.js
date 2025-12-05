@@ -1,5 +1,5 @@
 import { act, useCallback, useEffect, useReducer, useRef, useState } from "react";
-import { InteractionManager, ScrollView, Text, TouchableWithoutFeedback, View } from "react-native";
+import { Animated, InteractionManager, ScrollView, Text, TouchableWithoutFeedback, View } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import { getCategories, getMenu, setMenu, startPayment } from "../store/menu";
 import { ButtonGradientWrapper, CartFloatingBtnBg, CartFloatingBtnImg, CartFloatingBtnImgFullWidth, CartFloatingBtnText, CartFloatingBtnWrapper, CartFloatingBtnWrapperFullWidth, CartItemAmtBorderWrapper, CartItemAmtText, CartItemAmtWrapper, CartPaymentLabel, CartPaymentTotalAmt, CartPaymentWrapper, FloatingBtnImg, FloatingBtnText, FloatingBtnWrapper, InnerWrapper, InnerWrapperFullWidth, MainCartWrapper, MainMenuHeaderLogo, MainMenuWrapper, MainWrapper, MenuButtonWrapper, MenuItemWrapper, PayBtnWrapper } from "../style/main";
@@ -45,6 +45,10 @@ const MainScreen = (props) =>{
     const [lastAdded, setLastAdded] = useState("");
     const [trigger, setTrigger] = useState(true);
 
+    const opacity = useRef(new Animated.Value(1)).current;
+
+    
+
     // 번역
     const {strings,selectedLanguage, isAddShow} = useSelector(state=>state.common);
     const {categories, orderList, menu, items, breadOrderList, isPayStarted} = useSelector(state=>state.menu);
@@ -84,7 +88,27 @@ const MainScreen = (props) =>{
         }
     },[mainCat])
 
-
+    useEffect(() => {
+        // 2. 깜빡이는 애니메이션 루프 설정
+        if(breadOrderList.length>0 || orderList.length>0){
+            Animated.loop(
+                Animated.sequence([
+                    Animated.timing(opacity, {
+                    toValue: 0,
+                    duration: 230,
+                    useNativeDriver: true,
+                    }),
+                    Animated.timing(opacity, {
+                    toValue: 1,
+                    duration: 230,
+                    useNativeDriver: true,
+                    }),
+                   
+                ])
+            ).start();
+            
+        }
+    }, [breadOrderList, orderList]);
     useEffect(()=>{
         //console.log("itemCords: ",itemCords.length)
         //if(itemCords?.length>0){
@@ -516,6 +540,15 @@ const MainScreen = (props) =>{
                         </TouchableWithoutFeedback>
                         <TouchableWithoutFeedback onPress={()=>{ dispatch(startPayment({totalPrice,totalVat})); }} >
                             <ButtonViewPercent backgroundColor={colorRed} >
+                                {(breadOrderList.length>0 || orderList.length>0) &&
+                                    <>
+                                        <Animated.View style={{ opacity, position:'absolute',justifyContent:"center", backgroundColor:"rgba(255,255,255,0.4)",width:'100%',height:'100%' }}>
+                                                
+                                        </Animated.View>
+                                        <FastImage source={require("../resources/arrow_gif.gif")} style={{position:'absolute', right:-30,top:-70, width:100,height:100}} resizeMode={FastImage.resizeMode.contain} />
+                                    </>
+                                }   
+
                                 <ButtonImage source={require("../resources/imgs/drawable-xxxhdpi/img_pay.png")} resizeMode="contain" />
                                 <ButtonText>{strings["결제하기"][`${selectedLanguage}`]}</ButtonText>
                             </ButtonViewPercent>

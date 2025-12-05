@@ -286,7 +286,7 @@ public class BellModule extends ReactContextBaseJavaModule {
 
 
             isRun = true;
-            final int[] countDown = {15};
+            final int[] countDown = {2};
             bellThread = new Thread(()->{
 
                 while (isRun) {

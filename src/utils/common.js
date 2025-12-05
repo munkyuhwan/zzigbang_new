@@ -1070,7 +1070,21 @@ export function setBell(dispatch,orderList,items) {
                         }
                     ));
                 }else {
-                    EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"주문오류", str:"진동벨에 오류가 있습니다.",isCancle:true});
+                    //EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"주문오류", str:"진동벨에 오류가 있습니다.",isCancle:true});
+                    dispatch(setAlert(
+                        {
+                            title:"",
+                            msg:'',
+                            subMsg:"",
+                            okText:'닫기',
+                            cancelText:'',
+                            isCancle:false,
+                            isOK:false,
+                            icon:"",   
+                            isAlertOpen:false,
+                            clickType:"",
+                        }
+                    ));
                 }
 
             }

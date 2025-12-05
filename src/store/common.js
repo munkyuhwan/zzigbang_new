@@ -296,10 +296,10 @@ export const commonSlice = createSlice({
                 ko:"",
             },  
             "키오스크\n바로주문":{
-                en:"Kiosk Order",
-                jp:"キオスク注文",
-                cn:"自助终端点餐",
-                ko:"확인",
+                en:"Order beverages and meals only",
+                jp:"飲み物と食事のみ注文",
+                cn:"只能點飲料和餐點",
+                ko:"음료식사만주문",
             },      
             "빵":{
                 en:"Bread",
@@ -350,10 +350,10 @@ export const commonSlice = createSlice({
                 ko:"쟁반추가",
             },          
             "빵 + 음료\n주문":{
-                en:"Bread + Beverage Order",
-                jp:"パン + ドリンク 注文",
-                cn:"面包 + 饮料 订单",
-                ko:"빵 + 음료 주문",
+                en:"Order",
+                jp:"注文する",
+                cn:"下单",
+                ko:"주문하기",
             },          
             "음료 / 식사만\n주문":{
                 en:"Beverage Only / Meal Only Order",

@@ -275,7 +275,7 @@ const SettingScreen = (props) =>{
                         <Text style={{flex:1,fontSize:40,color:colorBlack}} ></Text>
                     </View>
                     <View style={{flexDirection:'row', paddingLeft:30,paddingRight:30}}>
-                        <Text style={{flex:1,fontSize:20,color:colorBlack,textAlign:'center'}} >v1.0.36</Text>
+                        <Text style={{flex:1,fontSize:20,color:colorBlack,textAlign:'center'}} >v1.0.39</Text>
                     </View>
                     <SettingWrapper>
 
@@ -618,7 +618,21 @@ const SettingScreen = (props) =>{
                                                             EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"주문완료", str:responseData?.msg,isCancle:true});
                                                         }
                                                     }else {
-                                                        EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"주문오류", str:"진동벨에 오류가 있습니다.",isCancle:true});
+                                                        //EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"주문오류", str:"진동벨에 오류가 있습니다.",isCancle:true});
+                                                        dispatch(setAlert(
+                                                            {
+                                                                title:"",
+                                                                msg:'',
+                                                                subMsg:"",
+                                                                okText:'닫기',
+                                                                cancelText:'',
+                                                                isCancle:false,
+                                                                isOK:false,
+                                                                icon:"",   
+                                                                isAlertOpen:false,
+                                                                clickType:"",
+                                                            }
+                                                        ));
                                                     }
                                                 }
                                             });
@@ -773,9 +787,24 @@ const SettingScreen = (props) =>{
                             <SettingSectionTitle>업데이트 정보</SettingSectionTitle>
                             <SettingSectionDetailWrapper>
                                 <SettingSenctionInputViewColumn>
+                                    <SettingSectionLabel>- 메인 화면 버튼 깜빡임 수정</SettingSectionLabel> 
+                                    <SettingSectionLabel>- 스캔화면 버튼 문구 수정</SettingSectionLabel> 
+                                    <SettingSectionLabel>- 스캔화면 버튼 색 수정</SettingSectionLabel> 
+                                </SettingSenctionInputViewColumn>
+                                {/* <SettingSenctionInputViewColumn>
+                                    <SettingSectionLabel>- 진동벨 대기시간 줄임</SettingSectionLabel> 
+                                    <SettingSectionLabel>- 결제하기기 버튼 깜빡임으로수정</SettingSectionLabel> 
+                                    <SettingSectionLabel>- 스캔화면 확인 버튼위치 수정</SettingSectionLabel> 
+                                    <SettingSectionLabel>- 배너화면 시작하기 버튼 하나로 수정</SettingSectionLabel> 
+                                </SettingSenctionInputViewColumn> */}
+                                {/* 
+                                <SettingSenctionInputViewColumn>
+                                    <SettingSectionLabel>- 스캔화면 점멸 / 화살표 안내 추가</SettingSectionLabel> 
+                                </SettingSenctionInputViewColumn> */}
+                                {/* <SettingSenctionInputViewColumn>
                                     <SettingSectionLabel>- 날짜 지나면 주문번호 초기화</SettingSectionLabel> 
                                     <SettingSectionLabel>- 무게 오류 시 빵 리스트 수정</SettingSectionLabel> 
-                                </SettingSenctionInputViewColumn>
+                                </SettingSenctionInputViewColumn> */}
                                 {/* <SettingSenctionInputViewColumn>
                                     <SettingSectionLabel>- 스캔 오류 화면 빵 리스팅 수정</SettingSectionLabel> 
                                 </SettingSenctionInputViewColumn> */}

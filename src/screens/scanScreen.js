@@ -188,9 +188,12 @@ const ScanScreen = () => {
     function startWeighting() {
         DeviceEventEmitter.addListener("onWeightChanged",(data)=>{    
             //const result = data?.weight.replace(/[^0-9.]/g, ""); // 숫자와 소숫점 제외 모든 문자 제거
-            const weight = parseFloat(data?.weight);
+            var weight = parseFloat(data?.weight);
+
             if(!isNaN(weight) && Number(weight)>=0) {
-                const kiloWeight = weight*1000;
+                var kiloWeight = weight*1000;
+                const roundInt = (num) => Math.round(num);
+                kiloWeight = roundInt(kiloWeight)
                 setCurrentWeight(kiloWeight);
                 if(kiloWeight>Number(storage.getString("TRAY_WEIGHT"))) {
                     const newArr = weightArr.current;
@@ -242,32 +245,32 @@ const ScanScreen = () => {
     
     useEffect(() => {
         // 2. 깜빡이는 애니메이션 루프 설정
-        if(tmpBreadList.length>0 &&rescanIndex!=null){
+        //if(tmpBreadList.length>0 &&rescanIndex!=null){
             Animated.loop(
                 Animated.sequence([
                     Animated.timing(opacity, {
                     toValue: 0,
-                    duration: 2000,
+                    duration: 230,
                     useNativeDriver: true,
                     }),
                     Animated.timing(opacity, {
                     toValue: 1,
-                    duration: 1000,
+                    duration: 230,
                     useNativeDriver: true,
                     }),
                     Animated.timing(colorAnim, {
                         toValue: 1,
-                        duration: 500,
+                        duration: 200,
                         useNativeDriver: false, // color 애니메이션은 false
                       }),
                       Animated.timing(colorAnim, {
                         toValue: 0,
-                        duration: 500,
+                        duration: 200,
                         useNativeDriver: false,
                       }),
                 ])
             ).start();
-        }
+        //}
     }, [tmpBreadList, rescanIndex]);
 
     /* useEffect(() => {
@@ -421,6 +424,7 @@ const ScanScreen = () => {
                 
 
                 const aiResult = await formRequest(dispatch,`${AI_SERVER}${AI_QUERY}`, formData );
+                
                 console.log("aiResult: ",aiResult.data);
                 const date = new Date();
 
@@ -443,6 +447,9 @@ const ScanScreen = () => {
                     return;
                 }
                 const data = aiResult.data;
+                //const data = {"message":"✅ Query Completed successfully","detected_image_path":"/static/detected_image/woori-pos/detected_25-12-03-01-10-48-1048.jpg","similar_items":[{"product":"none","product_code":"none","bread_weight":0,"weight_tolerance":0,"distance":0.4152410626411438,"image_path":"static/uploaded_images/woori-pos/믹스츄러스/2025-11-25-12-21-53-314_aug_2.jpg"}],"item_counts":{"900459":1},"total_registered_weight":0,"total_tolerance":0,"within_tolerance":true,"execution_time":"0.20 seconds","input_weight":26,"alt_candidates":[{"rank":2,"product":"치즈바게트","product_code":"900459","bread_weight":166,"weight_tolerance":3,"distance":0.39367473125457764,"image_path":"static/uploaded_images/woori-pos/치즈바게트/2025-11-27-15-03-56-327_aug_1.jpg"},{"rank":3,"product":"동물쿠기","product_code":"33333","bread_weight":0,"weight_tolerance":1,"distance":0.36955246329307556,"image_path":"static/uploaded_images/woori-pos/동물쿠기/2025-11-13-10-11-31-494_aug_0.jpg"},{"rank":4,"product":"하트초코쿠키","product_code":"55555","bread_weight":18,"weight_tolerance":1,"distance":0.35007911920547485,"image_path":"static/uploaded_images/woori-pos/하트초코쿠키/2025-11-13-10-26-15-551_aug_1.jpg"},{"rank":5,"product":"츄러스","product_code":"8001","bread_weight":208,"weight_tolerance":1,"distance":0.3466029167175293,"image_path":"static/uploaded_images/woori-pos/츄러스/2025-11-25-12-20-02-110_aug_5.jpg"},{"rank":6,"product":"풋풋사과파이","product_code":"900436","bread_weight":68,"weight_tolerance":3,"distance":0.3397134244441986,"image_path":"static/uploaded_images/woori-pos/풋풋사과파이/2025-11-14-14-00-20-930_aug_2.jpg"}]}
+
+                //console.log(JSON.stringify(data));
                 //console.log("aiResult data: ",data);
                 RNFS.unlink(`${RNFS.DownloadDirectoryPath}/${fileName}`);
                 if(isEmpty(data.item_counts)) {
@@ -693,6 +700,24 @@ const ScanScreen = () => {
             <View style={{width:'100%' ,height:'100%',position:'absolute',zIndex:999999999,justifyContent:'center'}}>
                 <View style={{width:'100%',height:'100%', position:'absolute',backgroundColor:'rgba(0,0,0,0.4)'}} ></View>
                 <Text style={{fontSize:240, fontWeight:'900',color:'white', textAlign:'center'}} >{strings["쟁반을 올려주세요."][`${selectedLanguage}`]}</Text>
+                <View style={{position:'absolute', zIndex:9999999, right:0, bottom:35, right:10}}>
+                    <TouchableWithoutFeedback onPress={()=>{if(isScanning==false){ setMainShow(true); dispatch(setCommon({isAddShow:false})); dispatch(setMenu({breadOrderList:totalBreadList})); initCamera(); setTmpBreadList([]);setTotalBreadList([]); }}} >
+                        <SquareButtonView backgroundColor={colorGreen} >
+                            {tmpBreadList.length>0 &&
+                                <>
+                                    <Animated.View style={{ opacity, position:'absolute',justifyContent:"center", backgroundColor:"rgba(255,255,255,0.4)",width:'100%',height:'100%' }}>
+                                                
+                                    </Animated.View>
+                                    <FastImage source={require("../resources/arrow_gif.gif")} style={{position:'absolute', right:-30,top:-30, width:100,height:100}} resizeMode={FastImage.resizeMode.contain} />
+                                </>
+                            }
+
+                            <ButtonText>{strings["키오스크\n바로주문"][`${selectedLanguage}`]}</ButtonText>
+                            
+                        </SquareButtonView>
+                        
+                    </TouchableWithoutFeedback>
+                </View>
             </View>
         }
         {( (storage.getBoolean("WEIGHT_SET") && currentWeight>Number(storage.getString("TRAY_WEIGHT")) && !isMainShow )&&!isWeightStable) &&
@@ -753,18 +778,18 @@ const ScanScreen = () => {
                 </View>
                 <View style={{position:'absolute', zIndex:9999999, right:0, bottom:35, right:10}}>
                     <TouchableWithoutFeedback onPress={()=>{if(isScanning==false){ setMainShow(true); dispatch(setCommon({isAddShow:false})); dispatch(setMenu({breadOrderList:totalBreadList})); initCamera(); setTmpBreadList([]);setTotalBreadList([]); }}} >
-                        <SquareButtonView backgroundColor={colorDarkGrey} >
-                            <ButtonText>{strings["키오스크\n바로주문"][`${selectedLanguage}`]}</ButtonText>
-                            {/* (currentWeight>0 && !isMainShow  && tmpBreadList.length>0 )&&
-                                <View style={{position:'absolute',width:'100%',height:'100%', justifyContent:"center"}} >
+                        <SquareButtonView backgroundColor={colorGreen} >
+                            {tmpBreadList.length>0 &&
+                                <>
                                     <Animated.View style={{ opacity, position:'absolute',justifyContent:"center", backgroundColor:"rgba(255,255,255,0.4)",width:'100%',height:'100%' }}>
-                                        <Text style={{color:colorBlack, textAlign:'center', fontSize:36, fontWeight:800}}>
-                                            {strings["스캔완료안내"][`${selectedLanguage}`]}
-                                        </Text>
+                                                
                                     </Animated.View>
-                                    
-                                </View>
-                             */}
+                                    <FastImage source={require("../resources/arrow_gif.gif")} style={{position:'absolute', right:-30,top:-30, width:100,height:100}} resizeMode={FastImage.resizeMode.contain} />
+                                </>
+                            }
+
+                            <ButtonText>{strings["키오스크\n바로주문"][`${selectedLanguage}`]}</ButtonText>
+                            
                         </SquareButtonView>
                         
                     </TouchableWithoutFeedback>
@@ -812,8 +837,16 @@ const ScanScreen = () => {
                                 </View>
                             */}
                             <View style={{ width:'100%',height:'100%',position:'absolute', justifyContent:"center"}} >
+                            
                             {tmpBreadList.length<=0 &&
-                                <ButtonText>{strings["스캔하기"][`${selectedLanguage}`]}</ButtonText>
+                                <View style={{position:'absolute',width:'100%',height:'100%', justifyContent:"center"}} >
+                                    {/* <ButtonText>{strings["스캔하기"][`${selectedLanguage}`]}</ButtonText> */}
+                                    <Animated.View style={{ opacity, position:'absolute',justifyContent:"center", backgroundColor:"rgba(255,255,255,0.4)",width:'100%',height:'100%' }}>
+                                        
+                                    </Animated.View>
+                                    <ButtonText>{strings["스캔하기"][`${selectedLanguage}`]}</ButtonText>
+                                    <FastImage source={require("../resources/arrow_gif.gif")} style={{position:'absolute', right:-30,top:-30, width:100,height:100}} resizeMode={FastImage.resizeMode.contain} />
+                                </View>
                             }
                             {/*(currentWeight>0 && !isMainShow  && tmpBreadList.length<=0 )&&
                                 <View style={{position:'absolute',width:'100%',height:'100%', justifyContent:"center"}} >
