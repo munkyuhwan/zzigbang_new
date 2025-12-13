@@ -164,6 +164,7 @@ const MainScreen = (props) =>{
             //dispatch(getMenu());
             //dispatch(getStoreInfo());
             screenTimeOut();
+            console.log("init app");
             dispatch(initializeApp());
         //}
     },[])

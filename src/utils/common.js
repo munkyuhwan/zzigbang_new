@@ -15,7 +15,7 @@ import { EventRegister } from 'react-native-event-listeners';
 import axios from 'axios';
 import { setCommon } from '../store/common';
 import { VAN_KOCES, VAN_SMARTRO, apiRequest, callApiWithExceptionHandling, posApiRequest } from './apiRequest';
-import { LAN_CN, LAN_EN, LAN_JP } from '../resources/values';
+import { LAN_CN, LAN_EN, LAN_JP, LAN_KO } from '../resources/values';
 import Tts from 'react-native-tts';
 import { setAlert } from '../store/alert';
 import { DeviceEventEmitter, NativeModules } from 'react-native';
@@ -474,6 +474,7 @@ export async function postOrderToPos(vanType, postData,orderData, PRINT_ORDER_NO
             const POS_IP = getIP() ;
             try {
                 console.log("postOrderData: ",postOrderData);
+                console.log(`${POS_BASE_URL(POS_IP)}`);
                 //const data = await callApiWithExceptionHandling(`${POS_BASE_URL(POS_IP)}`,postOrderData, {}); 
                 const data = await posApiRequest(`${POS_BASE_URL(POS_IP)}`,postOrderData);   
                 EventRegister.emit("showSpinner",{isSpinnerShow:false, msg:"", spinnerType:"",closeText:""});
@@ -865,6 +866,20 @@ export const menuName = (item, lan) =>{
     }
 }
 
+export const menuDetail = (item, lan) =>{
+    if(lan == LAN_EN) {
+        return item?.gmemo_en||item?.gmemo
+    }
+    else if(lan == LAN_CN) {
+        return item?.gmemo_cn||item?.gmemo
+    }
+    else if(lan == LAN_JP) {
+        return item?.gmemo_jp||item?.gmemo
+    }else {
+        return item?.gmemo;
+    }
+}
+
 // 메뉴 리스트에 수량 추가 하는 함수
 export function updateList(tmpBreadList, newBreadList) {
     newBreadList.forEach(newItem => {
@@ -968,13 +983,14 @@ export function setBell(dispatch,orderList,items) {
     const orderNo = storage.getString("orderNo");
 
     var lan = "a";
-    if(storage.getString("LAN")=="ko") {
+    console.log("storage.getString(\"LAN\"): ",storage.getString("LAN"));
+    if(storage.getString("LAN")==LAN_KO) {
         lan = "a";
-    }else if(storage.getString("LAN")=="jp") {
+    }else if(storage.getString("LAN")==LAN_JP) {
         lan = "c";
-    }else if(storage.getString("LAN")=="cn") {
+    }else if(storage.getString("LAN")==LAN_CN) {
         lan = "d";
-    }else if(storage.getString("LAN")=="en") {
+    }else if(storage.getString("LAN")==LAN_EN) {
         lan = "b";
     }
 
@@ -997,6 +1013,7 @@ export function setBell(dispatch,orderList,items) {
     
     const uniqueCorners = [...corners];
     console.log("uniqueCorners: ",uniqueCorners);
+    console.log("lan: ",lan)
     Bell.bellRing(lan,JSON.stringify(uniqueCorners),orderNo,bellVID,bellPID);
     //EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"주문완료", str:"진동벨을 챙겨주세요.",isCancle:false, isOK:false});
     dispatch(setAlert(
@@ -1090,7 +1107,8 @@ export function setBell(dispatch,orderList,items) {
             }
         }
     });
-    
+    storage.set("LAN",LAN_KO);
+    dispatch(setCommon({selectedLanguage:LAN_KO}));
 }
 
 export async function printReceipt(orderList, breadOrderList, items, payResultData) {

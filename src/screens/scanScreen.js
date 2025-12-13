@@ -787,9 +787,12 @@ const ScanScreen = () => {
                                     <FastImage source={require("../resources/arrow_gif.gif")} style={{position:'absolute', right:-30,top:-30, width:100,height:100}} resizeMode={FastImage.resizeMode.contain} />
                                 </>
                             }
-
-                            <ButtonText>{strings["키오스크\n바로주문"][`${selectedLanguage}`]}</ButtonText>
-                            
+                            {tmpBreadList.length<=0&&    
+                                <ButtonText>{strings["키오스크\n바로주문"][`${selectedLanguage}`]}</ButtonText>
+                            }
+                            {tmpBreadList.length>0&&    
+                                <ButtonText>{strings["확인"][`${selectedLanguage}`]}</ButtonText>
+                            }
                         </SquareButtonView>
                         
                     </TouchableWithoutFeedback>
@@ -865,9 +868,9 @@ const ScanScreen = () => {
                 </View>
             </View>
         </View>
-        {isMainShow&&
-            <View style={{width:'100%',height:'100%',position:'absolute'}}>
-                <MainScreen initScanScreen={initScanScreen} currentWeight={currentWeight} setMainShow={setMainShow}/>
+        {//isMainShow&&
+            <View style={isMainShow?{width:'100%',height:'100%',position:'absolute'}:{width:'0%',height:'0%',position:'absolute'}}>
+                <MainScreen isMainShow={isMainShow} initScanScreen={initScanScreen} currentWeight={currentWeight} setMainShow={setMainShow}/>
             </View>
         }
         </>

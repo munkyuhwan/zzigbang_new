@@ -4,7 +4,7 @@ import { BackgroundDim, BackgroundWrapper, ItemDetailViewImage, ItemView, ItemVi
 import { MainItem } from "../../components/mainComponents";
 import { ItemAmtText, ItemPrice, ItemTitle } from "../../style/main";
 import FastImage from "react-native-fast-image";
-import { compareArrays, isOptionValid, menuName, numberWithCommas, optionName, optionTrimmer } from "../../utils/common";
+import { compareArrays, isOptionValid, menuDetail, menuName, numberWithCommas, optionName, optionTrimmer } from "../../utils/common";
 import { BottomButton } from "../../components/commonComponents";
 import { setMenu } from "../../store/menu";
 import { BlackDimWRapper, ButtonImage, ButtonText, ButtonView, ButtonWrapper, CloseBtnIcon, CloseBtnView } from "../../style/common";
@@ -12,6 +12,7 @@ import { FlatList, ScrollView, TouchableWithoutFeedback, View, ViewBase } from "
 import { useEffect, useState } from "react";
 import { EventRegister } from "react-native-event-listeners";
 import { colorRed } from "../../resources/colors";
+import { Text } from "react-native-gesture-handler";
 
 export const MenuMetaDetailPopup = (props) => {
     const dispatch = useDispatch();
@@ -200,7 +201,7 @@ export const MenuMetaDetailPopup = (props) => {
             return(<></>)
         }
     }
-
+    console.log(detailItem);
     return (
         <>
             <BackgroundWrapper>
@@ -218,15 +219,16 @@ export const MenuMetaDetailPopup = (props) => {
                                     <ItemDetailViewImage source={{ uri: detailItem?.gimg_chg }} resizeMode={FastImage.resizeMode.cover} />
                                     <ItemTitle>{menuName(detailItem,selectedLanguage)}</ItemTitle>
                                     <ItemPrice>{numberWithCommas(detailItem?.sal_tot_amt)}{strings["원"][`${selectedLanguage}`]}{optPrice>0?"+"+numberWithCommas(optPrice)+strings["원"][`${selectedLanguage}`]:""}</ItemPrice>
+                                    <Text style={{paddingLeft:10,paddingRight:10,fontSize:20}}>{menuDetail(detailItem,selectedLanguage)}</Text>
                                 </MenuBorder>
                             </ItemViewInfo>
-                            <ItemViewSelectedOption>
+                            {/* <ItemViewSelectedOption>
                                 <ItemViewSelectedOptionBorder>
                                     <ScrollView style={{width:'100%',height:'100%'}}>
                                         <ItemViewSelectedOptionText>{optString}</ItemViewSelectedOptionText>
                                     </ScrollView>
                                 </ItemViewSelectedOptionBorder>
-                            </ItemViewSelectedOption>
+                            </ItemViewSelectedOption> */}
                             <ItemViewSelectedCountView>
                                 <TouchableWithoutFeedback onPress={()=>{ if(amt>1){ setAmt(Number(amt)-1)}} } >
                                     <ItemViewSelectedCountBtn source={require('../../resources/imgs/drawable-xxxhdpi/bt_sub_off_1.png')} resizeMode="contain" />
@@ -245,7 +247,7 @@ export const MenuMetaDetailPopup = (props) => {
                                         <View></View>
                                     </OptionListView>
                                 }
-                                {detailItem.option.length > 0 &&
+                                {//detailItem.option.length > 0 &&
                                     <OptionListView showsVerticalScrollIndicator={false} horizontal={false} >
                                         {
                                             detailItem.option.map(item => {
@@ -261,7 +263,13 @@ export const MenuMetaDetailPopup = (props) => {
                                         }
                                     </OptionListView>
                                 }
-
+                                <ItemViewSelectedOption>
+                                    <ItemViewSelectedOptionBorder>
+                                        <ScrollView style={{width:'100%',height:'100%'}}>
+                                            <ItemViewSelectedOptionText>{optString}</ItemViewSelectedOptionText>
+                                        </ScrollView>
+                                    </ItemViewSelectedOptionBorder>
+                                </ItemViewSelectedOption>
                             </OptionArea>
                         </OptionsView>
                     </OrderArea>

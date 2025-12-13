@@ -117,6 +117,7 @@ export default function Navigation() {
 
     async function initializeFcm() {
         const prevStoreID = storage.getString("STORE_IDX");
+        console.log("prevStoreID: ",prevStoreID);
         if(prevStoreID){      
             try{
                await messaging().unsubscribeFromTopic(`${prevStoreID}`);
@@ -158,7 +159,8 @@ export default function Navigation() {
         })
          */
         messaging().onMessage((result)=>{
-            initializeApp();
+            console.log("on message====================");
+            dispatch(initializeApp());
             console.log("result: ",result);
         })
 

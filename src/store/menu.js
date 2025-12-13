@@ -74,8 +74,9 @@ export const getMenu = createAsyncThunk("menu/getMenu", async(_,{dispatch,getSta
                 if(!isEmpty(menuData[k].gimg_chg)) {
                     FastImage.preload([{uri:`${menuData[k].gimg_chg}`}]);
                 }
-                
-                mainItems.push(menuData[k])
+                if(menuData[k].is_del=="N" && menuData[k].is_use=="Y"  && menuData[k].is_view=="Y"   ){
+                    mainItems.push(menuData[k])
+                }
                 if(categories[i].is_del=="N" && categories[i].is_use=="Y"  && categories[i].is_view=="Y"   ){
                 }
             }
@@ -85,7 +86,6 @@ export const getMenu = createAsyncThunk("menu/getMenu", async(_,{dispatch,getSta
             var mainData = {items:mainItems,code1:categories[i].cate_code1,name_kr:categories[i]?.cate_name1, name_cn:categories[i].cate_name1_cn, name_en:categories[i].cate_name1_en, name_jp:categories[i].cate_name1_jp }
             var subItems = [];
             for(var j=0;j<categories[i].level2?.length;j++) {
-                //console.log(categories[i].level2[j].cate_name2,": "," isDel",categories[i].level2[j].is_del," is_use",categories[i].level2[j].is_use," is_view",categories[i].level2[j].is_view);
                 if(categories[i].level2[j].is_del=="N" && categories[i].level2[j].is_use=="Y"  && categories[i].level2[j].is_view=="Y"   ){
                     
                     for(var k=0;k<menuData.length;k++) {
@@ -102,6 +102,7 @@ export const getMenu = createAsyncThunk("menu/getMenu", async(_,{dispatch,getSta
                 }
             }
         }else {
+            console.log("main");
             var mainData = {items:mainItems,code1:categories[i].cate_code1,name_kr:categories[i]?.cate_name1, name_cn:categories[i].cate_name1_cn, name_en:categories[i].cate_name1_en, name_jp:categories[i].cate_name1_jp }
         }
         var tmpCat = { mainCat:mainData, subCat:subCat };
@@ -372,7 +373,7 @@ export const startPayment = createAsyncThunk("menu/startPayment", async(data,{di
     const orderFinalData = await metaPostPayFormat([...orderList,...breadOrderList],result, items, PRINT_ORDER_NO);
     if(orderFinalData instanceof Error) {
         EventRegister.emit("showSpinner",{isSpinnerShow:false, msg:"", spinnerType:"",closeText:""});
-        EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"주문 오류", str:orderFinalData.errorMsg});    
+        EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"주문 포맷 오류", str:orderFinalData.errorMsg});    
         return rejectWithValue();
     }
 

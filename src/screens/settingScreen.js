@@ -230,7 +230,20 @@ const SettingScreen = (props) =>{
 
     async function completeStoreInfo() {
         storage.set("BREAD_STORE_ID",breadStoreID); 
+
+        const prevStoreID = storage.getString("STORE_IDX");
         storage.set("STORE_IDX",storeID)
+        console.log("prevStoreID: ",prevStoreID);
+        try{
+            messaging().unsubscribeFromTopic(`${prevStoreID}`);
+        }catch(err){
+             
+        }
+        try {
+            messaging().subscribeToTopic(`${storeID}`)
+        }catch(err){
+        }
+
         console.log("OK");
         dispatch(getStoreInfo()); 
         dispatch(initializeApp());
@@ -275,7 +288,7 @@ const SettingScreen = (props) =>{
                         <Text style={{flex:1,fontSize:40,color:colorBlack}} ></Text>
                     </View>
                     <View style={{flexDirection:'row', paddingLeft:30,paddingRight:30}}>
-                        <Text style={{flex:1,fontSize:20,color:colorBlack,textAlign:'center'}} >v1.0.39</Text>
+                        <Text style={{flex:1,fontSize:20,color:colorBlack,textAlign:'center'}} >v1.0.44</Text>
                     </View>
                     <SettingWrapper>
 
@@ -321,7 +334,11 @@ const SettingScreen = (props) =>{
                                     <SettingSectionDetailInnerWrapper>
                                         <SettingSenctionInputView>
                                             <SettingSectionLabel>스토어 아이디</SettingSectionLabel>
-                                            <SettingSectionInput onChangeText={(val)=>{setStoreID(val)}} value={storeID} ></SettingSectionInput>
+                                            <SettingSectionInput 
+                                            onChangeText={(val)=>{
+                                                setStoreID(val)
+                                                
+                                                }} value={storeID} ></SettingSectionInput>
                                         </SettingSenctionInputView>
                                         <SettingSenctionInputView>
                                             <SettingSectionLabel>제품등록 아이디</SettingSectionLabel>
@@ -787,10 +804,16 @@ const SettingScreen = (props) =>{
                             <SettingSectionTitle>업데이트 정보</SettingSectionTitle>
                             <SettingSectionDetailWrapper>
                                 <SettingSenctionInputViewColumn>
-                                    <SettingSectionLabel>- 메인 화면 버튼 깜빡임 수정</SettingSectionLabel> 
-                                    <SettingSectionLabel>- 스캔화면 버튼 문구 수정</SettingSectionLabel> 
-                                    <SettingSectionLabel>- 스캔화면 버튼 색 수정</SettingSectionLabel> 
+                                    <SettingSectionLabel>- 메뉴 상세설명 추가 </SettingSectionLabel> 
+                                    <SettingSectionLabel>- 음료식사 주문 문구 수정</SettingSectionLabel> 
                                 </SettingSenctionInputViewColumn>
+                                {/* <SettingSenctionInputViewColumn>
+                                    <SettingSectionLabel>- 스캔화면 버튼 문구 수정</SettingSectionLabel> 
+                                    <SettingSectionLabel>- 메뉴 사용 / 비사용 구분 적용</SettingSectionLabel> 
+                                </SettingSenctionInputViewColumn> */}
+                                {/* <SettingSenctionInputViewColumn>
+                                    <SettingSectionLabel>- 옵션선택 주문 오류 수정 테스트</SettingSectionLabel> 
+                                </SettingSenctionInputViewColumn> */}
                                 {/* <SettingSenctionInputViewColumn>
                                     <SettingSectionLabel>- 진동벨 대기시간 줄임</SettingSectionLabel> 
                                     <SettingSectionLabel>- 결제하기기 버튼 깜빡임으로수정</SettingSectionLabel> 

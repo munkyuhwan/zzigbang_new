@@ -78,12 +78,10 @@ export const setAdShow = createAsyncThunk("common/setAdShow", async(data,{dispat
 export const initializeApp  = createAsyncThunk("common/initializeApp", async(data,{dispatch,getState, rejectWithValue}) =>{
     // store id 여부
     const storeID = storage.getString("STORE_IDX");
-
     if(isEmpty(storeID)) {
 
         return rejectWithValue();
     }
-
     dispatch(getMenu());
     dispatch(getStoreInfo());
     dispatch(getBanner());
@@ -233,7 +231,7 @@ export const commonSlice = createSlice({
                 en:"SCAN",
                 jp:"スキャンする",
                 cn:"掃描",
-                ko:"스캔하기",
+                ko:"빵 스캔하기",
             },      
             "결제하기":{
                 en:"Card Payment",
@@ -299,7 +297,13 @@ export const commonSlice = createSlice({
                 en:"Order beverages and meals only",
                 jp:"飲み物と食事のみ注文",
                 cn:"只能點飲料和餐點",
-                ko:"음료식사만주문",
+                ko:"음료/식사만 주문",
+            },
+            "확인":{
+                en:"OK",
+                jp:"OK",
+                cn:"OK",
+                ko:"확인",
             },      
             "빵":{
                 en:"Bread",

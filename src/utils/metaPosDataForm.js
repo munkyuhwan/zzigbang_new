@@ -116,6 +116,7 @@ export const metaPostPayFormat = async (orderList,payData, allItems, PRINT_ORDER
                 // set item 
                 var setItemArray = [];
                 for(var j=0;j<setItems.length;j++) {
+                    console.log("setItems[",j,"]: ",setItems[j]);
                     const setItemDetail = allItems?.filter(el=>el.prod_cd == setItems[j]?.prodCD);
                     var setItem = {
                         "ITEM_SEQ" : 1,
@@ -128,7 +129,8 @@ export const metaPostPayFormat = async (orderList,payData, allItems, PRINT_ORDER
                     }
                     setItem["ITEM_SEQ"] = i+1;
                     setItem["SET_SEQ"] = j+1;
-                    setItem["PROD_I_CD"] = setItems[j].optItem;
+                    //setItem["PROD_I_CD"] = setItems[j].optItem;
+                    setItem["PROD_I_CD"] = setItems[j].prodCD;
                     setItem["PROD_I_NM"] = setItemDetail[0].gname_kr;
                     setItem["QTY"] = Number(setItems[j].amt)*Number(orderList[i].amt);
                     setItem["AMT"] = Number(setItemDetail[0]?.sal_amt)*Number(setItems[j].amt)*Number(orderList[i].amt);

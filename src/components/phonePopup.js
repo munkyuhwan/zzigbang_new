@@ -61,15 +61,20 @@ export const PhonePopup = () => {
                 if(storage.getString("isBellUse")=="Y"){
                   setBell(dispatch,orderList,items);
                 }else {
+                  storage.set("LAN",LAN_KO);
+                  dispatch(setCommon({selectedLanguage:LAN_KO}));
                   dispatch(setCommon({isAddShow:true})); 
                 }
                 /* dispatch(setFullPopup({isShow:true,fullPopupText:strings["주문완료"][`${selectedLanguage}`]})); */
               }, 
               cancelFunction:()=>{
                 dispatch(initOrderList());
+                
                 if(storage.getString("isBellUse")=="Y"){
                   setBell(dispatch,orderList,items);
                 }else {
+                  storage.set("LAN",LAN_KO);
+                  dispatch(setCommon({selectedLanguage:LAN_KO}));
                   dispatch(setCommon({isAddShow:true}));
                 }
                 /* dispatch(setFullPopup({isShow:true,fullPopupText:strings["주문완료"][`${selectedLanguage}`]})); */

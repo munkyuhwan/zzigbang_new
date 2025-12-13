@@ -6,7 +6,7 @@ import FastImage from "react-native-fast-image";
 import { categoryName, menuCatName, menuName, numberWithCommas, paginateArray } from "../utils/common";
 import {isEmpty} from 'lodash';
 import { useDispatch, useSelector } from "react-redux";
-import { colorBlack, colorDarkGrey, colorRed } from "../resources/colors";
+import { colorBlack, colorDarkGrey, colorRed, colorWhite } from "../resources/colors";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { setCommon } from "../store/common";
 import { LAN_CN, LAN_EN, LAN_JP, LAN_KO } from "../resources/values";
@@ -383,9 +383,27 @@ export const MainItem = (props) => {
     const item = props?.item;
     const { orderList, menu } = useSelector(state=>state.menu);
     const isIn = isProductInCart(item,orderList);
-    return(
-        <>
-        <Pressable key={"press_"+item?.cate_code+"_"+item?.prod_cd} onPress={()=>{ props?.onPress(); }} >
+    if(item.soldout=="N") {
+        return(
+            <>
+            <Pressable key={"press_"+item?.cate_code+"_"+item?.prod_cd} onPress={()=>{ props?.onPress(); }} >
+                <ItemWrapper isIn={isIn} key={"itemWrapper_"+item?.cate_code+"_"+item?.prod_cd} >
+                    {isIn &&
+                        <FastImage style={{width:20,height:20,position:'absolute',zIndex:999,right:10,top:10}} source={require("../resources/imgs/drawable-xxxhdpi/img_check_1.png")} />
+                    }
+                    <ItemInnerWrapper key={"itemInnerWrapper_"+item?.cate_code+"_"+item?.prod_cd} >
+                        <ItemImage key={"itemImage_"+item?.cate_code+"_"+item?.prod_cd} source={{uri:item?.gimg_chg}} resizeMode={FastImage.resizeMode.cover} />
+                        <ItemTextWrapper isIn={isIn} key={"itemTextWrapper_"+item?.cate_code+"_"+item?.prod_cd} >
+                            <ItemTitle isIn={isIn} key={"itemTitle_"+item?.cate_code+"_"+item?.prod_cd}>{menuName(item,selectedLanguage)}</ItemTitle>
+                            <ItemPrice isIn={isIn} key={"itemPrice_"+item?.cate_code+"_"+item?.prod_cd} >{numberWithCommas(item?.sal_tot_amt)+strings["원"][`${selectedLanguage}`]}</ItemPrice>
+                        </ItemTextWrapper>
+                    </ItemInnerWrapper>
+                </ItemWrapper>
+            </Pressable>
+            </>
+        );
+    }else {
+        return(
             <ItemWrapper isIn={isIn} key={"itemWrapper_"+item?.cate_code+"_"+item?.prod_cd} >
                 {isIn &&
                     <FastImage style={{width:20,height:20,position:'absolute',zIndex:999,right:10,top:10}} source={require("../resources/imgs/drawable-xxxhdpi/img_check_1.png")} />
@@ -397,10 +415,14 @@ export const MainItem = (props) => {
                         <ItemPrice isIn={isIn} key={"itemPrice_"+item?.cate_code+"_"+item?.prod_cd} >{numberWithCommas(item?.sal_tot_amt)+strings["원"][`${selectedLanguage}`]}</ItemPrice>
                     </ItemTextWrapper>
                 </ItemInnerWrapper>
+                <View style={{justifyContent:'center', alignItems:"center", width:'100%',height:'100%',position:'absolute', }} >
+                    <View style={{width:'100%',height:'100%', backgroundColor:"rgba(0,0,0,0.5)",position:'absolute',}} >
+                    </View>
+                    <Text style={{textAlign:'center',position:'absolute', fontSize:50, color:colorWhite, zIndex:999999}}  >SOLD OUT</Text>
+                </View>
             </ItemWrapper>
-        </Pressable>
-        </>
-    );
+        )
+    }
 }
 
 // 카트 리스트

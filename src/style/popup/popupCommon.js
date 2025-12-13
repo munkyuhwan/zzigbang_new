@@ -52,8 +52,10 @@ export const MenuBorder = styled.View`
     borderColor:${colorRed};
     borderRadius:10px; 
     paddingBottom:20px;
-    justifyContent:center;
     alignItems:center;
+    maxWidth:506px;
+    height:650px;
+    marginTop:60px;
 `
 export const ItemViewImage = styled(FastImage)`
     width:504px;
@@ -67,9 +69,9 @@ export const ItemDetailViewImage = styled(FastImage)`
     borderTopRightRadius:8px;
 `
 export const ItemViewSelectedOption = styled.View`
-    paddingLeft:40px;
-    paddingRight:40px;
-    flex:0.4;
+    paddingLeft:22px;
+    paddingRight:22px;
+    flex:0.2;
 `
 export const ItemViewSelectedOptionBorder = styled.View`
     borderColor:${colorRed};
