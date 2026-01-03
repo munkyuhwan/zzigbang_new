@@ -8,7 +8,7 @@ import SettingScreen from '../screens/settingScreen';
 import PopupIndicator from '../screens/popups/popupIndicator';
 import { EventRegister } from 'react-native-event-listeners';
 import { smartroCancelService } from '../utils/smartro';
-import { Alert, DeviceEventEmitter, NativeModules } from 'react-native';
+import { Alert, DeviceEventEmitter, NativeEventEmitter, NativeModules, TextInput } from 'react-native';
 import { InstallmentPopup } from '../screens/popups/installmentPopup';
 import messaging from '@react-native-firebase/messaging';
 import { initializeApp, setCommon } from '../store/common';
@@ -32,6 +32,8 @@ var statusInterval;
 export default function Navigation() {
     const navigate = useRef();
     const dispatch = useDispatch();
+    let keyEvent = new NativeEventEmitter(NativeModules.MyEvent);
+
     const [isIndicatorShow, setIndicatorShow] = useState(false);
     const [isNonCancelShow, setIsNonCancelShow] = useState(false);
     const [nonCancelText, setNonCancelText] = useState("");
@@ -179,10 +181,18 @@ export default function Navigation() {
                 
             }
         }
+        keyEvent.removeAllListeners("onMyKeyBackPressed");
+        keyEvent.addListener("onMyKeyBackPressed",(ev)=>{
+            console.log("ev: ",ev.pressedKey)
+        })
+
     },[])
+
+    const {barcodeText, setBarcodeText} = useState("");
 
     return (
         <>  
+            {/* <TextInput value={barcodeText} onChangeText={(val)=>{setBarcodeText(val)}} style={{width:200, height:100, backgroundColor:'red',color:'white' }} /> */}
             {isIndicatorShow &&
                 <PopupIndicator text={spinnerText} setText={setSpinnerText} closeText={closeText} setCloseText={setCloseText} onClosePress={()=>{  setCloseText(""); setSpinnerText(""); setIndicatorShow(""); onCloseSpinner(); }}/>
             }
@@ -214,7 +224,7 @@ export default function Navigation() {
                   />
                 </Stack.Navigator>
             </NavigationContainer>
-            
+
             <AlertPopup/>
             {/* <CallAssistance/> */}
             <PhonePopup/>

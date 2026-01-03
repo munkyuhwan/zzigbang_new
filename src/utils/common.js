@@ -409,7 +409,7 @@ export async function adminDataPost(payData, orderData, allItems,phoneNumber) {
             "STORE_ID":STORE_IDX,
         }
         postOrderData = {...postOrderData,...addData,...{phone_number:phoneNumber}};
-        console.log("1111postOrderData: ",postOrderData)
+        console.log("1111postOrderData: ",JSON.stringify(postOrderData))
         try {
             const data = await apiRequest(`${ADMIN_API_BASE_URL}${ADMIN_API_POST_ORDER}`,postOrderData).catch(error=>error);;
             if(data) {

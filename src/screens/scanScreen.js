@@ -521,7 +521,7 @@ const ScanScreen = () => {
                                 //const topFive = getTopFive(items, difference);
                                 console.log("top five: ",topFive);
                                 //[...topFive, ...sampleData]
-                                dispatch(setAlert(
+                                /* dispatch(setAlert(
                                     {
                                         title:"테스트",
                                         msg:"스캔이 잘될수있도록 빵이 겹치지\n않게 골고루 펼쳐주세요.",
@@ -534,6 +534,21 @@ const ScanScreen = () => {
                                         isAlertOpen:true,
                                         clickType:"",
                                         imageArr:topFive
+                                    }
+                                )); */
+                                dispatch(setAlert(
+                                    {
+                                        title:"테스트",
+                                        msg:"스캔이 잘될수있도록 빵이 겹치지\n않게 골고루 펼쳐주세요.",
+                                        subMsg:"",
+                                        okText:'닫기',
+                                        cancelText:'',
+                                        isCancle:false,
+                                        isOK:true,
+                                        icon:"",   
+                                        isAlertOpen:true,
+                                        clickType:"",
+                                        imageArr:[]
                                     }
                                 ));
                             }else {

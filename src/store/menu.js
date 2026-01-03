@@ -396,7 +396,8 @@ export const startPayment = createAsyncThunk("menu/startPayment", async(data,{di
     const bellData = [...orderList,...breadOrderList];
 
     if(orderList.length<=0 && breadOrderList.length>0) {
-        
+        adminDataPost(result, orderFinalData ,items, `010`).catch(err=>{return err});
+
         dispatch(dispatchShowAlert({
             title:"영수증", 
             msg:"영수증을 출력하시겠습니까?", 

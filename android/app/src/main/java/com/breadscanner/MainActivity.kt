@@ -1,8 +1,10 @@
 package com.breadscanner
 
 import android.os.Bundle
+import android.view.KeyEvent
 import android.view.View
 import android.view.WindowManager
+import com.breadscanner.modules.MyEventModule
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.fabricEnabled
@@ -46,4 +48,22 @@ class MainActivity : ReactActivity() {
                     )
         }
     }
+
+    override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+
+        val unicode = event!!.unicodeChar
+        val unicodeChar = Character.toChars(unicode)[0]
+        System.out.println(event)
+
+        if(event.action == KeyEvent.ACTION_DOWN) {
+            if(unicode != 0 && !unicode.equals("") && !unicode.equals("\n") ) {
+                var newStr: String = unicodeChar.toString();
+                MyEventModule.getInstance().keyPressed(newStr);
+            }
+        }
+
+        return super.dispatchKeyEvent(event)
+    }
+
+
 }

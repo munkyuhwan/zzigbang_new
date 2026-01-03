@@ -1,6 +1,7 @@
 package com.breadscanner
 
 import android.app.Application
+import com.breadscanner.modules.MyEventPackage
 import com.breadscanner.modules.bell.BellPackage
 import com.breadscanner.modules.camera.CameraPackage
 import com.breadscanner.modules.etc.EtcPackage
@@ -41,6 +42,7 @@ class MainApplication : Application(), ReactApplication {
                 add(SerialPackage())
                 add(LedPackage())
                 add(EtcPackage())
+                add(MyEventPackage())
             }
 
 

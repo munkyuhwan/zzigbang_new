@@ -288,7 +288,7 @@ const SettingScreen = (props) =>{
                         <Text style={{flex:1,fontSize:40,color:colorBlack}} ></Text>
                     </View>
                     <View style={{flexDirection:'row', paddingLeft:30,paddingRight:30}}>
-                        <Text style={{flex:1,fontSize:20,color:colorBlack,textAlign:'center'}} >v1.0.44</Text>
+                        <Text style={{flex:1,fontSize:20,color:colorBlack,textAlign:'center'}} >v1.0.47</Text>
                     </View>
                     <SettingWrapper>
 
@@ -804,9 +804,12 @@ const SettingScreen = (props) =>{
                             <SettingSectionTitle>업데이트 정보</SettingSectionTitle>
                             <SettingSectionDetailWrapper>
                                 <SettingSenctionInputViewColumn>
+                                    <SettingSectionLabel>- 어드민 데이터 수정 </SettingSectionLabel> 
+                                </SettingSenctionInputViewColumn>
+                                {/* <SettingSenctionInputViewColumn>
                                     <SettingSectionLabel>- 메뉴 상세설명 추가 </SettingSectionLabel> 
                                     <SettingSectionLabel>- 음료식사 주문 문구 수정</SettingSectionLabel> 
-                                </SettingSenctionInputViewColumn>
+                                </SettingSenctionInputViewColumn> */}
                                 {/* <SettingSenctionInputViewColumn>
                                     <SettingSectionLabel>- 스캔화면 버튼 문구 수정</SettingSectionLabel> 
                                     <SettingSectionLabel>- 메뉴 사용 / 비사용 구분 적용</SettingSectionLabel> 

@@ -17,6 +17,7 @@ import { initOrderList } from '../store/menu';
 import { adminDataPost, printReceipt, setBell } from '../utils/common';
 import { setFullPopup } from '../store/fullPopup';
 import { storage } from '../utils/localStorage';
+import { LAN_KO } from '../resources/values';
 
 
 export const PhonePopup = () => {
