@@ -50,7 +50,7 @@ const MainScreen = (props) =>{
     
 
     // 번역
-    const {strings,selectedLanguage, isAddShow} = useSelector(state=>state.common);
+    const {strings,selectedLanguage, isAddShow, isMaster} = useSelector(state=>state.common);
     const {categories, orderList, menu, items, breadOrderList, isPayStarted} = useSelector(state=>state.menu);
     const [mainCat, setMainCat] = useState("");
     const [subCat,setSubCat] = useState("");
@@ -242,11 +242,18 @@ const MainScreen = (props) =>{
         return(<></>)
     } */
 
-    function cancelList(index) {
-        var tmpList = Object.assign([],orderList);
-        tmpList.splice(index,1);
-        console.log("tmpList: ",tmpList);
-        dispatch(setMenu({orderList:tmpList}))
+    function cancelList(type, index) {
+        if(type=="drinks") {
+            var tmpList = Object.assign([],orderList);
+            tmpList.splice(index,1);
+            console.log("tmpList: ",tmpList);
+            dispatch(setMenu({orderList:tmpList}))
+        }else {
+            var tmpList = Object.assign([],breadOrderList);
+            tmpList.splice(index,1);
+            console.log("tmpList: ",tmpList);
+            dispatch(setMenu({breadOrderList:tmpList}))
+        }
     }
     function handleScroll(ev) {
         //console.log('on scroll',ev.nativeEvent.contentOffset.y);
@@ -335,11 +342,11 @@ const MainScreen = (props) =>{
                             <CartList
                                 onLayout={onListLayout}
                                 data={breadOrderList}
-                                isCancelUse={false}
+                                isCancelUse={isMaster?true:false}
                                 isImageUse={true}
                                 isMargin={orderList.length>0}
                                 placeHolder={strings["빵"][`${selectedLanguage}`]}
-                                onCancelPress={(index)=>{ cancelList(index); }}
+                                onCancelPress={(index)=>{ cancelList("bread",index); }}
                                 />
                         }
                         
@@ -353,7 +360,7 @@ const MainScreen = (props) =>{
                                 isImageUse={true}
                                 isMargin={breadOrderList.length>0}
                                 placeHolder={strings["음료"][`${selectedLanguage}`]}
-                                onCancelPress={(index)=>{ cancelList(index); }}
+                                onCancelPress={(index)=>{ cancelList("drinks",index); }}
                             />
                         }
                     </ScrollView>
@@ -503,23 +510,11 @@ const MainScreen = (props) =>{
                         </TouchableWithoutFeedback>
                     }
                 </MenuItemWrapper>
+
                 <LinearGradient colors={['rgba(0,0,0,0.2);','#00000000']} style={{flex:0.089, width:'100%'}} > 
                     <ButtonWrapper>
                         <TouchableWithoutFeedback 
                             onPress={()=>{ 
-                               /*  const sound = new Sound('z001.wav', Sound.MAIN_BUNDLE, (error) => {
-                                    if (error) {
-                                        console.log('오디오 로드 실패', error);
-                                        return;
-                                    }
-                                    sound.play((success) => {
-                                        if (success) {
-                                            console.log('재생 성공');
-                                        } else {
-                                            console.log('재생 실패');
-                                        }
-                                    });
-                                }); */
                                 if(breadOrderList?.length>0){  
 
                                 }else {
@@ -532,28 +527,39 @@ const MainScreen = (props) =>{
                                 <ButtonText>{strings["스캔하기"][`${selectedLanguage}`]}</ButtonText>
                             </ButtonViewPercent>
                         </TouchableWithoutFeedback>
+                        {isMaster &&
+                           <TouchableWithoutFeedback onPress={()=>{ dispatch(setCommon({isMaster:false})) }} >
+                                <ButtonViewPercent backgroundColor={colorRed} >
+                                    <ButtonImage source={require("../resources/imgs/drawable-xxxhdpi/img_pay.png")} resizeMode="contain" />
+                                    <ButtonText>{"관리자모드 종료"}</ButtonText>
+                                </ButtonViewPercent>
+                            </TouchableWithoutFeedback> 
+                        }
+                        {!isMaster &&
+                        <>
+                            <TouchableWithoutFeedback onPress={()=>{EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"결제", str:"준비중 입니다."});}} >
+                                <ButtonViewPercent backgroundColor={colorDarkGrey} >
+                                    <ButtonImage source={require("../resources/imgs/drawable-xxxhdpi/img_cupon_01.png")} resizeMode="contain" />
+                                    <ButtonText>{strings["쿠폰/포인트"][`${selectedLanguage}`]}</ButtonText>
+                                </ButtonViewPercent>
+                            </TouchableWithoutFeedback>
+                            <TouchableWithoutFeedback onPress={()=>{ dispatch(startPayment({totalPrice,totalVat})); }} >
+                                <ButtonViewPercent backgroundColor={colorRed} >
+                                    {(breadOrderList.length>0 || orderList.length>0) &&
+                                        <>
+                                            <Animated.View style={{ opacity, position:'absolute',justifyContent:"center", backgroundColor:"rgba(255,255,255,0.4)",width:'100%',height:'100%' }}>
+                                                    
+                                            </Animated.View>
+                                            <FastImage source={require("../resources/arrow_gif.gif")} style={{position:'absolute', right:-30,top:-70, width:100,height:100}} resizeMode={FastImage.resizeMode.contain} />
+                                        </>
+                                    }   
 
-                        <TouchableWithoutFeedback onPress={()=>{EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"결제", str:"준비중 입니다."});}} >
-                            <ButtonViewPercent backgroundColor={colorDarkGrey} >
-                                <ButtonImage source={require("../resources/imgs/drawable-xxxhdpi/img_cupon_01.png")} resizeMode="contain" />
-                                <ButtonText>{strings["쿠폰/포인트"][`${selectedLanguage}`]}</ButtonText>
-                            </ButtonViewPercent>
-                        </TouchableWithoutFeedback>
-                        <TouchableWithoutFeedback onPress={()=>{ dispatch(startPayment({totalPrice,totalVat})); }} >
-                            <ButtonViewPercent backgroundColor={colorRed} >
-                                {(breadOrderList.length>0 || orderList.length>0) &&
-                                    <>
-                                        <Animated.View style={{ opacity, position:'absolute',justifyContent:"center", backgroundColor:"rgba(255,255,255,0.4)",width:'100%',height:'100%' }}>
-                                                
-                                        </Animated.View>
-                                        <FastImage source={require("../resources/arrow_gif.gif")} style={{position:'absolute', right:-30,top:-70, width:100,height:100}} resizeMode={FastImage.resizeMode.contain} />
-                                    </>
-                                }   
-
-                                <ButtonImage source={require("../resources/imgs/drawable-xxxhdpi/img_pay.png")} resizeMode="contain" />
-                                <ButtonText>{strings["결제하기"][`${selectedLanguage}`]}</ButtonText>
-                            </ButtonViewPercent>
-                        </TouchableWithoutFeedback>
+                                    <ButtonImage source={require("../resources/imgs/drawable-xxxhdpi/img_pay.png")} resizeMode="contain" />
+                                    <ButtonText>{strings["결제하기"][`${selectedLanguage}`]}</ButtonText>
+                                </ButtonViewPercent>
+                            </TouchableWithoutFeedback>
+                        </>
+                        }
                     </ButtonWrapper>
                 </LinearGradient>
             </MainMenuWrapper>

@@ -13,7 +13,7 @@ import { InstallmentPopup } from '../screens/popups/installmentPopup';
 import messaging from '@react-native-firebase/messaging';
 import { initializeApp, setCommon } from '../store/common';
 import { SCREEN_TIMEOUT } from '../resources/values';
-import { extractNumbers, openAlert } from '../utils/common';
+import { barcodeChecker, extractNumbers, openAlert } from '../utils/common';
 import BasicNonCancel from '../screens/popups/basicNonCancel';
 import { isEmpty } from 'lodash'
 import { CallAssistance } from '../components/callAssistance';
@@ -41,7 +41,11 @@ export default function Navigation() {
     const [closeText, setCloseText] = useState("");
     const [spinnerType, setSpinnerType] = useState("");
 
-    const { weight } = useSelector(state=>state.common);
+    const { isMaster } = useSelector(state=>state.common);
+
+    useEffect(()=>{
+        console.log("isMaster: ",isMaster)
+    },[isMaster])
 
     const handleEventListener = () => {
         //리스너 중복방지를 위해 한번 삭제
@@ -51,6 +55,7 @@ export default function Navigation() {
         EventRegister.removeAllListeners("showAlert");
         EventRegister.removeAllListeners("goBack");
         EventRegister.removeAllListeners("nonCancelPopup");
+        keyEvent.removeAllListeners("onMyKeyPressed");
         /* DeviceEventEmitter.removeAllListeners("onWeightChanged");
         //EventRegister.removeAllListeners("showSpinnerNonCancel");
         DeviceEventEmitter.addListener("onWeightChanged",(data)=>{    
@@ -104,6 +109,19 @@ export default function Navigation() {
             setIsNonCancelShow(data.text);
             setIsNonCancelShow(data.isShow);
     
+        })
+        keyEvent.addListener("onMyKeyPressed",(ev)=>{
+            console.log("ev.pressedKey: ",ev.pressedKey)
+            if(ev.pressedKey) {
+                const barcode = ev.pressedKey;
+                barcodeChecker(barcode)
+                .then(result=>{
+                    console.log("result: ",result)
+                    if(result?.result) {
+                        dispatch(setCommon({isMaster:true}));
+                    }
+                })
+            }
         })
     }
     function onCloseSpinner() {
@@ -181,10 +199,10 @@ export default function Navigation() {
                 
             }
         }
-        keyEvent.removeAllListeners("onMyKeyBackPressed");
+        /* keyEvent.removeAllListeners("onMyKeyBackPressed");
         keyEvent.addListener("onMyKeyBackPressed",(ev)=>{
             console.log("ev: ",ev.pressedKey)
-        })
+        }) */
 
     },[])
 

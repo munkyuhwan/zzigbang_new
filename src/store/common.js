@@ -179,6 +179,7 @@ export const postHelp = createAsyncThunk("common/postHelp", async(_, {dispatch,r
 export const commonSlice = createSlice({
     name: 'common',
     initialState: {
+        isMaster:false,
         languages: ["en","cn","jp","ko"],
         selectedLanguage:"ko",
         installmentData:{
@@ -487,6 +488,7 @@ export const commonSlice = createSlice({
         builder.addCase(initCommon.fulfilled,(state, action)=>{
            
             const initState = {
+                isMaster:false,
                 languages: ["en","cn","jp","kr"],
                 selectedLanguage:"",
                 installmentData:{

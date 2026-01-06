@@ -47,7 +47,7 @@ public class MyEventModule extends ReactContextBaseJavaModule {
         if(!pressedKey.equals("\n")) {
             scannedText = scannedText+pressedKey;
         }
-        //System.out.println("scanned text: "+scannedText);
+        System.out.println("scanned text: "+scannedText);
         if(pressedKey.equals("\n")) {
             params.putString("pressedKey", scannedText);
             mJSModule.emit("onMyKeyPressed", params);

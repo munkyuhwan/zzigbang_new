@@ -18,7 +18,7 @@ export const MenuMetaDetailPopup = (props) => {
     const dispatch = useDispatch();
     // 번역
     const {strings,selectedLanguage} = useSelector(state=>state.common);
-    const { detailItem, items, orderList } = useSelector(state => state.menu);
+    const { detailItem, items, orderList, breadOrderList } = useSelector(state => state.menu);
 
     const [optionSelect, setOptionSelect] = useState([]);
     const [amt, setAmt] = useState(1);
@@ -69,22 +69,84 @@ export const MenuMetaDetailPopup = (props) => {
             }
         }
         console.log("detailItem: ",detailItem);
-        const orderItemData = {prodCD:detailItem.prod_cd, option:optionSelect, amt:amt};
-        // 아이템 비교 
-        const checkDuple = orderList.filter(el=> el.prodCD == detailItem.prod_cd);
-        if(checkDuple.length > 0) {
-            // 선택한 아이템이 장바구니에 있으면 비교하기
-            const itemData = items.filter(el=>el.prod_cd==detailItem.prod_cd);
-            if(itemData.length>0) {
-                if(itemData[0]?.prod_gb == "09") {
-                    // 옵션있는 메뉴 옵션 선택 구분
-                    const compareResult = compareArrays(checkDuple[0].option, optionSelect);
-                    if(compareResult == true) {
+        if(detailItem?.cate_code=="8000") {
+            // 빵일경우
+            const orderItemData = {prodCD:detailItem.prod_cd, option:optionSelect, amt:amt};
+            // 아이템 비교 
+            const checkDuple = breadOrderList.filter(el=> el.prodCD == detailItem.prod_cd);
+            if(checkDuple.length > 0) {
+                // 선택한 아이템이 장바구니에 있으면 비교하기
+                const itemData = items.filter(el=>el.prod_cd==detailItem.prod_cd);
+                if(itemData.length>0) {
+                    
+                        // 이미 있는 메뉴
+                        var tmpDuple = Object.assign({},checkDuple[0]);
+                        tmpDuple = {...tmpDuple, ...{amt:(Number(tmpDuple.amt)+Number(amt))}};
+                        var orderListExc = breadOrderList.filter(el=>el.prodCD != detailItem.prod_cd);
+                        var dupleIndex = 0;
+                        for(var i=0; i<breadOrderList.length; i++) {
+                            if(breadOrderList[i].prodCD == detailItem.prod_cd){
+                                dupleIndex = i;
+                            }
+                        }
+                    
+                        var tmpOrderList = Object.assign([], breadOrderList);
+                        tmpOrderList[dupleIndex] = tmpDuple;
+                        dispatch(setMenu({breadOrderList:tmpOrderList,detailItem:{}}));
+
+                        //orderListExc.push(tmpDuple);
+                        //dispatch(setMenu({orderList:orderListExc,detailItem:{}}));
+
+                        props.onItemAdd(detailItem.prod_cd);
+                    
+                }
+
+            }else {
+                var tmpOrderList = [...breadOrderList,...[orderItemData]];
+                dispatch(setMenu({breadOrderList:tmpOrderList,detailItem:{}}));
+                props.onItemAdd(detailItem.prod_cd);
+            }
+        }else {
+            const orderItemData = {prodCD:detailItem.prod_cd, option:optionSelect, amt:amt};
+            // 아이템 비교 
+            const checkDuple = orderList.filter(el=> el.prodCD == detailItem.prod_cd);
+            if(checkDuple.length > 0) {
+                // 선택한 아이템이 장바구니에 있으면 비교하기
+                const itemData = items.filter(el=>el.prod_cd==detailItem.prod_cd);
+                if(itemData.length>0) {
+                    if(itemData[0]?.prod_gb == "09") {
+                        // 옵션있는 메뉴 옵션 선택 구분
+                        const compareResult = compareArrays(checkDuple[0].option, optionSelect);
+                        if(compareResult == true) {
+                            // 이미 있는 메뉴
+                            var tmpDuple = Object.assign({},checkDuple[0]);
+                            tmpDuple = {...tmpDuple, ...{amt:(Number(tmpDuple.amt)+Number(amt))}};
+                            var orderListExc = orderList.filter(el=>el.prodCD != detailItem.prod_cd);
+                            
+                            var dupleIndex = 0;
+                            for(var i=0; i<orderList.length; i++) {
+                                if(orderList[i].prodCD == detailItem.prod_cd){
+                                    dupleIndex = i;
+                                }
+                            }
+                        
+                            var tmpOrderList = Object.assign([], orderList);
+                            tmpOrderList[dupleIndex] = tmpDuple;
+                            dispatch(setMenu({orderList:tmpOrderList,detailItem:{}}));
+
+                            //orderListExc.push(tmpDuple);
+                            //dispatch(setMenu({orderList:orderListExc,detailItem:{}}));
+                            props.onItemAdd(detailItem.prod_cd);
+                        }else {
+                            var tmpOrderList = [...orderList,...[orderItemData]];
+                            dispatch(setMenu({orderList:tmpOrderList,detailItem:{}}));
+                            props.onItemAdd(detailItem.prod_cd);
+                        }
+                    }else {
                         // 이미 있는 메뉴
                         var tmpDuple = Object.assign({},checkDuple[0]);
                         tmpDuple = {...tmpDuple, ...{amt:(Number(tmpDuple.amt)+Number(amt))}};
                         var orderListExc = orderList.filter(el=>el.prodCD != detailItem.prod_cd);
-                        
                         var dupleIndex = 0;
                         for(var i=0; i<orderList.length; i++) {
                             if(orderList[i].prodCD == detailItem.prod_cd){
@@ -98,41 +160,17 @@ export const MenuMetaDetailPopup = (props) => {
 
                         //orderListExc.push(tmpDuple);
                         //dispatch(setMenu({orderList:orderListExc,detailItem:{}}));
-                        props.onItemAdd(detailItem.prod_cd);
-                    }else {
-                        var tmpOrderList = [...orderList,...[orderItemData]];
-                        dispatch(setMenu({orderList:tmpOrderList,detailItem:{}}));
+
                         props.onItemAdd(detailItem.prod_cd);
                     }
-                }else {
-                    // 이미 있는 메뉴
-                    var tmpDuple = Object.assign({},checkDuple[0]);
-                    tmpDuple = {...tmpDuple, ...{amt:(Number(tmpDuple.amt)+Number(amt))}};
-                    var orderListExc = orderList.filter(el=>el.prodCD != detailItem.prod_cd);
-                    var dupleIndex = 0;
-                    for(var i=0; i<orderList.length; i++) {
-                        if(orderList[i].prodCD == detailItem.prod_cd){
-                            dupleIndex = i;
-                        }
-                    }
-                 
-                    var tmpOrderList = Object.assign([], orderList);
-                    tmpOrderList[dupleIndex] = tmpDuple;
-                    dispatch(setMenu({orderList:tmpOrderList,detailItem:{}}));
-
-                    //orderListExc.push(tmpDuple);
-                    //dispatch(setMenu({orderList:orderListExc,detailItem:{}}));
-
-                    props.onItemAdd(detailItem.prod_cd);
                 }
+
+            }else {
+                var tmpOrderList = [...orderList,...[orderItemData]];
+                dispatch(setMenu({orderList:tmpOrderList,detailItem:{}}));
+                props.onItemAdd(detailItem.prod_cd);
             }
-
-        }else {
-            var tmpOrderList = [...orderList,...[orderItemData]];
-            dispatch(setMenu({orderList:tmpOrderList,detailItem:{}}));
-            props.onItemAdd(detailItem.prod_cd);
         }
-
         const data1 = [{"amt": 2, "groupIdx": "3", "prodCD": "2828"},{"amt": 1, "groupIdx": "3", "prodCD": "10012"}, {"amt": 1, "groupIdx": "2", "prodCD": "10003"}, {"amt": 2, "groupIdx": "1", "prodCD": "78098"}, {"amt": 1, "groupIdx": "1", "prodCD": "1111111"}]
         const data2 = [{"amt": 1, "groupIdx": "3", "prodCD": "10012"}, {"amt": 2, "groupIdx": "3", "prodCD": "2828"}, {"amt": 1, "groupIdx": "2", "prodCD": "10003"}, {"amt": 2, "groupIdx": "1", "prodCD": "78098"}, {"amt": 1, "groupIdx": "1", "prodCD": "1111111"}]
 

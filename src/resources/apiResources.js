@@ -17,6 +17,7 @@ export const ADMIN_API_MENU_CHECK = "/check_serviceable.php";
 export const ADMIN_API_REGULAR_UPDATE = "/reqular_update.php";
 export const ADMIN_PAY_LOG = "/pay1.php";
 export const ADMIN_ERROR_LOG = "/error1a.php";
+export const ADMIN_BARCODE_CHECK = "/store_barcode.php";
 
 // 배너
 export const ADMIN_API_BANNER = "/banner.php";

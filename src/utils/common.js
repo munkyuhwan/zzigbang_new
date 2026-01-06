@@ -10,7 +10,7 @@ import { fetch } from "@react-native-community/netinfo";
 // device info
 import DeviceInfo, { getUniqueId, getManufacturer } from 'react-native-device-info';
 import moment from 'moment';
-import { ADMIN_API_BASE_URL, ADMIN_API_MENU_CHECK, ADMIN_API_MENU_UPDATE, ADMIN_API_POST_ORDER, ADMIN_ERROR_LOG, ADMIN_PAY_LOG, POS_BASE_URL, POS_VERSION_CODE, POS_WORK_CD_REQ_STORE_INFO } from '../resources/apiResources';
+import { ADMIN_API_BASE_URL, ADMIN_API_MENU_CHECK, ADMIN_API_MENU_UPDATE, ADMIN_API_POST_ORDER, ADMIN_BARCODE_CHECK, ADMIN_ERROR_LOG, ADMIN_PAY_LOG, POS_BASE_URL, POS_VERSION_CODE, POS_WORK_CD_REQ_STORE_INFO } from '../resources/apiResources';
 import { EventRegister } from 'react-native-event-listeners';
 import axios from 'axios';
 import { setCommon } from '../store/common';
@@ -1489,6 +1489,28 @@ export function getTopWeightMatches(items, difference, maxResults = 4) {
   
     // 상위 4개만 반환
     return sorted.slice(0, maxResults);
+}
+
+export async function barcodeChecker(barcode) {
+    const STORE_IDX = storage.getString("STORE_IDX");
+    return await new Promise((resolve,reject)=>{
+        apiRequest(`${ADMIN_API_BASE_URL}${ADMIN_BARCODE_CHECK}`,{"STORE_ID":`${STORE_IDX}`,"BARCODE":barcode}, {})
+        .then((response)=>{
+            if(response) {
+                if(response?.result == true) {
+                    resolve({result:response?.result})
+                }else {
+                    reject();
+                }
+            }else {
+                reject();
+            }
+        })
+        .catch(err=>{
+            reject();
+        })
+    }) 
+
 }
   
   

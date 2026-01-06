@@ -18,7 +18,7 @@ export const MainHeader = (props) => {
     const dispatch = useDispatch();
     const navigate = useNavigation();
     const [dateTime, setDateTime] = useState("");
-    const {strings,selectedLanguage} = useSelector(state=>state.common);
+    const {strings,selectedLanguage, isMaster} = useSelector(state=>state.common);
     const [isOpen, setOpen] = useState(false);
    
     setInterval(() => {
@@ -33,7 +33,7 @@ export const MainHeader = (props) => {
         <>
             <MainMenuHeaderWrapper>
                 <MainMenuHeaderSectionWrapper flex={1} >
-                    <TouchableWithoutFeedback onPress={()=>{props.setSetting(true); }} >
+                    <TouchableWithoutFeedback onPress={()=>{if(isMaster){ props.setSetting(true); }}} >
                         <FastImage resizeMode="contain" style={{width:220, height:80, marginLeft:-160}} source={require("../resources/imgs/drawable-xxxhdpi/img_logo_11124.png")} />
                     </TouchableWithoutFeedback>
                 </MainMenuHeaderSectionWrapper >
@@ -127,8 +127,15 @@ export const MainHeader = (props) => {
 
 // 카테고리 컴포넌트
 export const MenuCategories = (props) =>{
-    const {strings,selectedLanguage} = useSelector(state=>state.common);
-    const categories = props?.categories;
+    const {strings,selectedLanguage,isMaster} = useSelector(state=>state.common);
+    //const categories = props?.categories;
+    console.log("categories: ",categories);
+    if(isMaster) {
+        var categories = props?.categories;
+    }else {
+        var categories = props?.categories;
+        categories = categories.filter(el=>el.cate_code1!="8000")
+    }
     const catSelected = props?.catSelected;
     const isMain = props?.isMain;
     const categoryIndex = props?.categoryIndex;
