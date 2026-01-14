@@ -961,7 +961,6 @@ export function openAlert(dispatch,getState, titleStr, msgStr, okFunction, cance
 
     popupInterval = setInterval(() => {
         const {isAlertOpen, clickType} = getState().alert;
-        console.log("isAlertOpen:",isAlertOpen);
         if(isAlertOpen == false ) {
             clearInterval(popupInterval);
             popupInterval=null;
@@ -1032,11 +1031,12 @@ export function setBell(dispatch,orderList,items) {
     ));
     DeviceEventEmitter.removeAllListeners("onBellChange"); 
     DeviceEventEmitter.addListener("onBellChange",(data)=>{    
-        dispatch(setCommon({isAddShow:true}));
+        //dispatch(setCommon({isAddShow:true}));
         if(data) {
             console.log("responseData: ",(data.response));
             const responseData = JSON.parse(data.response);
             if(responseData?.code == "0000") {
+                dispatch(setCommon({isAddShow:true}));
                 if(responseData?.response == "1") {
                     dispatch(setAlert(
                         {

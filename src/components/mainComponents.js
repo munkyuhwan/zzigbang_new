@@ -8,7 +8,7 @@ import {isEmpty} from 'lodash';
 import { useDispatch, useSelector } from "react-redux";
 import { colorBlack, colorDarkGrey, colorRed, colorWhite } from "../resources/colors";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
-import { setCommon } from "../store/common";
+import { getBanner, setAdShow, setCommon } from "../store/common";
 import { LAN_CN, LAN_EN, LAN_JP, LAN_KO } from "../resources/values";
 import SettingScreen from "../screens/settingScreen";
 import { storage } from "../utils/localStorage";
@@ -33,7 +33,19 @@ export const MainHeader = (props) => {
         <>
             <MainMenuHeaderWrapper>
                 <MainMenuHeaderSectionWrapper flex={1} >
-                    <TouchableWithoutFeedback onPress={()=>{if(isMaster){ props.setSetting(true); }}} >
+                    <TouchableWithoutFeedback onPress={()=>{
+                        if(isMaster){ 
+                            props.setSetting(true); 
+                        }else{
+                            if(isEmpty(storage.getString("STORE_IDX"))) {
+                                props.setSetting(true); 
+                            }else {
+                                dispatch(getBanner());
+                                dispatch(setAdShow());
+                            }
+                        } 
+                        } 
+                    }>
                         <FastImage resizeMode="contain" style={{width:220, height:80, marginLeft:-160}} source={require("../resources/imgs/drawable-xxxhdpi/img_logo_11124.png")} />
                     </TouchableWithoutFeedback>
                 </MainMenuHeaderSectionWrapper >
@@ -129,7 +141,6 @@ export const MainHeader = (props) => {
 export const MenuCategories = (props) =>{
     const {strings,selectedLanguage,isMaster} = useSelector(state=>state.common);
     //const categories = props?.categories;
-    console.log("categories: ",categories);
     if(isMaster) {
         var categories = props?.categories;
     }else {

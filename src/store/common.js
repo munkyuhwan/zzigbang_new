@@ -1,7 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import {isEmpty} from "lodash";
-import { getMenu } from "./menu";
+import { getMenu, initMenu } from "./menu";
 import { getStoreInfo, getTableData } from "./metaPos";
 import { ADMIN_API_BANNER, ADMIN_API_BASE_URL, ADMIN_API_CALL_SERVICE, ADMIN_API_POST_CALL_SERVICE } from "../resources/apiResources";
 import { apiRequest } from "../utils/apiRequest";

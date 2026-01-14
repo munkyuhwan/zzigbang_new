@@ -51,10 +51,11 @@ const sound = new Sound("shutter.wav", null, (error) => {
     }
     
 });
-const ScanScreen = () => {
+const ScanScreen = (props) => {
     const [appState, setAppState] = useState(AppState.currentState);
     const { Weight } = NativeModules;
     const camera = useRef();
+    const mainRef = useRef();
     const sumRef = useRef(0);
     const countRef = useRef(0);
     const averageRef = useRef(0);
@@ -89,7 +90,7 @@ const ScanScreen = () => {
     const [totalBreadList, setTotalBreadList] = useState([]);
     const [price,setPrice] = useState(0);
     const [amt,setAmt] = useState(0);
-    const [isMainShow, setMainShow] = useState(true);
+    //const [isMainShow, setMainShow] = useState(true);
     const [storeID, setStoreID] = useState("");
     const [currentWeight, setCurrentWeight] = useState(0);
     const [scannedWeight, setScannedWeight] = useState("0");
@@ -156,7 +157,7 @@ const ScanScreen = () => {
     
           setAppState(nextAppState);
         });
-    
+        /* screenTimeOut() */
         return () => {
           subscription.remove();
         };
@@ -216,7 +217,7 @@ const ScanScreen = () => {
             }
         }); 
     }
-    
+
     function initScanScreen() {
     
         Weight.closeSerialConnection();
@@ -298,7 +299,6 @@ const ScanScreen = () => {
   
     useFocusEffect(
         useCallback(()=>{
-            console.log("use callback")
             initScanScreen();
         },[])
     )
@@ -307,17 +307,28 @@ const ScanScreen = () => {
         setStoreID(storage.getString("BREAD_STORE_ID"));
     },[])
     
-    function screenTimeOut(){
+    /* function screenTimeOut(){
         clearInterval(timeoutSet);
         timeoutSet=null;
-        timeoutSet = setInterval(()=>{
-            console.log("screen time out");
+        timeoutSet = setInterval(async()=>{
+            
+            await dispatch(setMenu({
+                selectedItems:[],
+                detailItem:{},
+                isProcessing:false,
+                orderList:[],
+                breadOrderList:[],
+                isPayStarted:false,
+                payResultData:{}
+            }));
+            //setAdShow(true);
             dispatch(getBanner());
             dispatch(setAdShow());
-            clearTimeOut();
-            navigate.goBack();
+            setMainShow(true);
+            
         },SCREEN_TIMEOUT)
-    } 
+
+    }  */
     function clearTimeOut() {
         clearInterval(timeoutSet);
         timeoutSet=null;
@@ -343,11 +354,18 @@ const ScanScreen = () => {
     },[totalBreadList])
 
     useEffect(()=>{
-        if(currentWeight<=0 && !isMainShow ) {
+        if(currentWeight<=0 && !props.isMainShow ) {
             setImgURL(``)
         }
+        if(props.isMainShow) {
+            setImgURL(``);
+            setTmpBreadList([]);
+            setTotalBreadList([]);
+            setPrice(0)
+            setAmt(0)
+        }
 
-    },[currentWeight,isMainShow ])
+    },[currentWeight,props.isMainShow ])
 
     function addToTmpList(addData,type,index) {
         var toSet = Object.assign([],tmpBreadList);
@@ -707,16 +725,22 @@ const ScanScreen = () => {
     function initCamera() {
         setImgURL("");
     }
+
+
+    function timeoutFunction(){
+        console.log("test timeoutFunction");
+    }
+    
     
     return(
         <>
         {/* 안내 UI */}
-        {(currentWeight<=0 && !isMainShow )&&
-            <View style={{width:'100%' ,height:'100%',position:'absolute',zIndex:999999999,justifyContent:'center'}}>
+        {(currentWeight<=0 && !props.isMainShow )&&
+            <View onTouchStart={()=>{ /* screenTimeOut(); */ }} style={{width:'100%' ,height:'100%',position:'absolute',zIndex:999999999,justifyContent:'center'}}>
                 <View style={{width:'100%',height:'100%', position:'absolute',backgroundColor:'rgba(0,0,0,0.4)'}} ></View>
                 <Text style={{fontSize:240, fontWeight:'900',color:'white', textAlign:'center'}} >{strings["쟁반을 올려주세요."][`${selectedLanguage}`]}</Text>
                 <View style={{position:'absolute', zIndex:9999999, right:0, bottom:35, right:10}}>
-                    <TouchableWithoutFeedback onPress={()=>{if(isScanning==false){ setMainShow(true); dispatch(setCommon({isAddShow:false})); dispatch(setMenu({breadOrderList:totalBreadList})); initCamera(); setTmpBreadList([]);setTotalBreadList([]); }}} >
+                    <TouchableWithoutFeedback onPress={()=>{if(isScanning==false){ props.setMainShow(true); dispatch(setCommon({isAddShow:false})); dispatch(setMenu({breadOrderList:totalBreadList})); initCamera(); setTmpBreadList([]);setTotalBreadList([]); }}} >
                         <SquareButtonView backgroundColor={colorGreen} >
                             {tmpBreadList.length>0 &&
                                 <>
@@ -735,8 +759,8 @@ const ScanScreen = () => {
                 </View>
             </View>
         }
-        {( (storage.getBoolean("WEIGHT_SET") && currentWeight>Number(storage.getString("TRAY_WEIGHT")) && !isMainShow )&&!isWeightStable) &&
-            <View style={{width:'100%' ,height:'100%',position:'absolute',zIndex:999999999,justifyContent:'center'}}>
+        {( (storage.getBoolean("WEIGHT_SET") && currentWeight>Number(storage.getString("TRAY_WEIGHT")) && !props.isMainShow )&&!isWeightStable) &&
+            <View onTouchStart={()=>{ /* screenTimeOut(); */ }} style={{width:'100%' ,height:'100%',position:'absolute',zIndex:999999999,justifyContent:'center'}}>
                 <View style={{width:'100%',height:'100%', position:'absolute',backgroundColor:'rgba(0,0,0,0.4)'}} ></View>
                 <Text style={{fontSize:240, fontWeight:'900',color:'white', textAlign:'center'}} >{strings["무게 측정 중 입니다."][`${selectedLanguage}`]}</Text>
             </View>
@@ -745,7 +769,7 @@ const ScanScreen = () => {
             <View style={{width:'100%',height:'100%',  position:'absolute',backgroundColor:'rgba(0,0,0,0.8)'}} ></View>
             <Text style={{fontSize:28, fontWeight:'900',color:colorYellow, textAlign:'center'}} >{strings["스캔하기버튼안내"][`${selectedLanguage}`]}</Text>
         </View> */}
-        <View style={{width:'100%', height:'100%', flexDirection:'row'}} onTouchStart={()=>{  }} >
+        <View style={{width:'100%', height:'100%', flexDirection:'row'}} onTouchStart={()=>{ /* screenTimeOut(); */ }} >
             <View style={{flex:1,}}>
                     <Camera
                         ref={camera}
@@ -792,7 +816,7 @@ const ScanScreen = () => {
                     {/* <Text style={{fontSize:30,color:colorYellow}}>{strings["실제무게"][`${selectedLanguage}`]}: {scannedWeight}g</Text> */}
                 </View>
                 <View style={{position:'absolute', zIndex:9999999, right:0, bottom:35, right:10}}>
-                    <TouchableWithoutFeedback onPress={()=>{if(isScanning==false){ setMainShow(true); dispatch(setCommon({isAddShow:false})); dispatch(setMenu({breadOrderList:totalBreadList})); initCamera(); setTmpBreadList([]);setTotalBreadList([]); }}} >
+                    <TouchableWithoutFeedback onPress={()=>{if(isScanning==false){ props.setMainShow(true); dispatch(setCommon({isAddShow:false})); dispatch(setMenu({breadOrderList:totalBreadList})); initCamera(); setTmpBreadList([]);setTotalBreadList([]); }}} >
                         <SquareButtonView backgroundColor={colorGreen} >
                             {tmpBreadList.length>0 &&
                                 <>
@@ -884,8 +908,8 @@ const ScanScreen = () => {
             </View>
         </View>
         {//isMainShow&&
-            <View style={isMainShow?{width:'100%',height:'100%',position:'absolute'}:{width:'0%',height:'0%',position:'absolute'}}>
-                <MainScreen isMainShow={isMainShow} initScanScreen={initScanScreen} currentWeight={currentWeight} setMainShow={setMainShow}/>
+            <View style={props.isMainShow?{width:'100%',height:'100%',position:'absolute'}:{width:'0%',height:'0%',position:'absolute'}}>
+                <MainScreen /* screenTimeOut={screenTimeOut} */ ref={mainRef} isMainShow={props.isMainShow} initScanScreen={initScanScreen} currentWeight={currentWeight} setMainShow={props.setMainShow}/>
             </View>
         }
         </>

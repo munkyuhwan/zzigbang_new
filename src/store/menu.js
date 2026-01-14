@@ -60,7 +60,6 @@ export const getMenu = createAsyncThunk("menu/getMenu", async(_,{dispatch,getSta
     categories = categories.filter(el=>(el.is_del=="N" && el.is_use=="Y"  && el.is_view=="Y") );
     const menuData = result.order;
     const minWeight = getMinWeightItem(menuData);
-    console.log("minWeight: ",minWeight);
     if(minWeight!=null) {
         storage.set("MIN_WEIGHT",minWeight?.weight);
     }
@@ -102,7 +101,6 @@ export const getMenu = createAsyncThunk("menu/getMenu", async(_,{dispatch,getSta
                 }
             }
         }else {
-            console.log("main");
             var mainData = {items:mainItems,code1:categories[i].cate_code1,name_kr:categories[i]?.cate_name1, name_cn:categories[i].cate_name1_cn, name_en:categories[i].cate_name1_en, name_jp:categories[i].cate_name1_jp }
         }
         var tmpCat = { mainCat:mainData, subCat:subCat };
@@ -228,7 +226,7 @@ export const startPayment = createAsyncThunk("menu/startPayment", async(data,{di
         EventRegister.emit("showSpinner",{isSpinnerShow:false, msg:"", spinnerType:"",closeText:""});
         EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"주문 오류", str:"수량을 초과해 주문을 할 수 없습니다."});
         return rejectWithValue();
-    }
+    } 
   
     const bsnNo = storage.getString("BSN_NO");
     const tidNo = storage.getString("TID_NO");
@@ -379,13 +377,13 @@ export const startPayment = createAsyncThunk("menu/startPayment", async(data,{di
 
     //console.log("orderfinal data: ",orderFinalData);
     // 포스에 요청
-    var posOrderResult = await postOrderToPos(storage.getString("VAN"), result,orderFinalData, PRINT_ORDER_NO).catch(err=>err);  
+     var posOrderResult = await postOrderToPos(storage.getString("VAN"), result,orderFinalData, PRINT_ORDER_NO).catch(err=>err);  
     //console.log("posOrderResult: ",posOrderResult)
     if(posOrderResult instanceof Error) {
         EventRegister.emit("showSpinner",{isSpinnerShow:false, msg:"", spinnerType:"",closeText:""});
         EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"주문 오류", str:posOrderResult.errorMsg});    
         return rejectWithValue();
-    }
+    } 
 
     // 서버에 올림
     //const postAdminResult = adminDataPost(result,orderFinalData,items).catch(err=>{return err}); 
@@ -395,44 +393,78 @@ export const startPayment = createAsyncThunk("menu/startPayment", async(data,{di
     //EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"주문 완료", str:"주문완료"});  
     const bellData = [...orderList,...breadOrderList];
 
+    console.log("IS_RECEIPT: ",storage.getString("IS_RECEIPT"))
+
     if(orderList.length<=0 && breadOrderList.length>0) {
         adminDataPost(result, orderFinalData ,items, `010`).catch(err=>{return err});
 
-        dispatch(dispatchShowAlert({
-            title:"영수증", 
-            msg:"영수증을 출력하시겠습니까?", 
-            okFunction:()=>{ 
-                printReceipt( orderList, breadOrderList, items, result); 
-                dispatch(initOrderList()); 
-                dispatch(setCommon({isAddShow:true})); 
-            }, 
-            cancelFunction:()=>{
-                dispatch(initOrderList()); 
-                dispatch(setCommon({isAddShow:true}));     
-            }}
-            )
-        ); 
-    }else {
-        if(storage.getString("isBellUse")=="Y"){
-
-            adminDataPost(result, orderFinalData ,items, `010`).catch(err=>{return err});
-            
-            dispatch(dispatchShowAlert({title:"영수증", msg:"영수증을 출력하시겠습니까?", 
-                okFunction:async ()=>{ 
-                    await printReceipt(orderList, breadOrderList, items, result); 
-                    await dispatch(initOrderList()); 
-                    setBell(dispatch,orderList,items);
+        if(storage.getString("IS_RECEIPT")=="N") {
+            // 팝업사용 유무를 N으로 하면 팝업없이 무조건 출력
+            printReceipt( orderList, breadOrderList, items, result); 
+            dispatch(initOrderList()); 
+            dispatch(setCommon({isAddShow:true})); 
+        }else {
+            dispatch(dispatchShowAlert({
+                title:"영수증", 
+                msg:"영수증을 출력하시겠습니까?", 
+                okFunction:()=>{ 
+                    printReceipt( orderList, breadOrderList, items, result); 
+                    dispatch(initOrderList()); 
+                    dispatch(setCommon({isAddShow:true})); 
                 }, 
                 cancelFunction:()=>{
-                    dispatch(initOrderList());
-                    setBell(dispatch,orderList,items);
-                } 
-            }
-            )
-          );
+                    dispatch(initOrderList()); 
+                    dispatch(setCommon({isAddShow:true}));     
+                }}
+                )
+            ); 
+        }
         
+
+    }else {
+        adminDataPost(result, orderFinalData ,items, `010`).catch(err=>{return err});
+        if(storage.getString("isBellUse")=="Y"){
+            if(storage.getString("IS_RECEIPT")=="N") {
+                // 팝업사용 유무를 N으로 하면 팝업없이 무조건 출력
+                await printReceipt(orderList, breadOrderList, items, result); 
+                await dispatch(initOrderList()); 
+                setBell(dispatch,orderList,items);
+            }else {
+                dispatch(dispatchShowAlert({title:"영수증", msg:"영수증을 출력하시겠습니까?", 
+                        okFunction:async ()=>{ 
+                            await printReceipt(orderList, breadOrderList, items, result); 
+                            await dispatch(initOrderList()); 
+                            setBell(dispatch,orderList,items);
+                        }, 
+                        cancelFunction:()=>{
+                            dispatch(initOrderList());
+                            setBell(dispatch,orderList,items);
+                        } 
+                    })
+                );
+            }
         }else {
-            dispatch(onConfirmCancelClick({confirmType:"pay",payData:{result,orderFinalData,items}}));
+            // 진동벨 미사용
+            if(storage.getString("IS_RECEIPT")=="N") {
+                // 팝업사용 유무를 N으로 하면 팝업없이 무조건 출력
+                await printReceipt(orderList, breadOrderList, items, result); 
+                await dispatch(initOrderList()); 
+                dispatch(setCommon({isAddShow:true})); 
+            }else {
+                dispatch(dispatchShowAlert({title:"영수증", msg:"영수증을 출력하시겠습니까?", 
+                        okFunction:async ()=>{ 
+                            await printReceipt(orderList, breadOrderList, items, result); 
+                            await dispatch(initOrderList()); 
+                            dispatch(setCommon({isAddShow:true})); 
+                        }, 
+                        cancelFunction:()=>{
+                            dispatch(initOrderList());
+                            dispatch(setCommon({isAddShow:true})); 
+                        } 
+                    })
+                );
+            }
+            //dispatch(onConfirmCancelClick({confirmType:"pay",payData:{result,orderFinalData,items}}));
         }
     }
 

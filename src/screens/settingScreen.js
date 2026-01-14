@@ -40,6 +40,7 @@ const SettingScreen = (props) =>{
     const printerPickerRef = useRef();
     const weightRef = useRef();
     const bellRef = useRef();
+    const receiptRef = useRef();
     const printerRef = useRef();
 
     const [approvalAmt, setApprovalAmt] = useState("4091");
@@ -57,12 +58,14 @@ const SettingScreen = (props) =>{
     const [bellProductName, setBellProductName] = useState("");
     const [printerPort, setPrinterPort] = useState("");
     const [isBellUse, setBellUse] = useState("");
+    const [isReceiptUse, setReceiptUse] = useState("");
     const [printerList, setPrinterList] = useState([]);
     const [cdcList, setCdcLIst] = useState([]);
     const [isWeight, setWeight] = useState(true);
     const [trayWeight, setTrayWeight] = useState(true);
 
     const {storeInfo, tableList} = useSelector(state=>state.meta);
+    const {isMaster} = useSelector(state=>state.common);
     // 단말기 관련
     const [bsnNo, setBsnNo] = useState("");
     const [catId, setCatId] = useState("");
@@ -143,7 +146,7 @@ const SettingScreen = (props) =>{
         setTrayWeight(storage.getString("TRAY_WEIGHT"));
         setBellUse(storage.getString("isBellUse"));
         setPrinterPort(storage.getString("PRINT_PORT"));
-
+        setReceiptUse(storage.getString("IS_RECEIPT"));
         dispatch(getStoreInfo());
 
         var deviceListStr = Printer.getAllUsbDeviceList();
@@ -233,7 +236,6 @@ const SettingScreen = (props) =>{
 
         const prevStoreID = storage.getString("STORE_IDX");
         storage.set("STORE_IDX",storeID)
-        console.log("prevStoreID: ",prevStoreID);
         try{
             messaging().unsubscribeFromTopic(`${prevStoreID}`);
         }catch(err){
@@ -281,14 +283,14 @@ const SettingScreen = (props) =>{
             <ScrollView style={{backgroundColor:colorWhite}}>   
                 <KeyboardAvoidingView enabled style={{width:'100%', height:'100%'}}>
                     <View style={{flexDirection:'row', paddingLeft:30,paddingRight:30}}>
-                        <TouchableWithoutFeedback onPress={()=>{dispatch(setCommon({isAddShow:true})); props.setSetting(false); }}>
+                        <TouchableWithoutFeedback onPress={()=>{if(!isMaster){dispatch(setCommon({isAddShow:true}));} props.setSetting(false); }}>
                             <Text style={{flex:1,fontSize:60,color:colorBlack, textAlign:'left'}} >{"<"}</Text>
                         </TouchableWithoutFeedback>
                         <Text style={{flex:1,fontSize:40,color:colorBlack, textAlign:'center'}} >설정</Text>
                         <Text style={{flex:1,fontSize:40,color:colorBlack}} ></Text>
                     </View>
                     <View style={{flexDirection:'row', paddingLeft:30,paddingRight:30}}>
-                        <Text style={{flex:1,fontSize:20,color:colorBlack,textAlign:'center'}} >v1.0.47</Text>
+                        <Text style={{flex:1,fontSize:20,color:colorBlack,textAlign:'center'}} >v1.0.52</Text>
                     </View>
                     <SettingWrapper>
 
@@ -500,7 +502,37 @@ const SettingScreen = (props) =>{
                                 </SettingSenctionInputView> */}
                             </SettingSectionDetailWrapper>
                         </SettingSectionWrapper>
-                        
+
+                        <SettingSectionWrapper>
+                            <SettingSectionTitle>영수증 출력</SettingSectionTitle>
+                            <SettingSenctionInputView>
+                                <SettingSectionLabel>영수증 출력 팝업 사용 여부</SettingSectionLabel>
+                                {
+                                    <Picker
+                                        ref={receiptRef}
+                                        key={"tablePicker"}
+                                        mode='dialog'
+                                        selectedValue={isReceiptUse}
+                                        onValueChange = {(itemValue, itemIndex) => {
+                                            //if(itemValue) {
+                                                storage.set("IS_RECEIPT",`${itemValue}`);
+                                                setReceiptUse(itemValue);
+                                            //}
+                                        }}
+                                        style = {{
+                                            width: 300,
+                                            height: 50,
+                                        }}>
+                                            <Picker.Item key={"none"} label = {"미선택"} value ={""} />
+                                            <Picker.Item key={"none"} label = {"미사용"} value ={"N"} />
+                                            <Picker.Item key={"none"} label = {"사용"} value ={"Y"} />
+                                       
+                                        
+                                    </Picker>
+                                }
+                            </SettingSenctionInputView>
+                        </SettingSectionWrapper>
+
                         <SettingSectionWrapper>
                             <SettingSectionTitle>진동벨</SettingSectionTitle>
                             <SettingSectionDetailWrapper>
@@ -533,6 +565,7 @@ const SettingScreen = (props) =>{
                                         </Picker>
                                     }
                                 </SettingSenctionInputView>
+                                
                                 <SettingSenctionInputView>
                                     <SettingSectionLabel>진동벨 사용여부</SettingSectionLabel>
                                     {
@@ -804,7 +837,9 @@ const SettingScreen = (props) =>{
                             <SettingSectionTitle>업데이트 정보</SettingSectionTitle>
                             <SettingSectionDetailWrapper>
                                 <SettingSenctionInputViewColumn>
-                                    <SettingSectionLabel>- 어드민 데이터 수정 </SettingSectionLabel> 
+                                    <SettingSectionLabel>- 동작 없을 시 메인 이동 버그 수정 </SettingSectionLabel> 
+                                    <SettingSectionLabel>- 영수증 출력 팝업 사용 여부 세팅에 추가 (미사용 선택: 팝업 X, 사용 선택: 팝업 O, 미선택: 팝업 O) </SettingSectionLabel> 
+                                    <SettingSectionLabel>- 빵스켄화면에서 대기화면 전환시 스캔빵 초기화 </SettingSectionLabel> 
                                 </SettingSenctionInputViewColumn>
                                 {/* <SettingSenctionInputViewColumn>
                                     <SettingSectionLabel>- 메뉴 상세설명 추가 </SettingSectionLabel> 

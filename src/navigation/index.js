@@ -8,10 +8,10 @@ import SettingScreen from '../screens/settingScreen';
 import PopupIndicator from '../screens/popups/popupIndicator';
 import { EventRegister } from 'react-native-event-listeners';
 import { smartroCancelService } from '../utils/smartro';
-import { Alert, DeviceEventEmitter, NativeEventEmitter, NativeModules, TextInput } from 'react-native';
+import { Alert, DeviceEventEmitter, NativeEventEmitter, NativeModules, TextInput, View } from 'react-native';
 import { InstallmentPopup } from '../screens/popups/installmentPopup';
 import messaging from '@react-native-firebase/messaging';
-import { initializeApp, setCommon } from '../store/common';
+import { getBanner, initializeApp, setAdShow, setCommon } from '../store/common';
 import { SCREEN_TIMEOUT } from '../resources/values';
 import { barcodeChecker, extractNumbers, openAlert } from '../utils/common';
 import BasicNonCancel from '../screens/popups/basicNonCancel';
@@ -24,9 +24,11 @@ import { FullAutoClosePopup } from '../components/fullAutoclosePopup';
 import { KocesAppPay } from '../utils/kocess';
 import { setAlert } from '../store/alert';
 import { VAN_KOCES, VAN_SMARTRO } from '../utils/apiRequest';
+import { setMenu } from '../store/menu';
 
 const Stack = createStackNavigator()
 var statusInterval;
+let timeoutSet = null;
 
 
 export default function Navigation() {
@@ -41,11 +43,9 @@ export default function Navigation() {
     const [closeText, setCloseText] = useState("");
     const [spinnerType, setSpinnerType] = useState("");
 
-    const { isMaster } = useSelector(state=>state.common);
+    const [isMainShow, setMainShow] = useState(true);
 
-    useEffect(()=>{
-        console.log("isMaster: ",isMaster)
-    },[isMaster])
+
 
     const handleEventListener = () => {
         //리스너 중복방지를 위해 한번 삭제
@@ -137,7 +137,6 @@ export default function Navigation() {
 
     async function initializeFcm() {
         const prevStoreID = storage.getString("STORE_IDX");
-        console.log("prevStoreID: ",prevStoreID);
         if(prevStoreID){      
             try{
                await messaging().unsubscribeFromTopic(`${prevStoreID}`);
@@ -154,6 +153,7 @@ export default function Navigation() {
         console.log("onOkClick ========================");
     }
     useEffect(()=>{
+        screenTimeOut()
         // 저울 스타트
         async function startConnect () {
             const productId = storage.getString("weightProductID");
@@ -207,9 +207,31 @@ export default function Navigation() {
     },[])
 
     const {barcodeText, setBarcodeText} = useState("");
+    function screenTimeOut(){
+        clearInterval(timeoutSet);
+        timeoutSet=null;
+        timeoutSet = setInterval(async()=>{
+            await dispatch(setMenu({
+                selectedItems:[],
+                detailItem:{},
+                isProcessing:false,
+                orderList:[],
+                breadOrderList:[],
+                isPayStarted:false,
+                payResultData:{}
+            }));
+            //setAdShow(true);
+            dispatch(getBanner());
+            dispatch(setAdShow());
+            setMainShow(true);
+            
+        },SCREEN_TIMEOUT)
 
+    } 
     return (
         <>  
+        <View style={{width:'100%',height:'100%'}} onTouchStart={()=>{ screenTimeOut(); }}  >
+
             {/* <TextInput value={barcodeText} onChangeText={(val)=>{setBarcodeText(val)}} style={{width:200, height:100, backgroundColor:'red',color:'white' }} /> */}
             {isIndicatorShow &&
                 <PopupIndicator text={spinnerText} setText={setSpinnerText} closeText={closeText} setCloseText={setCloseText} onClosePress={()=>{  setCloseText(""); setSpinnerText(""); setIndicatorShow(""); onCloseSpinner(); }}/>
@@ -230,11 +252,20 @@ export default function Navigation() {
                         component={MainScreen}
                         options={{title:"Main Screen"}}
                     />
-                    <Stack.Screen
+                    {/* <Stack.Screen
                        name='scan'
                        component={ScanScreen}
                        options={{title:"Scan Screen"}}
-                    />
+                    /> */}
+                    <Stack.Screen name="scan" options={{ title: "Scan Screen" }}>
+                        {(props) => (
+                            <ScanScreen
+                            {...props}
+                            isMainShow={isMainShow}
+                            setMainShow={setMainShow}
+                            />
+                        )}
+                    </Stack.Screen>
                    <Stack.Screen
                       name='setting'
                       component={SettingScreen}
@@ -247,6 +278,7 @@ export default function Navigation() {
             {/* <CallAssistance/> */}
             <PhonePopup/>
             <BasicNonCancel isShow={isNonCancelShow} text={nonCancelText} />
+        </View>
         </>
     )
 }

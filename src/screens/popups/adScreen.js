@@ -20,12 +20,13 @@ import { colorGreen, colorPink, colorRed } from "../../resources/colors";
 import FastImage from "react-native-fast-image";
 import Sound from "react-native-sound";
 import { storage } from "../../utils/localStorage";
+import { setMenu } from "../../store/menu";
   
 let swipeTimeOut;
 const AdScreen = (props) => {
     const navigate = useNavigation();
     const dispatch = useDispatch();
-    const {strings,selectedLanguage, bannerList} = useSelector(state=>state.common);
+    const {strings,selectedLanguage, bannerList, isMaster} = useSelector(state=>state.common);
     // 영상 플레이, 스톱
     const [adIndex, setAdIndex] = useState();
     const [displayUrl, setDisplayUrl] = useState("");
@@ -51,6 +52,15 @@ const AdScreen = (props) => {
                 ])
             ).start();
         //}
+        /* dispatch(setMenu({
+            selectedItems:[],
+            detailItem:{},
+            isProcessing:false,
+            orderList:[],
+            breadOrderList:[],
+            isPayStarted:false,
+            payResultData:{}
+        })); */
     }, []);
     useEffect(()=>{
         if( bannerList?.length > 0) {
@@ -79,6 +89,12 @@ const AdScreen = (props) => {
     },[adIndex])
 
     if(bannerList.length<=0) {
+        return(
+            <></>
+        )
+    }
+    console.log("isMaster: ",isMaster);
+    if(isMaster==true) {
         return(
             <></>
         )

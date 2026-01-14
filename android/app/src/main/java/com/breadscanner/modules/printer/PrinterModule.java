@@ -6,6 +6,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.hardware.usb.UsbConstants;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbDeviceConnection;
@@ -48,9 +49,13 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 
 public class PrinterModule extends ReactContextBaseJavaModule {
+    private static final String PREF_NAME = "order_no_pref";
+    private static final String KEY_DATE = "last_date";
+    private static final String KEY_SEQ = "last_seq";
 
     private ReactContext mContext = null;
     private static final String ACTION_USB_PERMISSION = "com.android.example.USB_PERMISSION";
@@ -736,10 +741,20 @@ public class PrinterModule extends ReactContextBaseJavaModule {
                                     builder.addText("주문번호\n");
                                     builder.addTextSize(3, 3);
                                     builder.addText(orderNo + "\n");
-
+                                    String parkignNo = generate(getReactApplicationContext(),orderNo);
                                     builder.addTextSize(1, 1);
                                     builder.addText("                                                \n");
                                     builder.addText("                                                \n");
+                                    builder.addTextSize(2, 2);
+                                    builder.addText("주차 바코드\n");
+                                    builder.addTextSize(1, 1);
+                                    builder.addText("\n");
+                                    builder.addBarcode(parkignNo, Sam4sBuilder.BARCODE_CODE39, Sam4sBuilder.BARCODE_UPC_A, Sam4sBuilder.FONT_A, 140, 100);
+                                    builder.addTextSize(1, 1);
+                                    builder.addText(parkignNo+"\n");
+                                    builder.addText("                                                \n");
+                                    builder.addText("                                                \n");
+
                                     builder.addCut(Sam4sBuilder.CUT_NO_FEED); // Sam4sBuilder.CUT_FEED
 
                                     //addFeedUnit
@@ -1083,6 +1098,44 @@ public class PrinterModule extends ReactContextBaseJavaModule {
         //} else {
             //connectToDevice(device);
         //}
+    }
+
+    public static String generate(Context context, String orderNo) {
+
+        SharedPreferences prefs =
+                context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+
+        // 1. 오늘 날짜
+        String today = new SimpleDateFormat("yyyyMMdd", Locale.getDefault())
+                .format(new Date());
+
+        String savedDate = prefs.getString(KEY_DATE, null);
+        int seq = prefs.getInt(KEY_SEQ, 0);
+
+        // 2. 날짜가 바뀌었으면 리셋
+        if (!today.equals(savedDate)) {
+            seq = 1;
+        } else {
+            seq++;
+        }
+
+        // 3. orderNo 첫 자리
+        char prefix = (orderNo != null && orderNo.length() > 0)
+                ? orderNo.charAt(0)
+                : '0';
+
+        // 4. 뒤 8자리 생성
+        String seqBody = String.format("%07d", seq);
+        String finalSeq = prefix + seqBody;
+
+        // 5. 저장
+        prefs.edit()
+                .putString(KEY_DATE, today)
+                .putInt(KEY_SEQ, seq)
+                .apply();
+
+        // 6. 최종 주문번호
+        return today + finalSeq;
     }
 
 

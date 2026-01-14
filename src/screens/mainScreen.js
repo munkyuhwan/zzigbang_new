@@ -144,16 +144,29 @@ const MainScreen = (props) =>{
             }
         }
     };
-    function screenTimeOut(){
+    /* function screenTimeOut(){
         clearInterval(timeoutSet);
         timeoutSet=null;
-        timeoutSet = setInterval(()=>{
+        timeoutSet = setInterval(async ()=>{
+            console.log("isMaster: ",isMaster)
+            await dispatch(setMenu({
+                selectedItems:[],
+                detailItem:{},
+                isProcessing:false,
+                orderList:[],
+                breadOrderList:[],
+                isPayStarted:false,
+                payResultData:{}
+            }));
+            setAdShow(true);
             dispatch(getBanner());
             dispatch(setAdShow());
+            props.setMainShow(true);
+            
             //dispatch(regularUpdate());
             //dispatch(setAdScreen({isShow:true,isMain:true}))
         },SCREEN_TIMEOUT)
-    } 
+    }  */
     function clearTimeout() {
         clearInterval(timeoutSet);
         timeoutSet=null;
@@ -163,8 +176,7 @@ const MainScreen = (props) =>{
         //if(menu?.length<=0) {
             //dispatch(getMenu());
             //dispatch(getStoreInfo());
-            screenTimeOut();
-            console.log("init app");
+            //screenTimeOut();
             dispatch(initializeApp());
         //}
     },[])
@@ -303,7 +315,7 @@ const MainScreen = (props) =>{
         {isAddShow &&
             <AdScreen setMainShow={props.setMainShow} />      
         }
-        <MainWrapper onTouchStart={()=>{ screenTimeOut(); }} >
+        <MainWrapper onTouchStart={()=>{ /* props.screenTimeOut(); */ /* screenTimeOut(); */ }} >
             <MainCartWrapper>
                 <View style={{
                         flex:1,
@@ -528,7 +540,7 @@ const MainScreen = (props) =>{
                             </ButtonViewPercent>
                         </TouchableWithoutFeedback>
                         {isMaster &&
-                           <TouchableWithoutFeedback onPress={()=>{ dispatch(setCommon({isMaster:false})) }} >
+                           <TouchableWithoutFeedback onPress={()=>{ dispatch(setCommon({isMaster:false})); setCategoryIndex(0);setMainCat(categories[0]?.cate_code1); setSubCatList(categories[0]?.level2); setSubCat(); }} >
                                 <ButtonViewPercent backgroundColor={colorRed} >
                                     <ButtonImage source={require("../resources/imgs/drawable-xxxhdpi/img_pay.png")} resizeMode="contain" />
                                     <ButtonText>{"관리자모드 종료"}</ButtonText>
