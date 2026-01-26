@@ -947,15 +947,15 @@ export function removeUnicodeControls(str) {
   
 var popupInterval;
 
-export function openAlert(dispatch,getState, titleStr, msgStr, okFunction, cancelFunction) {
+export function openAlert(dispatch,getState, titleStr, msgStr, okFunction, cancelFunction, okText="확인", isCancle=true,isOK=true,icon="") {
     dispatch(setAlert( {
         title:titleStr,
         msg:msgStr,
-        okText:'출력',
+        okText:okText,
         cancelText:'닫기',
-        isCancle:true,
-        isOK:true,
-        icon:"receipt",   
+        isCancle:isCancle,
+        isOK:isOK,
+        icon:icon,   
         isAlertOpen:true,
     }))
 

@@ -11,8 +11,8 @@ import { smartroCancelService } from '../utils/smartro';
 import { Alert, DeviceEventEmitter, NativeEventEmitter, NativeModules, TextInput, View } from 'react-native';
 import { InstallmentPopup } from '../screens/popups/installmentPopup';
 import messaging from '@react-native-firebase/messaging';
-import { getBanner, initializeApp, setAdShow, setCommon } from '../store/common';
-import { SCREEN_TIMEOUT } from '../resources/values';
+import { dispatchShowAlert, getBanner, initializeApp, setAdShow, setCommon } from '../store/common';
+import { POPUP_TIMEOUT_, SCREEN_TIMEOUT } from '../resources/values';
 import { barcodeChecker, extractNumbers, openAlert } from '../utils/common';
 import BasicNonCancel from '../screens/popups/basicNonCancel';
 import { isEmpty } from 'lodash'
@@ -29,6 +29,8 @@ import { setMenu } from '../store/menu';
 const Stack = createStackNavigator()
 var statusInterval;
 let timeoutSet = null;
+let popupTimeoutSet = null;
+//var popupTimeoutSec = 30;
 
 
 export default function Navigation() {
@@ -42,9 +44,13 @@ export default function Navigation() {
     const [spinnerText, setSpinnerText] = useState("");
     const [closeText, setCloseText] = useState("");
     const [spinnerType, setSpinnerType] = useState("");
-
+ 
     const [isMainShow, setMainShow] = useState(true);
 
+    const {isAddShow,scanErrorCnt} = useSelector(state=>state.common);
+
+    const isAddShowRef = useRef(false);
+    const isScanError = useRef(false);
 
 
     const handleEventListener = () => {
@@ -151,7 +157,7 @@ export default function Navigation() {
     }
     function onOkClick() {
         console.log("onOkClick ========================");
-    }
+    } 
     useEffect(()=>{
         screenTimeOut()
         // 저울 스타트
@@ -206,26 +212,130 @@ export default function Navigation() {
 
     },[])
 
+    useEffect(()=>{
+        console.log("useeffect isAddShow: ",isAddShow)
+        isAddShowRef.current = isAddShow;
+    },[isAddShow])
+
+    useEffect(()=>{
+        console.log("useeffect scanErrorCnt: ",scanErrorCnt)
+        isScanError.current = scanErrorCnt>=3;
+    },[scanErrorCnt])
+
     const {barcodeText, setBarcodeText} = useState("");
     function screenTimeOut(){
         clearInterval(timeoutSet);
         timeoutSet=null;
-        timeoutSet = setInterval(async()=>{
-            await dispatch(setMenu({
-                selectedItems:[],
-                detailItem:{},
-                isProcessing:false,
-                orderList:[],
-                breadOrderList:[],
-                isPayStarted:false,
-                payResultData:{}
-            }));
-            //setAdShow(true);
-            dispatch(getBanner());
-            dispatch(setAdShow());
-            setMainShow(true);
+        var popupTimeoutSec=SCREEN_TIMEOUT;
+/* 
+        clearInterval(popupTimeoutSet);
+        popupTimeoutSet=null;
+        popupTimeoutSec=15;
+
+ */
+        timeoutSet = setInterval(()=>{
+            popupTimeoutSec = popupTimeoutSec-1;
+            if(popupTimeoutSec<=15 && popupTimeoutSec>0){
+                //dispatch(setAlert({"isAlertOpen":true, clickType:"", subMsg:"",imageArr:[]}));
+                //console.log("isAddShow: ",isAddShow);
+                if(isAddShowRef.current==false && isScanError.current==false) {
+                    dispatch(dispatchShowAlert({title:"알림", msg:"동작이 없어 주문을 중단합니다. 중단 하시겠습니까?"+"("+popupTimeoutSec+"초)", 
+                            okFunction: ()=>{ 
+                                clearInterval(popupTimeoutSet);
+                                popupTimeoutSet=null;
+                                popupTimeoutSec=SCREEN_TIMEOUT;
+                                dispatch(setAlert({"isAlertOpen":false, clickType:"ok", subMsg:"",imageArr:[]}));
+                            }, 
+                            cancelFunction:()=>{
+                                clearInterval(popupTimeoutSet);
+                                popupTimeoutSet=null;
+                                popupTimeoutSec=SCREEN_TIMEOUT;
+                                dispatch(setAlert({"isAlertOpen":false, clickType:"cancel", subMsg:"",imageArr:[]}));
+                            },
+                            isCancle:false                
+                        })
+                    );
+                }
+            }else if(popupTimeoutSec<=0) {
+                if(isScanError.current==false) {
+                    dispatch(setMenu({
+                        selectedItems:[],
+                        detailItem:{},
+                        isProcessing:false,
+                        orderList:[],
+                        breadOrderList:[],
+                        isPayStarted:false,
+                        payResultData:{}
+                    }));
+                    //setAdShow(true);
+                    dispatch(getBanner());
+                    dispatch(setAdShow());
+                    setMainShow(true);
+                    
+                    clearInterval(popupTimeoutSet);
+                    popupTimeoutSet=null;
+                    popupTimeoutSec=SCREEN_TIMEOUT;
+                    dispatch(setAlert({"isAlertOpen":false, clickType:"", subMsg:"",imageArr:[]}));
+                    screenTimeOut();
+                }
             
-        },SCREEN_TIMEOUT)
+            }
+
+        },POPUP_TIMEOUT_)
+
+
+        /* timeoutSet = setTimeout(()=>{
+            console.log("timeout!!!");
+           
+            popupTimeoutSet = setInterval(async()=>{
+                console.log("show timeout popup");
+                
+
+                dispatch(dispatchShowAlert({title:"알림", msg:"동작이 없어 주문을 중단합니다. 중단 하시겠습니까?"+"("+popupTimeoutSec+"초)", 
+                    okFunction: ()=>{ 
+                        console.log("popop ok btn clicked");
+                        clearInterval(popupTimeoutSet);
+                        popupTimeoutSet=null;
+                        popupTimeoutSec=15;
+                        dispatch(setAlert({"isAlertOpen":false, clickType:"", subMsg:"",imageArr:[]}));
+                    }, 
+                    cancelFunction:()=>{
+                        clearInterval(popupTimeoutSet);
+                        popupTimeoutSet=null;
+                        popupTimeoutSec=15;
+                        dispatch(setAlert({"isAlertOpen":false, clickType:"", subMsg:"",imageArr:[]}));
+                    },
+                    isCancle:false                
+                })
+                );
+                //EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"동작이 없어 주문을 중단합니다. 중단 하시겠습니까?"+"("+popupTimeoutSec+"초)", str:"",isCancle:false});
+                if(popupTimeoutSec<=0) {
+                    console.log("clear popup");
+                    await dispatch(setMenu({
+                        selectedItems:[],
+                        detailItem:{},
+                        isProcessing:false,
+                        orderList:[],
+                        breadOrderList:[],
+                        isPayStarted:false,
+                        payResultData:{}
+                    }));
+                    //setAdShow(true);
+                    dispatch(getBanner());
+                    dispatch(setAdShow());
+                    setMainShow(true);
+                    
+                    clearInterval(popupTimeoutSet);
+                    popupTimeoutSet=null;
+                    popupTimeoutSec=15;
+                    dispatch(setAlert({"isAlertOpen":false, clickType:"", subMsg:"",imageArr:[]}));
+                    screenTimeOut();
+                }
+                popupTimeoutSec--;  
+ 
+            },POPUP_TIMEOUT_)
+
+        },SCREEN_TIMEOUT) */
 
     } 
     return (

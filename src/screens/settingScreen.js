@@ -274,8 +274,9 @@ const SettingScreen = (props) =>{
     }
 
     function testLed() {
-        LED.connectDevice();
-        LED.sendLedCommand(false, true, false);
+        //LED.connectDevice("1");
+        LED.sendLed1Color("3",true,true,true);
+        //LED.sendLedCommand(false, true, false);
     }
 
     return(
@@ -290,7 +291,7 @@ const SettingScreen = (props) =>{
                         <Text style={{flex:1,fontSize:40,color:colorBlack}} ></Text>
                     </View>
                     <View style={{flexDirection:'row', paddingLeft:30,paddingRight:30}}>
-                        <Text style={{flex:1,fontSize:20,color:colorBlack,textAlign:'center'}} >v1.0.52</Text>
+                        <Text style={{flex:1,fontSize:20,color:colorBlack,textAlign:'center'}} >v1.0.54</Text>
                     </View>
                     <SettingWrapper>
 
@@ -837,9 +838,13 @@ const SettingScreen = (props) =>{
                             <SettingSectionTitle>업데이트 정보</SettingSectionTitle>
                             <SettingSectionDetailWrapper>
                                 <SettingSenctionInputViewColumn>
-                                    <SettingSectionLabel>- 동작 없을 시 메인 이동 버그 수정 </SettingSectionLabel> 
+                                    <SettingSectionLabel>- 대기시간 2분으로 수정 </SettingSectionLabel> 
+                                    <SettingSectionLabel>- 옵션 품절 처리 </SettingSectionLabel> 
+                                    <SettingSectionLabel>- 옵션 선택 금액 버그 수정 </SettingSectionLabel> 
+                                    <SettingSectionLabel>- 스캔오류 3회시 팝업 </SettingSectionLabel> 
+                                    {/* <SettingSectionLabel>- 동작 없을 시 메인 이동 버그 수정 </SettingSectionLabel> 
                                     <SettingSectionLabel>- 영수증 출력 팝업 사용 여부 세팅에 추가 (미사용 선택: 팝업 X, 사용 선택: 팝업 O, 미선택: 팝업 O) </SettingSectionLabel> 
-                                    <SettingSectionLabel>- 빵스켄화면에서 대기화면 전환시 스캔빵 초기화 </SettingSectionLabel> 
+                                    <SettingSectionLabel>- 빵스켄화면에서 대기화면 전환시 스캔빵 초기화 </SettingSectionLabel> */} 
                                 </SettingSenctionInputViewColumn>
                                 {/* <SettingSenctionInputViewColumn>
                                     <SettingSectionLabel>- 메뉴 상세설명 추가 </SettingSectionLabel> 

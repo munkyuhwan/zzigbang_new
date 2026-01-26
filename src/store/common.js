@@ -18,7 +18,7 @@ export const setCommon = createAsyncThunk("common/setCommon", async(data,{dispat
     return data;
 })
 export const dispatchShowAlert = createAsyncThunk("common/showAlert", async(data,{dispatch,getState, rejectWithValue}) =>{
-    openAlert(dispatch,getState, data.title, data.msg, data.okFunction, data.cancelFunction);
+    openAlert(dispatch,getState, data.title, data.msg, data.okFunction, data.cancelFunction, data?.okText, data?.isCancle,  data?.isOK,  data?.icon);
 
 })
 
@@ -203,6 +203,7 @@ export const commonSlice = createSlice({
         isAddShow:true,
         bannerList:[],
         weight:0,
+        scanErrorCnt:0,
         strings:{
             "주문내역":{
                 en:"Order List",
@@ -512,6 +513,7 @@ export const commonSlice = createSlice({
                 isAddShow:true,
                 bannerList:[],
                 weight:0,
+                scanErrorCnt:0,
             }
             return initState;
 

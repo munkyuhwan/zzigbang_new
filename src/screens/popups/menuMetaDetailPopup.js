@@ -11,7 +11,7 @@ import { BlackDimWRapper, ButtonImage, ButtonText, ButtonView, ButtonWrapper, Cl
 import { FlatList, ScrollView, TouchableWithoutFeedback, View, ViewBase } from "react-native";
 import { useEffect, useState } from "react";
 import { EventRegister } from "react-native-event-listeners";
-import { colorRed } from "../../resources/colors";
+import { colorRed, colorWhite } from "../../resources/colors";
 import { Text } from "react-native-gesture-handler";
 
 export const MenuMetaDetailPopup = (props) => {
@@ -54,8 +54,12 @@ export const MenuMetaDetailPopup = (props) => {
                 })
                 setOptString(newStr.substring(-1,newStr.length-1));
                 setOptPrice(tmpOptPrice);
+            }else {
+                setOptPrice(0);
             }
 
+        }else {
+            setOptPrice(0);
         }
     },[optionSelect])
 
@@ -196,6 +200,7 @@ export const MenuMetaDetailPopup = (props) => {
         if(prodIcd.length>0) {
             return prodIcd.map(opts=>{
                 const optItem = items.filter(el => el.prod_cd == opts);
+                console.log("optItem: ",optItem)
                 if (isEmpty(optItem)) {
                     return (<></>);
                 }
@@ -209,6 +214,13 @@ export const MenuMetaDetailPopup = (props) => {
                 return (
                     <>
                         <OptionItemOnlyView isSelected={isSelected} >
+                            {optItem[0]?.soldout=="Y"&&
+                                <View style={{justifyContent:'center', alignItems:"center", width:'100%',height:'100%',position:'absolute', }} >
+                                    <View style={{width:'100%',height:'100%', backgroundColor:"rgba(0,0,0,0.5)",position:'absolute',}} >
+                                    </View>
+                                    <Text style={{textAlign:'center',position:'absolute', fontSize:50, color:colorWhite, zIndex:999999}}  >SOLD OUT</Text>
+                                </View>
+                            }
                             <TouchableWithoutFeedback onPress={() => { onOptionSelect(item.limit_count, item.idx, opts, "plus"); }}>
                                 <OptionItmeTextOnlyWrapper>
                                     <OptionItemTitleOnlyText isSelected={true} >
@@ -290,12 +302,23 @@ export const MenuMetaDetailPopup = (props) => {
                                         {
                                             detailItem.option.map(item => {
                                                 //return OptList(item, item?.prod_i_cd);
-                                                return (
-                                                    <OptionTitleView>
-                                                        <OptionTitleText>{optionName(item,selectedLanguage)}{Number(item?.limit_count) > 2 ? ` (${strings["필수"][selectedLanguage]} ${numberWithCommas(item?.limit_count)}개)` : ""}</OptionTitleText>
-                                                        <OptList item={item} prodIcd={item?.prod_i_cd} />
-                                                    </OptionTitleView>
-                                                )
+                                                console.log("item: ",item)
+                                                if(item?.soldout=="Y" ) {
+                                                    return (
+                                                        <OptionTitleView>
+                                                            <OptionTitleText>{optionName(item,selectedLanguage)}</OptionTitleText>
+                                                            <OptList item={item} prodIcd={item?.prod_i_cd} />
+                                                        </OptionTitleView>
+                                                    )
+                                                }else {
+                                                    return (
+                                                        <OptionTitleView>
+                                                            <OptionTitleText>{optionName(item,selectedLanguage)}{Number(item?.limit_count) > 2 ? ` (${strings["필수"][selectedLanguage]} ${numberWithCommas(item?.limit_count)}개)` : ""}</OptionTitleText>
+                                                            <OptList item={item} prodIcd={item?.prod_i_cd} />
+                                                        </OptionTitleView>
+                                                    )
+                                                }
+                                                
                                                 
                                             })
                                         }

@@ -2,7 +2,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { BottomButton } from "../../components/commonComponents";
 import { AdButtonIcon, AdButtonIconWrapper, AdButtonSquare, AdButtonText, AdButtonView, AdScreenView, SwiperImage, SwiperVideo } from "../../style/adScreenStyle";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
-import { setCommon } from "../../store/common";
+import { setAdShow, setCommon } from "../../store/common";
 import { MainHeader } from "../../components/mainComponents";
 import { Animated, NativeModules, Pressable, TouchableWithoutFeedback, View } from "react-native";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -26,7 +26,7 @@ let swipeTimeOut;
 const AdScreen = (props) => {
     const navigate = useNavigation();
     const dispatch = useDispatch();
-    const {strings,selectedLanguage, bannerList, isMaster} = useSelector(state=>state.common);
+    const {strings,selectedLanguage, bannerList, isMaster, scanErrorCnt} = useSelector(state=>state.common);
     // 영상 플레이, 스톱
     const [adIndex, setAdIndex] = useState();
     const [displayUrl, setDisplayUrl] = useState("");
@@ -93,7 +93,6 @@ const AdScreen = (props) => {
             <></>
         )
     }
-    console.log("isMaster: ",isMaster);
     if(isMaster==true) {
         return(
             <></>
@@ -218,7 +217,7 @@ const AdScreen = (props) => {
                 }
                 </View>
                 <AdButtonView>
-                    <TouchableWithoutFeedback onPress={async()=>{ 
+                    <TouchableWithoutFeedback onPress={()=>{ 
                          /* const sound = new Sound('z001.wav', Sound.MAIN_BUNDLE, (error) => {
                             if (error) {
                                 console.log('오디오 로드 실패', error);
@@ -233,6 +232,7 @@ const AdScreen = (props) => {
                             });
                             // 재생                            
                         }); */
+                        dispatch(setCommon({isAddShow:false}));
                         props.setMainShow(false);
                         /* navigate.navigate("scan"); */ }} >
                         <AdButtonSquare style={{width:"100%"}} bgColor={colorGreen} >

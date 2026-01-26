@@ -16,7 +16,7 @@ import { ButtonImage, ButtonText, ButtonView, SquareButtonView } from '../style/
 import { RescanText, RescanView, ScanProductCheckWrapper, ScanProductList } from '../style/scanScreenStyle';
 import {isEmpty} from 'lodash';
 import { findWeightCombinations, getGimgChgByCandidates, getOptimizedWeightCombinations, getTopFive, getTopWeightMatches, numberPad, numberWithCommas, parseValue, postPayLog, speak, trimBreadList, updateList } from '../utils/common';
-import { getBanner, setAdShow, setCommon } from '../store/common';
+import { dispatchShowAlert, getBanner, setAdShow, setCommon } from '../store/common';
 import { SCREEN_TIMEOUT } from '../resources/values';
 import { CartItemTitleText } from '../style/main';
 import Sound from 'react-native-sound';
@@ -100,11 +100,10 @@ const ScanScreen = (props) => {
     const indexRef = useRef(0);
 
     const { items, orderList } = useSelector(state=>state.menu);
-    const {strings,selectedLanguage, isAddShow, weight} = useSelector(state=>state.common);
+    const {strings,selectedLanguage, isAddShow, weight, scanErrorCnt} = useSelector(state=>state.common);
     // 깜빡깜빡이는
     const opacity = useRef(new Animated.Value(1)).current;
     const colorAnim = useRef(new Animated.Value(0)).current;
-
     const BlinkingView = styled(Animated.View)`
         background-color: ${colorPink};
         height:100%;
@@ -141,6 +140,23 @@ const ScanScreen = (props) => {
     },[weightArr])
        */
 
+    useEffect(()=>{
+        console.log("scanErrorCnt: ",scanErrorCnt)
+        if(scanErrorCnt >=3) {
+            EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"스캔오류", str:"직원을 호출 해 주세요."});
+            dispatch(dispatchShowAlert({title:"스캔오류", msg:"직원을 호출 해 주세요.", 
+            okFunction: ()=>{ 
+                dispatch(setCommon({scanErrorCnt:0}));
+                dispatch(setAlert({"isAlertOpen":false, clickType:"ok", subMsg:"",imageArr:[]}));
+            }, 
+            cancelFunction:()=>{
+              
+            },
+            isCancle:false                
+        })
+    );
+        }
+    },[scanErrorCnt])
     useEffect(() => {
         const subscription = AppState.addEventListener("change", (nextAppState) => {
           if (
@@ -475,6 +491,7 @@ const ScanScreen = (props) => {
                     setImgURL(``)
                     EventRegister.emit("showSpinner",{isSpinnerShow:false, msg:"", spinnerType:"",closeText:""})
                     EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"스캔오류", str:"스캔할 수 있는 빵이 없습니다."});
+                    dispatch(setCommon({scanErrorCnt:Number(scanErrorCnt)+1}));
                     //setRescanIndex();
                     //const breadOrderList = [{prodCD:900040, option:[], amt:3}, {prodCD:900041, option:[], amt:3}];
                     //addToTmpList(breadOrderList)
@@ -529,7 +546,8 @@ const ScanScreen = (props) => {
                                     imageArr:[]
                                 }
                             ));
-                            
+                            dispatch(setCommon({scanErrorCnt:Number(scanErrorCnt)+1}));
+
                         }else {
                     
                             if(difference >= minWeight) {
@@ -569,6 +587,8 @@ const ScanScreen = (props) => {
                                         imageArr:[]
                                     }
                                 ));
+                                dispatch(setCommon({scanErrorCnt:Number(scanErrorCnt)+1}));
+
                             }else {
                                 console.log("오인식");
                                 // 오인식
@@ -591,6 +611,8 @@ const ScanScreen = (props) => {
                                             imageArr:[]
                                         }
                                     ));
+                                    dispatch(setCommon({scanErrorCnt:Number(scanErrorCnt)+1}));
+
                                 }else {
                                     dispatch(setAlert(
                                         {
@@ -607,6 +629,8 @@ const ScanScreen = (props) => {
                                             imageArr:[]
                                         }
                                     ));
+                                    dispatch(setCommon({scanErrorCnt:Number(scanErrorCnt)+1}));
+
                                 }
                             }
                         }
@@ -642,6 +666,7 @@ const ScanScreen = (props) => {
                         }
                     }else {
                         EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"스캔오류", str:"등록되지 않은 빵입니다."});
+                        dispatch(setCommon({scanErrorCnt:Number(scanErrorCnt)+1}));
                     }
                     setScanning(false);
                     
@@ -649,6 +674,7 @@ const ScanScreen = (props) => {
             }else {
                 EventRegister.emit("showSpinner",{isSpinnerShow:false, msg:"", spinnerType:"",closeText:""})
                 EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"스캔오류", str:"이미지를 저장할 수 없습니다."});
+                dispatch(setCommon({scanErrorCnt:Number(scanErrorCnt)+1}));
                 return;
             } 
         }catch(err) {
@@ -656,6 +682,7 @@ const ScanScreen = (props) => {
             EventRegister.emit("showSpinner",{isSpinnerShow:false, msg:"", spinnerType:"",closeText:""})
             EventRegister.emit("showAlert",{showAlert:true, msg:"", title:"스캔오류", str:err.errorMsg});
             setCountStart(false);
+            dispatch(setCommon({scanErrorCnt:Number(scanErrorCnt)+1}));
             //const breadOrderList = [{prodCD:900040, option:[], amt:1}, {prodCD:900041, option:[], amt:1}];
             //addToTmpList(breadOrderList)
             return;
